@@ -79,6 +79,14 @@ curl "http://localhost:8788/__scheduled?cron=0+6+*+*+*"   # run the collector on
 
 ### Deploy
 
+> **`wrangler.toml` is intentionally placeholdered.** The committed file ships
+> `database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"` and
+> `id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"` — no real IDs are tracked. Create
+> your own bindings (see [Create your bindings](#create-your-bindings) above:
+> `wrangler d1 create` / `wrangler kv namespace create`), paste the returned
+> IDs into your local `wrangler.toml`, and **keep that edit uncommitted** so
+> real IDs never land in git.
+
 ```sh
 npm run seed -- --remote   # once
 npm run deploy             # astro build && wrangler deploy
