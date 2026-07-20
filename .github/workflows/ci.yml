@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # gitleaks scans full history on push
 
       # ── secret scan (blocking) ──────────────────────────────────────
+      # Install the binary directly rather than gitleaks-action, which
+      # requires a paid licence key for organisation repos.
       - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" | tar -xz gitleaks
+          ./gitleaks dir . --no-banner --redact --exit-code 1
 
       - uses: actions/setup-node@v4
         with:
@@ -36,27 +36,36 @@ jobs:
       - name: Build
         run: npm run build
 
-      # ── QA gates: serve the built worker with a schema-seeded local D1,
-      #    then run both audits against it (blocking) ────────────────────
+      # ── QA gates: serve the built worker against a seeded local D1, then
+      #    run both audits against it (blocking) ─────────────────────────
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Seed local D1 (schema + metric metadata)
+      - name: Seed local D1 (schema + metadata + synthetic CI data)
         run: |
           npx wrangler d1 execute ethereum_beat --local --file db/schema.sql -y
           npx wrangler d1 execute ethereum_beat --local --file db/meta.sql -y
+          npx wrangler d1 execute ethereum_beat --local --file db/ci-seed.sql -y
 
-      - name: Start worker
+      - name: Start preview server
         run: |
           npx wrangler dev --port 8788 >/tmp/wrangler.log 2>&1 &
-          for i in $(seq 1 60); do
-            curl -sf -o /dev/null http://localhost:8788/ && break
+          echo "$!" > /tmp/wrangler.pid
+          # readiness poll: wait until the worker + seeded D1 answer the API
+          for i in $(seq 1 90); do
+            if curl -sf -o /dev/null "http://localhost:8788/api/snapshot"; then
+              echo "ready after ${i}s"; exit 0
+            fi
             sleep 1
           done
-          curl -sf -o /dev/null http://localhost:8788/ || (echo "worker did not start"; cat /tmp/wrangler.log; exit 1)
+          echo "server did not become ready"; cat /tmp/wrangler.log; exit 1
 
       - name: Contrast audit
-        run: node scripts/audit-contrast.mjs --base http://localhost:8788
+        run: node scripts/audit-contrast.mjs --base http://localhost:8788 --ci
 
       - name: Metadata audit
         run: node scripts/audit-meta.mjs --base http://localhost:8788
+
+      - name: Stop preview server
+        if: always()
+        run: kill "$(cat /tmp/wrangler.pid)" 2>/dev/null || true

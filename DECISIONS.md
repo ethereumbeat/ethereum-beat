@@ -749,3 +749,37 @@ CROPS category + source licence in `/llms-full.txt`.
   org repo URL is hardcoded (the final GitHub home is not set yet).
 
 Not pushed; clean local commits on `main`. No GitHub repo/remote created.
+
+## CI first-run robustness (2026-07-20)
+
+The two QA gates need a running worker + a browser, so CI can't just lint.
+Choices, so it passes reliably on a fresh PR:
+
+- **gitleaks via the binary, not `gitleaks-action`.** The Action requires a
+  paid licence key for *organisation* repos (this repo lives under the
+  `ethereumbeat` org), which would fail CI with no way around it on a fork.
+  The workflow downloads the pinned gitleaks binary and runs
+  `gitleaks dir . --exit-code 1` (blocking).
+- **Preview server = `wrangler dev`, not `astro preview`.** The Cloudflare
+  adapter builds a Worker, so `astro preview` is unsupported and a static
+  serve of `dist/` wouldn't run the API routes the audits check
+  (`/api/snapshot`, `/api/metric`, sitemap, llms). `wrangler dev` runs the
+  built worker with a local D1/KV.
+- **Hermetic data via `db/ci-seed.sql`.** Seeding real data (`npm run seed`)
+  would make CI depend on external APIs (growthepie et al.) — slow and flaky,
+  red for reasons unrelated to the PR. Instead CI applies `schema.sql` +
+  `meta.sql` + a synthetic recursive-CTE seed (~420 daily points per metric),
+  so every channel and every `/pulse/*` route renders like production with no
+  network. audit-meta then covers all 31 routes; audit-contrast covers all
+  channels/themes/viewports.
+- **Readiness poll, not a fixed sleep.** The workflow polls
+  `/api/snapshot` (200 ⇒ worker up *and* D1 seeded) for up to 90s, and tears
+  the server down in an `if: always()` step.
+- **`--ci` flag on audit-contrast** launches Chromium with
+  `--no-sandbox --disable-dev-shm-usage` for restricted runners; Playwright's
+  bundled Chromium (installed with `--with-deps`) is used either way. Headless
+  in CI is practical, so no separate build-output path was needed.
+
+Validated locally by replaying the exact CI sequence against an isolated
+`--persist-to` D1: audit-meta green (31 routes), audit-contrast `--ci` zero
+failures.
