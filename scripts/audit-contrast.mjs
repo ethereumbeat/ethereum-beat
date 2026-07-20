@@ -33,6 +33,9 @@ import { writeFileSync } from 'node:fs';
 const BASE = process.argv.includes('--base')
   ? process.argv[process.argv.indexOf('--base') + 1]
   : 'http://localhost:8788';
+// --ci: CI-appropriate Chromium launch flags (some runners restrict the
+// sandbox). Playwright's bundled Chromium is used either way.
+const CI = process.argv.includes('--ci');
 
 const ROUTES = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/about'];
 const THEMES = ['light', 'dark'];
@@ -204,7 +207,7 @@ async function collectTextBoxes(page, allowSel) {
 const failures = [];
 let checked = 0;
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(CI ? { args: ['--no-sandbox', '--disable-dev-shm-usage'] } : {});
 const ctx = await browser.newContext({ reducedMotion: 'reduce' });
 const page = await ctx.newPage();
 
