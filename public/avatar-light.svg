@@ -1,0 +1,103 @@
+<svg width="640" height="640" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="round"><circle cx="320" cy="320" r="320"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <!-- field -->
+    <rect width="640" height="640" fill="#EDEDEB"/>
+
+    <!-- faint plus-mark texture field -->
+    <g stroke="#0A0A0A" stroke-width="1.4" opacity="0.10">
+      <!-- generated grid of tiny plus marks -->
+      <g>
+        <!-- row generator done by hand at sparse points -->
+        <path d="M70 96 h10 M75 91 v10"/>
+        <path d="M150 70 h10 M155 65 v10"/>
+        <path d="M540 110 h10 M545 105 v10"/>
+        <path d="M470 74 h10 M475 69 v10"/>
+        <path d="M96 200 h10 M101 195 v10"/>
+        <path d="M560 220 h10 M565 215 v10"/>
+        <path d="M60 300 h10 M65 295 v10"/>
+        <path d="M580 330 h10 M585 325 v10"/>
+        <path d="M74 430 h10 M79 425 v10"/>
+        <path d="M556 440 h10 M561 435 v10"/>
+        <path d="M120 540 h10 M125 535 v10"/>
+        <path d="M500 552 h10 M505 547 v10"/>
+        <path d="M210 566 h10 M215 561 v10"/>
+        <path d="M420 574 h10 M425 569 v10"/>
+        <path d="M300 60 h10 M305 55 v10"/>
+      </g>
+    </g>
+
+    <!-- outer hairline ring -->
+    <circle cx="320" cy="320" r="250" fill="none" stroke="#0A0A0A" stroke-width="1.6" opacity="0.55"/>
+
+    <!-- 32-slot epoch tick ring -->
+    <g stroke="#0A0A0A" stroke-width="2" opacity="0.7">
+      <!-- 32 ticks around r=228..244 ; drawn programmatically below via transforms -->
+      <g transform="translate(320,320)">
+        <g><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(11.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(22.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(33.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(45)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(56.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(67.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(78.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(90)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(101.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(112.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(123.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(135)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(146.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(157.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(168.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(180)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(191.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(202.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(213.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(225)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(236.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(247.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(258.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(270)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(281.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(292.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(303.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(315)"><line x1="0" y1="-244" x2="0" y2="-228"/></g>
+        <g transform="rotate(326.25)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(337.5)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+        <g transform="rotate(348.75)"><line x1="0" y1="-244" x2="0" y2="-233"/></g>
+      </g>
+      <!-- current slot tick, in signal red, longer -->
+      <g transform="translate(320,320)">
+        <g transform="rotate(45)"><line x1="0" y1="-248" x2="0" y2="-224" stroke="#E60012" stroke-width="3.2" opacity="1"/></g>
+      </g>
+    </g>
+
+    <!-- ECG systole spike crossing the disc -->
+    <path d="M40 320 H210 l14 0 8 -44 12 96 10 -132 12 150 9 -40 8 20 h236"
+          fill="none" stroke="#0A0A0A" stroke-width="2.2" opacity="0.85"
+          stroke-linejoin="round" stroke-linecap="round"/>
+
+    <!-- line-only ETH glyph, centred -->
+    <g transform="translate(320,320)" fill="none" stroke="#0A0A0A" stroke-linejoin="round">
+      <!-- upper bipyramid -->
+      <path d="M0 -150 L88 -8 L0 44 L-88 -8 Z" stroke-width="3.4"/>
+      <!-- inner seam of upper -->
+      <path d="M0 -150 L0 44 M-88 -8 L88 -8" stroke-width="1.6" opacity="0.55"/>
+      <!-- lower bipyramid -->
+      <path d="M0 66 L88 14 L0 150 L-88 14 Z" stroke-width="3.4"/>
+      <path d="M0 66 L0 150" stroke-width="1.6" opacity="0.55"/>
+    </g>
+
+    <!-- corner brackets -->
+    <g stroke="#0A0A0A" stroke-width="2.4" fill="none" opacity="0.8">
+      <path d="M54 92 v-28 h28"/>
+      <path d="M586 92 v-28 h-28"/>
+      <path d="M54 548 v28 h28"/>
+      <path d="M586 548 v28 h-28"/>
+    </g>
+  </g>
+</svg>

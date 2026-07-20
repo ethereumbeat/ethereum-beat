@@ -1,0 +1,9 @@
+# Copy to .dev.vars (gitignored) for local development.
+# All keys are optional: the site runs fully keyless.
+
+# Unlocks the validators_active metric (beaconcha.in requires a key)
+BEACONCHAIN_API_KEY=
+
+# Reserved for optional metrics; currently unused
+DUNE_API_KEY=
+ETHERSCAN_API_KEY=

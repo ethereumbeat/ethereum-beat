@@ -1,0 +1,206 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ExplainChip from '../components/ExplainChip';
+import CropsWordmark from '../components/CropsWordmark.astro';
+import SectionHeader from '../components/SectionHeader';
+import { creditSources } from '../lib/sources';
+import { routeMeta, siteOrigin } from '../lib/site';
+import { buildSnapshot, SNAPSHOT_KEY, type Snapshot } from '../../worker/snapshot.ts';
+
+export const prerender = false;
+
+// panels: one idea each, a line or two, details behind [?] modals.
+// CROPS is FOUR properties (pass 13c); CR is one two-letter group.
+const crops = [
+  ['CR', 'Censorship resistance'],
+  ['O', 'Open source & free'],
+  ['P', 'Privacy'],
+  ['S', 'Security'],
+];
+
+// the sources list as JSON-LD citations (spec §18.6), built from the same
+// registry as the footer credit line so new sources appear automatically
+const { DB, SNAP } = Astro.locals.runtime.env;
+let snapshot: Snapshot | null = null;
+try {
+  const raw = await SNAP.get(SNAPSHOT_KEY);
+  snapshot = raw ? (JSON.parse(raw) as Snapshot) : await buildSnapshot(DB);
+} catch {
+  snapshot = null;
+}
+const origin = siteOrigin(Astro.locals.runtime.env);
+const aboutJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: routeMeta('/about').title,
+  url: `${origin}/about`,
+  citation: creditSources(snapshot).map((s) => ({ '@type': 'CreativeWork', name: s.name, url: s.url })),
+};
+---
+
+<Layout title={routeMeta('/about').title} description={routeMeta('/about').description} jsonLd={[aboutJsonLd]}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">A</div>
+  <div class="channel-dock" aria-hidden="true">
+    <SectionHeader index="A" title="about" subtitle="what this instrument is" size="sm" />
+  </div>
+
+  <main
+    id="about-rail"
+    class="flex h-dvh snap-y snap-mandatory flex-col overflow-y-auto overflow-x-hidden md:snap-x md:flex-row md:overflow-x-auto md:overflow-y-hidden"
+    aria-label="About, panel by panel"
+  >
+    <!-- 1 THE IDEA -->
+    <section class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
+      <SectionHeader index="01" title="the idea" subtitle="what you’re looking at" accent />
+      <h1 class="max-w-3xl font-display leading-tight" style="font-size: clamp(2rem, 5vw, 4.5rem)">
+        A HEARTBEAT,<br />NOT A TICKER
+      </h1>
+      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
+        Protocol health, usage and neutrality. No prices, no candles, no market talk.
+      </p>
+      <ExplainChip
+        client:load
+        title="The idea"
+        text={[
+          'Ethereum Beat turns the chain’s rhythm into something you can watch. Each beat surfaces one measure of protocol health, grouped by the properties that make Ethereum worth caring about.',
+          'Value-secured numbers appear because they measure trust placed in neutral infrastructure, not because number go up.',
+        ]}
+      />
+      <p class="micro text-[color:var(--ink-faint)]">SCROLL → OR ARROW KEYS</p>
+    </section>
+
+    <!-- 2 THE BEAT -->
+    <section class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
+      <SectionHeader index="02" title="the beat" subtitle="synced to the chain" accent />
+      <h2 class="max-w-3xl font-display leading-tight" style="font-size: clamp(2rem, 5vw, 4.5rem)">
+        ONE PULSE<br />EVERY 12 SECONDS
+      </h2>
+      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
+        The pulse fires on real slot boundaries. Nothing is simulated: when the disc beats, the chain moved.
+      </p>
+      <ExplainChip
+        client:load
+        title="The beat"
+        text={[
+          'The lub-dub runs at 65 bpm — exactly 13 beats per 12-second slot, so the strong systole lands precisely on each slot boundary, computed client-side from the Beacon Chain genesis timestamp.',
+          'The margins are live too: slot, epoch and finality countdowns are pure clock maths; block numbers arrive from one public RPC call per slot; FLOW streams the actual mempool.',
+        ]}
+      />
+    </section>
+
+    <!-- 3 CROPS -->
+    <section id="crops" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-7 px-8 text-center">
+      <SectionHeader index="03" title="four properties" subtitle="the crops mandate" accent />
+      <CropsWordmark gloss class="text-4xl sm:text-5xl" />
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        {
+          crops.map(([letter, name]) => (
+            <div class="brackets brackets-ink flex flex-col items-center gap-2 px-6 py-5">
+              <span class="invert flex h-10 min-w-10 items-center justify-center whitespace-nowrap px-2 font-display text-xl tracking-tight">
+                {letter}
+              </span>
+              <span class="micro">{name}</span>
+            </div>
+          ))
+        }
+      </div>
+      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
+        Ethereum’s four indivisible properties, from the EF mandate. Every number on this site
+        demonstrates one of them; the lettered badges link back here.
+      </p>
+      <ExplainChip
+        client:load
+        title="CROPS"
+        text={[
+          'CROPS is four properties. CR — Censorship resistance: no actor can selectively exclude a valid transaction or break functionality. O — Open source and free: no privileged code, no hidden specs; all of it public, auditable and free to run and fork.',
+          'P — Privacy: user data is not exposed beyond necessity or against a person’s interests. S — Security: things do exactly what they claim, no more and no less — history locked by economics. (The heartbeat — 100% uptime since 2015 — frames the beat, but is not itself a CROPS property.)',
+        ]}
+      />
+    </section>
+
+    <!-- 4 SOURCES -->
+    <section id="sources" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
+      <SectionHeader index="04" title="sources" subtitle="open data, credited" accent />
+      <h2 class="max-w-3xl font-display leading-tight" style="font-size: clamp(1.6rem, 4vw, 3.4rem)">
+        OPEN DATA,<br />CREDITED
+      </h2>
+      <p class="mono-label max-w-lg text-[color:var(--ink-soft)]">
+        growthepie (CC BY 4.0) · Beacon API · ultrasound.money · DefiLlama · ethernodes · PublicNode · dRPC · 1RPC ·
+        Natural Earth
+      </p>
+      <ExplainChip
+        client:load
+        title="Sources & licences"
+        text={[
+          'growthepie provides activity, fees, blobs and value-secured series under CC BY 4.0, attribution required and given. Finality and participation come from the standard Beacon API; staking from ultrasound.money; real-world assets from DefiLlama; node geography from ethernodes, baked with a visible date stamp.',
+          'Live blocks and the mempool stream ride PublicNode, dRPC and 1RPC. Map geometry is public-domain Natural Earth. A daily collector stores series in D1; if a source breaks, its metric quietly leaves the rotation.',
+        ]}
+      />
+    </section>
+
+    <!-- 5 COLOPHON -->
+    <section class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
+      <SectionHeader index="05" title="colophon" subtitle="how it’s built" accent />
+      <h2 class="max-w-3xl font-display leading-tight" style="font-size: clamp(1.6rem, 4vw, 3.4rem)">
+        OPEN SOURCE,<br />FREE-TIER, OFL
+      </h2>
+      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
+        MIT code · Departure Mono + Martian Mono · unaffiliated ecosystem work
+      </p>
+      <ExplainChip
+        client:load
+        title="Colophon"
+        text={[
+          'Built on Astro + Cloudflare Workers, D1 and KV, entirely on free tiers. Typeset in Departure Mono and Martian Mono, both SIL OFL, committed with their licences.',
+          'The Ethereum glyph and name represent the Ethereum network; this is independent ecosystem work, unaffiliated with the Ethereum Foundation. Adding a metric is one data module and one row of metadata — contributions welcome.',
+        ]}
+      />
+      <a href="https://github.com/nloureiro/ethereum-beat" class="cmd-chip !no-underline"><span>SOURCE → GITHUB</span></a>
+    </section>
+  </main>
+
+  <script>
+    // horizontal experience: wheel + arrows + drag drive the rail on md+.
+    // reduced motion / mobile: native (vertical) scrolling, no hijack.
+    const bind = () => {
+      const rail = document.getElementById('about-rail');
+      if (!rail || (rail as HTMLElement).dataset.bound) return;
+      (rail as HTMLElement).dataset.bound = '1';
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const horizontal = () => matchMedia('(min-width: 768px)').matches;
+
+      if (!reduced) {
+        rail.addEventListener(
+          'wheel',
+          (e) => {
+            if (!horizontal()) return;
+            e.preventDefault();
+            rail.scrollLeft += (e as WheelEvent).deltaY + (e as WheelEvent).deltaX;
+          },
+          { passive: false },
+        );
+      }
+      window.addEventListener('keydown', (e) => {
+        if (!location.pathname.startsWith('/about') || !horizontal()) return;
+        if (e.key === 'ArrowRight') rail.scrollBy({ left: window.innerWidth, behavior: reduced ? 'auto' : 'smooth' });
+        if (e.key === 'ArrowLeft') rail.scrollBy({ left: -window.innerWidth, behavior: reduced ? 'auto' : 'smooth' });
+      });
+      // drag
+      let dragging = false;
+      let startX = 0;
+      let startLeft = 0;
+      rail.addEventListener('pointerdown', (e) => {
+        if (!horizontal()) return;
+        dragging = true;
+        startX = (e as PointerEvent).clientX;
+        startLeft = rail.scrollLeft;
+      });
+      window.addEventListener('pointermove', (e) => {
+        if (dragging) rail.scrollLeft = startLeft - ((e as PointerEvent).clientX - startX);
+      });
+      window.addEventListener('pointerup', () => (dragging = false));
+    };
+    bind();
+    document.addEventListener('astro:page-load', bind);
+  </script>
+</Layout>

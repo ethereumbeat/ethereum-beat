@@ -1,0 +1,81 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SectionHeader from '../components/SectionHeader';
+import NodeMap from '../components/NodeMap';
+import { routeMeta } from '../lib/site';
+import { buildSnapshot, SNAPSHOT_KEY, type Snapshot } from '../../worker/snapshot.ts';
+import { compact } from '../lib/format';
+import geo from '../data/nodes-geo.json';
+
+export const prerender = false;
+
+const { DB, SNAP } = Astro.locals.runtime.env;
+let snapshot: Snapshot | null = null;
+try {
+  const raw = await SNAP.get(SNAPSHOT_KEY);
+  snapshot = raw ? (JSON.parse(raw) as Snapshot) : await buildSnapshot(DB);
+} catch {
+  snapshot = null;
+}
+
+const metric = (key: string) => snapshot?.metrics.find((m) => m.metric_key === key);
+const staked = metric('staked_eth');
+const stakedPct = metric('staked_pct');
+const validators = metric('validators_active');
+
+const stats: { label: string; value: string }[] = [
+  { label: 'EXECUTION NODES', value: geo.execution.total.toLocaleString('en-GB') },
+  { label: 'CONSENSUS NODES', value: geo.consensus.total.toLocaleString('en-GB') },
+  { label: 'COUNTRIES', value: String(geo.execution.countries.length) },
+];
+if (validators) stats.push({ label: 'ACTIVE VALIDATORS', value: compact(validators.latest.value, 2) });
+if (staked)
+  stats.push({
+    label: 'ETH STAKED',
+    value: `${compact(staked.latest.value, 2)}${stakedPct ? ` · ${stakedPct.latest.value.toFixed(1)}%` : ''}`,
+  });
+---
+
+<Layout title={routeMeta('/nodes').title} description={routeMeta('/nodes').description}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">2</div>
+  <div class="channel-dock" aria-hidden="true">
+    <SectionHeader index="02" title="nodes" subtitle="where ethereum lives" size="sm" />
+  </div>
+  <main class="mx-auto flex h-dvh max-w-6xl flex-col justify-center overflow-hidden px-4 pb-28 pt-10 lg:px-8">
+
+    <div class="stats-grid mt-2 grid grid-cols-2 gap-6" style={`--stat-cols: ${stats.length}`}>
+      {
+        stats.map((s, i) => (
+          <div>
+            {/* the module's one red element: the headline count */}
+            <p
+              class:list={['font-display leading-none tabular-nums', i === 0 && 'text-[color:var(--accent)]']}
+              style="font-size: clamp(1.8rem, min(4.6vw, 6.5vh), 4rem)"
+            >
+              {s.value}
+            </p>
+            <p class="micro mt-2">{s.label}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mt-6 min-h-0 flex-1">
+      <NodeMap client:load />
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* the page must fit 100dvh at every size: the map scales with the
+     viewport and the client tables scroll internally instead of running
+     under the command bar */
+  main :global(.node-map-svg) {
+    height: clamp(200px, 36vh, 520px);
+    width: 100%;
+  }
+  main :global(.node-tables) {
+    max-height: clamp(160px, 30vh, 420px);
+    overflow-y: auto;
+  }
+</style>

@@ -1,0 +1,271 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import CommandBar from '../components/CommandBar.astro';
+import MarginFrame from '../components/MarginFrame';
+import { siteOrigin, ROUTES, SITE_NAME, siteJsonLd } from '../lib/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** route-specific JSON-LD blocks, appended after the site-wide ones */
+  jsonLd?: object[];
+}
+
+const {
+  title,
+  description = 'The pulse of Ethereum: censorship resistance, open source, privacy and security, one beat per slot.',
+  jsonLd = [],
+} = Astro.props;
+const path = Astro.url.pathname;
+
+// canonicals always point at the canonical host, wherever this is deployed
+const origin = siteOrigin(Astro.locals?.runtime?.env);
+const normalized = path === '/' ? '/' : path.replace(/\/$/, '');
+const canonical = origin + normalized;
+
+// social card: per-channel build-time renders under /og/ (see
+// scripts/build-og.mjs); /pulse/* shares the generic pulse card
+const channel = ROUTES.find((r) => r.path === normalized);
+const ogImage = `${origin}/og/${channel?.og ?? (normalized.startsWith('/pulse/') ? 'pulse' : 'beat')}.png`;
+const ogAlt = channel
+  ? `${SITE_NAME} — ${channel.channel} channel card: ${channel.oneLine}`
+  : `${SITE_NAME} share card: ${description}`;
+
+const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogAlt} />
+    {jsonLdBlocks.map((block) => <script type="application/ld+json" set:html={JSON.stringify(block)} />)}
+    <link rel="preload" href="/fonts/departure-mono.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-64.png" type="image/png" sizes="64x64" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Ethereum Beat" href={`${origin}/feed.xml`} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbfbf9" />
+    <ClientRouter fallback="animate" />
+    <script is:inline>
+      // theme before first paint; system preference as the default.
+      // theme-color follows --paper so the browser chrome matches.
+      const t =
+        localStorage.getItem('theme') ??
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = t;
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute('content', t === 'dark' ? '#0a0a0a' : '#fbfbf9');
+    </script>
+  </head>
+  <body class="grain crt">
+    <slot />
+
+    <MarginFrame client:only="react" transition:persist="margin-frame" />
+
+    <CommandBar path={path} />
+
+
+    <!-- TV-style OSD on channel switch -->
+    <div id="osd" class="osd hidden" transition:persist aria-hidden="true"></div>
+
+    <!-- keyboard shortcuts overlay, styled like the system -->
+    <div
+      id="kbd-overlay"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-[color:var(--paper)]/90"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Keyboard shortcuts"
+    >
+      <div class="border border-[color:var(--hairline)] bg-[color:var(--paper)] px-8 py-6">
+        <p class="micro mb-4 flex items-center gap-2">
+          <span class="red-dot"></span>
+          <span>KEYBOARD // OPERATING MANUAL</span>
+        </p>
+        <table class="mono-label border-collapse">
+          <tbody>
+            {
+              [
+                ['1…6', 'channels: beat · nodes · blobs · flow · finality · layers'],
+                ['A', 'channel: about'],
+                ['← →', 'previous / next metric (beat · detail)'],
+                ['ENTER', 'open metric detail (beat)'],
+                ['SPACE', 'hold / resume rotation (beat)'],
+                ['D W M Q Y', 'chart range (detail)'],
+                ['X', 'share (beat · detail)'],
+                ['ESC', 'step out: modal → detail → page → channel 1'],
+                ['S', 'sound on / off (beat)'],
+                ['T', 'toggle ink / bone'],
+                ['?', 'this overlay'],
+              ].map(([k, what]) => (
+                <tr class="hairline-t">
+                  <td class="py-1.5 pr-8 font-bold text-[color:var(--ink)]">{k}</td>
+                  <td class="py-1.5 text-[color:var(--ink-soft)]">{what}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      import { navigate } from 'astro:transitions/client';
+
+      // ── persistent controller: runs once, survives every channel switch ──
+      const CHANNELS = { 1: '/', 2: '/nodes', 3: '/blobs', 4: '/flow', 5: '/finality', 6: '/layers', a: '/about' };
+      const CHANNEL_NAMES: Record<string, string> = {
+        '/': 'CH 01 — BEAT', '/nodes': 'CH 02 — NODES', '/blobs': 'CH 03 — BLOBS',
+        '/flow': 'CH 04 — FLOW', '/finality': 'CH 05 — FINALITY', '/layers': 'CH 06 — LAYERS', '/about': 'CH A — ABOUT',
+      };
+      const CYCLE = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers'];
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const here = (href: string) => (href === '/' ? location.pathname === '/' : location.pathname.startsWith(href));
+
+      (window as any).channelCut = (href: string) => {
+        if (here(href)) return;
+        void navigate(href);
+      };
+
+      const syncThemeColor = () => {
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#0a0a0a' : '#fbfbf9');
+      };
+
+      const toggleTheme = () => {
+        const html = document.documentElement;
+        const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+        html.dataset.theme = next;
+        localStorage.setItem('theme', next);
+        syncThemeColor();
+      };
+
+      const overlay = () => document.getElementById('kbd-overlay');
+      const toggleOverlay = (force?: boolean) => {
+        const el = overlay();
+        if (!el) return;
+        const show = force ?? el.classList.contains('hidden');
+        el.classList.toggle('hidden', !show);
+        el.classList.toggle('flex', show);
+      };
+
+      const flash = (chip: Element) => {
+        chip.classList.remove('cmd-pressed');
+        void (chip as HTMLElement).offsetWidth;
+        chip.classList.add('cmd-pressed');
+      };
+
+      // delegation: chips and strip buttons keep working across swaps
+      document.addEventListener('click', (e) => {
+        const t = e.target as HTMLElement;
+        const chip = t.closest('.cmd-chip') as HTMLElement | null;
+        if (!chip || !chip.dataset.keys) {
+          if (chip?.closest('#kbd-overlay')) toggleOverlay(false);
+          return;
+        }
+        chip.blur();
+        flash(chip);
+        if (chip.dataset.channel) {
+          (window as any).channelCut(chip.dataset.channel);
+          return;
+        }
+        const key = chip.dataset.keys.split('|').pop()!;
+        window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      });
+      document.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).id === 'kbd-overlay') toggleOverlay(false);
+      });
+
+      const cycleChannel = (dir: number) => {
+        const idx = CYCLE.findIndex(here);
+        (window as any).channelCut(CYCLE[((idx === -1 ? 0 : idx) + dir + CYCLE.length) % CYCLE.length]);
+      };
+
+      window.addEventListener('keydown', (e) => {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        const tag = (e.target as HTMLElement | null)?.tagName ?? '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        const lk = e.key.toLowerCase();
+        // flash the matching command-bar chip
+        const chip = [...document.querySelectorAll('#command-bar .cmd-chip')].find((c) =>
+          (c as HTMLElement).dataset.keys?.toLowerCase().split('|').includes(lk === ' ' ? ' ' : lk),
+        );
+        if (chip) flash(chip);
+        if (lk === 'arrowup' || lk === 'arrowdown') {
+          e.preventDefault();
+          cycleChannel(lk === 'arrowdown' ? 1 : -1);
+          return;
+        }
+        if (CHANNELS[lk as keyof typeof CHANNELS]) {
+          (window as any).channelCut(CHANNELS[lk as keyof typeof CHANNELS]);
+          return;
+        }
+        switch (lk) {
+          case '?':
+            e.preventDefault();
+            toggleOverlay();
+            break;
+          case 'escape':
+            if (!overlay()?.classList.contains('hidden')) toggleOverlay(false);
+            else if (location.pathname !== '/') (window as any).channelCut('/');
+            break;
+          case 't':
+            toggleTheme();
+            break;
+          case 'b':
+          case 'n':
+            (window as any).channelCut(lk === 'b' ? '/' : '/nodes');
+            break;
+        }
+      });
+
+      // theme survives every swap: the incoming document has no data-theme,
+      // so re-apply from localStorage synchronously before paint
+      const applyTheme = () => {
+        const t = localStorage.getItem('theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = t;
+        syncThemeColor();
+      };
+      document.addEventListener('astro:after-swap', applyTheme);
+
+      // OSD after every soft navigation
+      document.addEventListener('astro:after-swap', () => {
+        if (reduced) return;
+        const label = CHANNEL_NAMES[Object.keys(CHANNEL_NAMES).find(here) ?? ''];
+        const osd = document.getElementById('osd');
+        if (!label || !osd) return;
+        osd.textContent = label;
+        osd.classList.remove('hidden', 'osd-out');
+        setTimeout(() => {
+          osd.classList.add('osd-out');
+          osd.addEventListener('animationend', () => osd.classList.add('hidden'), { once: true });
+        }, 1200);
+      });
+    </script>
+  </body>
+</html>

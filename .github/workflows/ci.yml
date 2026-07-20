@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks scans full history on push
+
+      # ── secret scan (blocking) ──────────────────────────────────────
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # ── type-check + build (blocking) ───────────────────────────────
+      - name: Type-check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      # ── QA gates: serve the built worker with a schema-seeded local D1,
+      #    then run both audits against it (blocking) ────────────────────
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Seed local D1 (schema + metric metadata)
+        run: |
+          npx wrangler d1 execute ethereum_beat --local --file db/schema.sql -y
+          npx wrangler d1 execute ethereum_beat --local --file db/meta.sql -y
+
+      - name: Start worker
+        run: |
+          npx wrangler dev --port 8788 >/tmp/wrangler.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:8788/ && break
+            sleep 1
+          done
+          curl -sf -o /dev/null http://localhost:8788/ || (echo "worker did not start"; cat /tmp/wrangler.log; exit 1)
+
+      - name: Contrast audit
+        run: node scripts/audit-contrast.mjs --base http://localhost:8788
+
+      - name: Metadata audit
+        run: node scripts/audit-meta.mjs --base http://localhost:8788

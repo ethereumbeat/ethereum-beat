@@ -1,0 +1,86 @@
+---
+/**
+ * The bottom command bar: an arcade channel selector plus the move list.
+ * Channel chips navigate (number keys work from anywhere); action chips
+ * dispatch the real key events so pointer and keyboard share one path.
+ */
+interface Props {
+  path: string;
+}
+const { path } = Astro.props;
+
+const channels = [
+  { key: '1', label: 'BEAT', href: '/' },
+  { key: '2', label: 'NODES', href: '/nodes' },
+  { key: '3', label: 'BLOBS', href: '/blobs' },
+  { key: '4', label: 'FLOW', href: '/flow' },
+  { key: '5', label: 'FINALITY', href: '/finality' },
+  { key: '6', label: 'LAYERS', href: '/layers' },
+  { key: 'A', label: 'ABOUT', href: '/about' },
+];
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+
+const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolean }[] = [
+  { keys: ['ArrowLeft', 'ArrowRight'], glyph: '←/→', label: 'PREV·NEXT', homeOnly: true },
+  { keys: ['Enter'], glyph: 'ENTER', label: 'DIVE', homeOnly: true },
+  { keys: [' '], glyph: 'SPACE', label: 'HOLD', homeOnly: true },
+  { keys: ['s'], glyph: 'S', label: 'SOUND', homeOnly: true },
+  { keys: ['x'], glyph: 'X', label: 'SHARE' },
+  { keys: ['t'], glyph: 'T', label: 'INK/BONE' },
+  { keys: ['?'], glyph: '?', label: 'MANUAL' },
+];
+---
+
+<nav
+  id="command-bar"
+  transition:name="command-bar"
+  class="hairline-t fixed inset-x-0 bottom-0 z-30 flex items-center gap-1 overflow-x-auto bg-[color:var(--bar-bg)] px-2 pt-1.5 sm:gap-1.5 sm:px-4"
+  style="padding-bottom: calc(0.375rem + env(safe-area-inset-bottom, 0px))"
+  aria-label="Command bar"
+>
+  <a href="/" class="micro flex flex-none items-center gap-1.5 whitespace-nowrap !no-underline">
+    <span class="live-dot"></span>
+    <span class="hidden md:inline">ETHEREUM&nbsp;BEAT</span>
+    <span class="md:hidden">EB</span>
+  </a>
+  <span class="mx-1 h-4 w-px flex-none bg-[color:var(--hairline)]"></span>
+
+  {
+    channels.map((c) => (
+      <button
+        class:list={['cmd-chip cmd-channel', isActive(c.href) && 'cmd-channel-active']}
+        data-channel={c.href}
+        data-keys={c.key.toLowerCase()}
+        aria-label={`Channel ${c.key}: ${c.label}`}
+        aria-current={isActive(c.href) ? 'page' : undefined}
+      >
+        {
+          isActive(c.href) ? (
+            <span>&gt; {c.key} {c.label} &lt;</span>
+          ) : (
+            <>
+              <kbd>{c.key}</kbd>
+              <span class="hidden sm:inline">{c.label}</span>
+            </>
+          )
+        }
+      </button>
+    ))
+  }
+
+  <span class="mx-1 h-4 w-px flex-none bg-[color:var(--hairline)]"></span>
+  {
+    actions.map((c) => (
+      <button
+        class:list={['cmd-chip', c.homeOnly && path !== '/' ? 'hidden sm:inline-flex' : '']}
+        data-keys={c.keys.join('|')}
+        aria-label={`${c.label} (key ${c.glyph})`}
+        aria-disabled={c.homeOnly && path !== '/' ? 'true' : undefined}
+      >
+        <kbd class="hidden sm:inline">{c.glyph}</kbd>
+        <span class="hidden sm:inline">{c.label}</span>
+        <span class="sm:hidden">{c.glyph}</span>
+      </button>
+    ))
+  }
+</nav>

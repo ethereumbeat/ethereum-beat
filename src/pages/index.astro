@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BeatStage from '../components/BeatStage';
+import { routeMeta } from '../lib/site';
+
+export const prerender = false;
+const rm = routeMeta('/');
+---
+
+<Layout title={rm.title} description={rm.description}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">1</div>
+  <BeatStage client:load />
+</Layout>

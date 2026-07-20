@@ -1,0 +1,43 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "ethereum-beat"
+main = "worker/index.ts"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+assets = { directory = "dist", binding = "ASSETS" }
+
+# The canonical deployment serves ethereumbeat.org directly and 301s
+# workers.dev to it. Forks: remove or change the custom-domain route below
+# (you cannot bind a domain you do not own) and set your own canonical host
+# in [vars].
+workers_dev = true
+routes = [
+  { pattern = "ethereumbeat.org", custom_domain = true }
+]
+
+# Daily collector run at 06:00 UTC
+[triggers]
+crons = ["0 6 * * *"]
+
+[vars]
+# Canonical URLs (link rel=canonical, og:url, sitemap, JSON-LD) always use
+# this host, even when the worker is served from workers.dev.
+CANONICAL_HOST = "ethereumbeat.org"
+# DNS is live: 301 any *.workers.dev hostname to the canonical host.
+REDIRECT_TO_CANONICAL = "true"
+
+# Create your own bindings and paste the returned IDs below (see README
+# "Create your bindings"):
+#   wrangler d1 create ethereum_beat        -> database_id
+#   wrangler kv namespace create SNAP       -> id
+[[d1_databases]]
+binding = "DB"
+database_name = "ethereum_beat"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "SNAP"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+[observability]
+enabled = true

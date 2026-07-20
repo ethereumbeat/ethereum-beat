@@ -1,0 +1,78 @@
+/*
+  Ethereum Beat — design tokens.
+  Technical print brutalism: paper field, ink, one hot accent.
+  Theming is a one-file change: everything reads from these variables.
+*/
+
+:root {
+  /* palette — light (paper) */
+  --paper: #fbfbf9; /* near-pure white */
+  --paper-raise: #efefec;
+  --ink: #0a0a0a; /* true near-black: sharp print, not soft dashboard */
+  --ink-soft: rgb(10 10 10 / 0.82); /* ~#2f2f2f on paper, ~11:1 */
+  --ink-faint: rgb(10 10 10 / 0.7); /* ~#4d4d4d on paper, ~7:1 — the softest text that exists */
+  --ink-ghost: rgb(10 10 10 / 0.3); /* decorative only, never readable copy */
+  --hairline: rgb(10 10 10 / 0.2);
+  --hairline-faint: rgb(10 10 10 / 0.1);
+  --line-data: rgb(10 10 10 / 0.52); /* cell borders / gauge tracks: >=3:1 on paper */
+  --accent: #c90500; /* deep signal red: 5.9:1 on paper */
+  --accent-soft: rgb(201 5 0 / 0.14);
+  /* strategic colour: semantic only, a screen reads 95% mono */
+  --bar-text: #ffffff; /* on the red command bar: 5.9:1 on --bar-bg */
+  --bar-bg: #c90500;   /* the bar keeps its own deep red in both themes */
+  --bar-on-white: #c90500; /* red text on the white active chip: 5.9:1 */
+  --ok: #09702d;      /* phosphor green: confirmed / locked / healthy */
+  --warn: #705000;    /* amber: pending / queued / waiting (7:1 on paper) */
+  --disc-fill: rgb(10 10 10 / 0.028);
+
+  /* type — two voices: Departure Mono for numerals (terminal output, the
+     pixel grid at size is the point), Martian Mono for everything else */
+  --font-display: 'Departure Mono', 'VT323', 'Martian Mono Var', monospace;
+  /* pass 14: grotesk is the human voice (section headers + labels). Pixel
+     (--font-display) is reserved for live data. Inter is the vendored OFL
+     grotesk; swap this one line to change the face. */
+  --font-grotesk: 'Inter Var', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Martian Mono Var', 'JetBrains Mono Var', ui-monospace, 'SF Mono', Menlo, monospace;
+  --text-micro: 0.625rem;    /* 10px — printers' marks (9px glyph cores never reach nominal ink) */
+  --text-tick: 0.6875rem;    /* 11px — tickers, tick labels */
+  --text-label: 0.6875rem;   /* 11px — labels, table cells */
+  --text-body: 0.875rem;     /* 14px */
+  --text-kpi-sm: clamp(1.5rem, 4.5vw, 2.75rem);
+  --text-kpi: clamp(2.25rem, min(9vw, 13vh), 8rem);
+  --tracking-micro: 0.14em;
+  --tracking-wide: 0.08em;
+
+  /* spacing / geometry */
+  --gutter: clamp(0.875rem, 3vw, 2.5rem);
+  --hair: 1px;
+  --disc-size: min(78vmin, 44rem, calc(100dvh - 13rem));
+
+  /* motion — the beat */
+  --beat-lub: 1.06;          /* first pulse scale */
+  --beat-dub: 1.12;          /* second pulse scale */
+  --dur-flick: 120ms;        /* ticker mono flicker */
+  --dur-glitch: 80ms;        /* transition glitch slice */
+  --dur-swap: 420ms;         /* KPI crossfade */
+  --ease-settle: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+[data-theme='dark'] {
+  --paper: #0a0a0a; /* true near-black field */
+  --paper-raise: #161615;
+  --ink: #f4f2ec; /* bone white */
+  --ink-soft: rgb(244 242 236 / 0.84);
+  --ink-faint: rgb(244 242 236 / 0.72); /* the softest text that exists (~9:1) */
+  --ink-ghost: rgb(244 242 236 / 0.28);
+  --hairline: rgb(244 242 236 / 0.22);
+  --hairline-faint: rgb(244 242 236 / 0.11);
+  --line-data: rgb(244 242 236 / 0.42); /* >=3:1 on the near-black field */
+  --accent: #ff4136; /* 5.6:1 on near-black — #ff2a1f pixel-sampled under 4.5 for small text */
+  --accent-soft: rgb(255 65 54 / 0.16);
+  --bar-text: #ffffff;
+  --bar-bg: #d81510; /* 5.2:1 with white; the page accent #ff2a1f only hits 3.75 */
+  --bar-on-white: #b31210; /* dark's #d81510 on white is only 4.6 nominal; this is 7:1 */
+  --ok: #46d97a;      /* phosphor on black */
+  --warn: #eeba52; /* brighter amber: micro-size cores on near-black need the headroom */
+  --disc-fill: rgb(244 242 236 / 0.045);
+}

@@ -1,0 +1,901 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@theme {
+  --font-sans: var(--font-grotesk);
+  --font-mono-custom: var(--font-mono);
+}
+
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('/fonts/departure-mono.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'VT323';
+  src: url('/fonts/vt323.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Martian Mono Var';
+  src: url('/fonts/martian-mono-var.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+/* fallbacks, only fetched if the primary faces fail */
+@font-face {
+  font-family: 'Inter Var';
+  src: url('/fonts/inter-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Var';
+  src: url('/fonts/jetbrains-mono-var.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* visible focus, everywhere, in the system's own accent */
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+a {
+  color: inherit;
+}
+
+/* film grain — a static tile, animated only when motion is allowed */
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .grain::before {
+    animation: grain-shift 900ms steps(4) infinite;
+  }
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1.5%, 1%); }
+  50% { transform: translate(1%, -1.5%); }
+  75% { transform: translate(-1%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* shared print-grammar utilities */
+.micro {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+  /* full-strength ink: at 10px the glyph cores render 40-50% diluted,
+     so any grey starting point fails on pixels (spec §17.3) */
+  color: var(--ink);
+  /* weight is the other half of pixel truth: 400-weight stems at this
+     size never reach nominal colour; 650 does */
+  font-weight: 650;
+}
+
+.tick-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-tick);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-wide);
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(var(--stat-cols, 4), minmax(0, 1fr));
+  }
+}
+
+.hairline-t { border-top: var(--hair) solid var(--hairline); }
+.hairline-b { border-bottom: var(--hair) solid var(--hairline); }
+
+/* KPI swap: crossfade + slight rise */
+@media (prefers-reduced-motion: no-preference) {
+  .kpi-swap {
+    animation: kpi-in var(--dur-swap) var(--ease-settle);
+  }
+  @keyframes kpi-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  /* 80ms RGB-split + horizontal displacement slice on KPI transition */
+  .kpi-glitch {
+    animation: glitch-slice var(--dur-glitch) steps(2) 1;
+  }
+  @keyframes glitch-slice {
+    0% {
+      clip-path: inset(38% 0 42% 0);
+      transform: translateX(12px);
+      text-shadow:
+        4px 0 rgb(255 0 60 / 0.7),
+        -4px 0 rgb(0 170 255 / 0.6);
+    }
+    50% {
+      clip-path: inset(12% 0 70% 0);
+      transform: translateX(-10px);
+      text-shadow:
+        -4px 0 rgb(255 0 60 / 0.7),
+        4px 0 rgb(0 170 255 / 0.6);
+    }
+    100% {
+      clip-path: none;
+      transform: none;
+      text-shadow: none;
+    }
+  }
+
+  /* very low-opacity CRT scanline overlay, page-wide */
+  .crt::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    pointer-events: none;
+    opacity: 0.05;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--ink) 0px,
+      var(--ink) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  /* once per epoch: a thin pixel-sorted slice crosses the disc */
+  .pixel-sort {
+    animation: pixel-sort 340ms steps(4) 1 forwards;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--ink) 0 16px,
+      transparent 16px 30px,
+      var(--ink) 30px 32px,
+      transparent 32px 58px,
+      var(--ink) 58px 66px,
+      transparent 66px 104px
+    );
+  }
+  @keyframes pixel-sort {
+    0% { opacity: 0.55; transform: translateX(-3%) scaleX(1.04); }
+    50% { opacity: 0.4; transform: translateX(2%) scaleX(0.98); }
+    100% { opacity: 0; transform: none; }
+  }
+
+
+  /* chart redraw: quick fade-in on range change */
+  .chart-fade {
+    animation: chart-in 220ms ease-out;
+  }
+  @keyframes chart-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* connector arcs draw in on each systole, hold, retract (12s cycle) */
+  .arc-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: arc-draw 12s var(--ease-settle) infinite;
+  }
+  @keyframes arc-draw {
+    0% { stroke-dashoffset: 1; }
+    6% { stroke-dashoffset: 0; }
+    62% { stroke-dashoffset: 0; }
+    74% { stroke-dashoffset: -1; }
+    100% { stroke-dashoffset: -1; }
+  }
+
+  /* blueprint dimension line: measure on KPI change, then fade */
+  .dim-line {
+    animation: dim-line 2.2s ease-out forwards;
+  }
+  @keyframes dim-line {
+    0% { opacity: 0; transform: scaleX(0.2); }
+    18% { opacity: 1; transform: scaleX(1); }
+    72% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* a 1px scanline sweeps the viewport on a slow loop */
+  .scanline {
+    animation: scanline 11s linear infinite;
+  }
+  @keyframes scanline {
+    from { transform: translateY(-2px); }
+    to { transform: translateY(100vh); }
+  }
+  @supports (height: 100dvh) {
+    @keyframes scanline {
+      from { transform: translateY(-2px); }
+      to { transform: translateY(100dvh); }
+    }
+  }
+
+  /* crosshair ticks rotate almost imperceptibly (full turn in 8 minutes) */
+  .ticks-rotate {
+    animation: ticks-rotate 480s linear infinite;
+  }
+  @keyframes ticks-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* the red arc texts revolve slowly around the disc, top and bottom in
+     opposite directions; hovering the disc pauses them (pass 10b) */
+  .arc-spin {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+    animation: ticks-rotate 105s linear infinite;
+    will-change: transform;
+  }
+  .arc-spin--rev {
+    animation-direction: reverse;
+  }
+  .disc-core:hover .arc-spin {
+    animation-play-state: paused;
+  }
+  .arc-kick {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+  }
+
+  /* the bottom caption anchors the numeral, so it no longer revolves:
+     pinned centred with a slow ±8° oscillation, paused on hover (10c) */
+  .arc-osc {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+    animation: arc-osc 16s ease-in-out infinite;
+    will-change: transform;
+  }
+  @keyframes arc-osc {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+  }
+  .disc-core:hover .arc-osc {
+    animation-play-state: paused;
+  }
+
+  @keyframes country-flicker {
+    0%, 92% { opacity: 1; }
+    94% { opacity: 0.25; }
+    96% { opacity: 1; }
+    98% { opacity: 0.4; }
+    100% { opacity: 1; }
+  }
+
+  .spin-slow {
+    animation: spin-slow 96s linear infinite;
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* radar sweep across the node map, one pass per 12s slot */
+  .map-sweep {
+    animation: sweep 12s linear infinite;
+  }
+  @keyframes sweep {
+    from { transform: translateX(0); }
+    to { transform: translateX(830px); }
+  }
+
+  /* pass 12: overlay metric crossfade with a scramble frame on cycle */
+  .overlay-swap {
+    animation: overlay-swap 200ms steps(1, end);
+  }
+  @keyframes overlay-swap {
+    0% { opacity: 0; transform: translateY(6px); clip-path: inset(0 0 60% 0); }
+    40% { opacity: 1; transform: translateY(0); clip-path: inset(40% 0 0 0); }
+    41% { clip-path: inset(0 0 0 0); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* the dial numeral morphs into the overlay numeral on open */
+  ::view-transition-group(kpi-morph) {
+    animation-duration: 340ms;
+    animation-timing-function: var(--ease-settle);
+  }
+}
+
+/* coarse Bayer dither field: static texture, denser at the viewport edges */
+.dither-field {
+  opacity: 0.055;
+  /* mid-grey cells read as ink on paper and bone on near-black alike */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cg fill='%23808080'%3E%3Crect x='0' y='0' width='3' height='3'/%3E%3Crect x='6' y='6' width='3' height='3'/%3E%3Crect x='6' y='0' width='2' height='2'/%3E%3Crect x='0' y='6' width='2' height='2'/%3E%3Crect x='3' y='3' width='1.5' height='1.5'/%3E%3Crect x='9' y='9' width='1.5' height='1.5'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: radial-gradient(ellipse at center, transparent 32%, black 82%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dither-field {
+    animation: dither-drift 80s linear infinite;
+  }
+  @keyframes dither-drift {
+    0% { background-position: 0 0; }
+    50% { background-position: 24px 12px; }
+    100% { background-position: 0 0; }
+  }
+
+  /* hex-dump crawl behind everything */
+  .hex-crawl {
+    animation: hex-crawl 110s linear infinite;
+  }
+  @keyframes hex-crawl {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+  }
+
+  /* occasional whole-stage displacement */
+  .stage-glitch {
+    animation: stage-glitch 120ms steps(2) 1;
+  }
+  @keyframes stage-glitch {
+    0% {
+      clip-path: inset(20% 0 55% 0);
+      transform: translateX(-11px);
+    }
+    50% {
+      clip-path: inset(60% 0 8% 0);
+      transform: translateX(9px);
+    }
+    100% {
+      clip-path: none;
+      transform: none;
+    }
+  }
+
+  /* red pixel debris kicked off the disc edge on each systole */
+  .debris {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--ink);
+    animation: debris 400ms ease-out forwards;
+  }
+  @keyframes debris {
+    from { opacity: 0.9; transform: none; }
+    to { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+  }
+}
+
+/* margin tickers, pass 4: first-class citizens, twice the size, clickable */
+.ticker-label,
+.ticker-value {
+  /* one size + line-height 1 for both voices: identical baselines by
+     construction, so rotated columns cannot drift */
+  font-family: var(--font-mono);
+  font-size: 0.78125rem; /* 12.5px */
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ticker-label {
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: color 120ms;
+}
+.ticker-value {
+  font-weight: 700;
+  color: var(--ink);
+}
+.ticker-btn {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.ticker-btn:hover .ticker-label,
+.ticker-btn:focus-visible .ticker-label {
+  color: var(--accent);
+}
+/* connector line draws toward the disc on hover */
+.ticker-btn::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: 50%;
+  width: 20px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 160ms var(--ease-settle);
+}
+.ticker-btn:hover::before,
+.ticker-btn:focus-visible::before {
+  transform: scaleX(1);
+}
+
+/* short viewports: shed the least essential column items */
+@media (max-height: 760px) {
+  .tall-only {
+    display: none !important;
+  }
+}
+
+/* the command bar is the red spine of the system */
+#command-bar {
+  background: var(--bar-bg) !important;
+  border-top: none;
+}
+#command-bar,
+#command-bar .micro,
+#command-bar .cmd-chip,
+#command-bar .cmd-chip kbd {
+  color: var(--bar-text);
+}
+#command-bar .cmd-chip {
+  border-color: color-mix(in srgb, var(--bar-text) 45%, transparent);
+}
+#command-bar .cmd-chip:hover {
+  border-color: var(--bar-text);
+  color: var(--bar-text);
+}
+#command-bar .cmd-channel-active {
+  background: var(--bar-text);
+  border-color: var(--bar-text);
+}
+#command-bar .cmd-channel-active span {
+  color: var(--bar-on-white) !important;
+}
+/* home-only actions are inert off-home: visibly secondary, marked
+   aria-disabled (WCAG 1.4.3 exempts inactive controls) */
+#command-bar .cmd-chip[aria-disabled='true'] {
+  opacity: 0.55;
+}
+#command-bar .live-dot {
+  background: var(--bar-text);
+}
+#command-bar .cmd-active {
+  border-color: var(--bar-text);
+  color: var(--bar-text);
+  font-weight: 700;
+}
+
+
+.cmd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  flex: none;
+  cursor: pointer;
+  border: var(--hair) solid var(--hairline);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  padding: 0.28rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  transition: border-color 120ms, color 120ms;
+}
+.cmd-chip kbd {
+  font-family: inherit;
+  color: var(--ink);
+  font-weight: 700;
+}
+.cmd-chip:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+.cmd-chip:active {
+  transform: translateY(1px);
+}
+.cmd-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.cmd-channel-active {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.cmd-channel-active span {
+  color: var(--paper) !important;
+}
+
+/* view transitions: the room stays, the instrument changes. The glitch is
+   an accent slice layered mid-morph, not a substitute for it. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: 240ms ease-in both vt-out;
+  }
+  ::view-transition-new(root) {
+    animation: 260ms ease-out both vt-in;
+  }
+  @keyframes vt-out {
+    to { opacity: 0.2; }
+  }
+  @keyframes vt-in {
+    0% { opacity: 0.3; }
+    45% { clip-path: none; transform: none; }
+    55% { clip-path: inset(22% 0 48% 0); transform: translateX(-12px); }
+    62% { clip-path: none; transform: none; }
+    100% { opacity: 1; }
+  }
+  ::view-transition-group(channel-glyph),
+  ::view-transition-group(stage-core) {
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.25, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* channel transitions: quick glitch cut, no soft crossfade */
+@media (prefers-reduced-motion: no-preference) {
+  .channel-out {
+    animation: channel-cut 120ms steps(3) 1 forwards;
+  }
+  .channel-in {
+    animation: channel-cut 160ms steps(3) 1 reverse;
+  }
+  @keyframes channel-cut {
+    0% {
+      clip-path: none;
+      transform: none;
+      opacity: 1;
+    }
+    55% {
+      clip-path: inset(12% 0 34% 0);
+      transform: translateX(-14px);
+      opacity: 0.9;
+    }
+    100% {
+      clip-path: inset(46% 0 46% 0);
+      transform: translateX(10px);
+      opacity: 0.35;
+    }
+  }
+}
+.cmd-pressed {
+  animation: cmd-flash 220ms steps(2) 1;
+}
+@keyframes cmd-flash {
+  0% {
+    transform: translateY(1px);
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  100% {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmd-pressed {
+    animation: none;
+  }
+}
+
+/* pass 7: monochrome. Bullets are ink squares; red survives only as the
+   single live dot, sealed-block interrupts and true alerts. */
+.red-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  flex: none;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .live-dot {
+    animation: live-dot 2.4s ease-in-out infinite;
+  }
+  @keyframes live-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+}
+
+/* ── ornament kit v2 ─────────────────────────────────────────────── */
+
+/* plus-mark point fields: spatial texture on a loose grid */
+/* the dimness lives INSIDE the texture (stroke-opacity), never on the
+   element: an element-level opacity here silently dimmed every container
+   that used the ornament — the pass-10 pixel audit caught it */
+.plus-field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg stroke='%23808080' stroke-width='1' stroke-opacity='0.35'%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3Cpath d='M68 30v6M65 33h6'/%3E%3Cpath d='M30 62v8M26 66h8'/%3E%3Cpath d='M82 78v6M79 81h6'/%3E%3C/g%3E%3C/svg%3E");
+}
+.plus-field-dense {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg stroke='%23808080' stroke-width='1' stroke-opacity='0.4'%3E%3Cpath d='M10 6v8M6 10h8'/%3E%3Cpath d='M34 28v6M31 31h6'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* hatched fills: nothing fills flat any more */
+.hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--ink) 0,
+    var(--ink) 1px,
+    transparent 1px,
+    transparent 5px
+  );
+}
+.hatch-coarse {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--ink) 0,
+    var(--ink) 3px,
+    transparent 3px,
+    transparent 7px
+  );
+}
+.hatch-heavy {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--ink) 0,
+    var(--ink) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+}
+
+/* corner brackets on every module (8 background strokes, no extra nodes) */
+.brackets {
+  --bk: var(--hairline);
+  background-image:
+    linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
+    linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
+    linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
+    linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk));
+  background-repeat: no-repeat;
+  background-size: 10px 1px, 1px 10px, 10px 1px, 1px 10px, 10px 1px, 1px 10px, 10px 1px, 1px 10px;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+}
+.brackets-ink {
+  --bk: var(--ink);
+}
+
+/* inverted panel: bone on ink, for emphasis */
+.invert {
+  background: var(--ink);
+  color: var(--paper);
+}
+.invert .micro,
+.invert .mono-label,
+.invert .ticker-label {
+  color: var(--paper);
+  opacity: 0.85;
+}
+/* section headers inside an inverted panel (e.g. the values beat) */
+.invert .section-index,
+.invert .section-title {
+  color: var(--paper);
+}
+.invert .section-sub {
+  color: var(--paper);
+  opacity: 0.85;
+}
+.invert .section-index--accent {
+  color: var(--accent);
+}
+
+/* HUD callout box */
+.callout {
+  position: relative;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  padding: 0.4rem 0.6rem;
+}
+
+/* pass 12: the pulse detail overlay. 95% opaque paper so the live dial
+   stays faintly visible through the 5% transparency underneath. Sits below
+   the margin frame (z-20) and command bar (z-30) so both stay on top. */
+.pulse-overlay {
+  background: color-mix(in srgb, var(--paper) 95%, transparent);
+}
+
+/* barcode block separator (irregular vertical bars, ink) */
+.barcode {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--ink) 0 2px,
+    transparent 2px 5px,
+    var(--ink) 5px 6px,
+    transparent 6px 8px,
+    var(--ink) 8px 11px,
+    transparent 11px 13px
+  );
+}
+
+/* pass 14: the shared section header — grotesk index numeral + two-line
+   lowercase grotesk block. Pixel is retired here; this is the human voice. */
+.section-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+}
+.section-index {
+  font-family: var(--font-grotesk);
+  font-weight: 800;
+  font-size: clamp(1.75rem, 4.6vw, 2.75rem);
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  flex: none;
+}
+.section-index--accent {
+  color: var(--accent);
+}
+.section-header-text {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.section-title {
+  font-family: var(--font-grotesk);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--ink);
+}
+.section-sub {
+  font-family: var(--font-grotesk);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+}
+.section-header--sm .section-index {
+  font-size: 1.5rem;
+}
+.section-header--sm .section-title {
+  font-size: 0.8125rem;
+}
+.section-header--sm .section-sub {
+  font-size: 0.6875rem;
+}
+
+/* mid-size pixel labels: break the uniformity */
+.label-big {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.label-huge {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* TV OSD: channel name, huge pixel type, bottom-left */
+.osd {
+  position: fixed;
+  left: 1rem;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 7vw, 5rem);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  text-shadow: 3px 3px 0 var(--paper);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .osd:not(.hidden) {
+    animation: osd-in 180ms steps(3) 1;
+  }
+  .osd-out {
+    animation: osd-out 160ms steps(3) 1 forwards !important;
+  }
+  @keyframes osd-in {
+    0% { clip-path: inset(30% 0 40% 0); transform: translateX(-16px); opacity: 0.4; }
+    100% { clip-path: none; transform: none; opacity: 1; }
+  }
+  @keyframes osd-out {
+    0% { clip-path: none; opacity: 1; }
+    60% { clip-path: inset(20% 0 55% 0); transform: translateX(12px); }
+    100% { clip-path: inset(48% 0 48% 0); transform: translateX(-20px); opacity: 0; }
+  }
+}
+
+/* channel identity, docked above the command bar (pass 14: the shared
+   SectionHeader lockup, small variant) */
+.channel-dock {
+  position: fixed;
+  left: 0.75rem;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  z-index: 25;
+  pointer-events: none;
+}
+/* clear the vertical left margin rail, which only appears at lg+ */
+@media (min-width: 1024px) {
+  .channel-dock {
+    left: 2.75rem;
+  }
+}
+
+/* the channel number as architecture */
+.channel-glyph {
+  position: fixed;
+  right: 4vw;
+  bottom: 8vh;
+  z-index: 0;
+  font-family: var(--font-display);
+  font-size: 42vh;
+  line-height: 1;
+  opacity: 0.055;
+  pointer-events: none;
+  user-select: none;
+}

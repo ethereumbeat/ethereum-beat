@@ -1,0 +1,1082 @@
+{
+ "as_of": "2026-07-18",
+ "source": {
+  "name": "ethernodes.org (bitfly explorer gmbh)",
+  "url": "https://ethernodes.org"
+ },
+ "note": "Baked at build time: ethernodes has no public API and blocks automated fetches. Country-level aggregates only.",
+ "execution": {
+  "total": 6668,
+  "countries": [
+   {
+    "iso2": "US",
+    "name": "United States",
+    "count": 2145,
+    "pct": 32.17
+   },
+   {
+    "iso2": "DE",
+    "name": "Germany",
+    "count": 948,
+    "pct": 14.22
+   },
+   {
+    "iso2": "GB",
+    "name": "United Kingdom",
+    "count": 313,
+    "pct": 4.69
+   },
+   {
+    "iso2": "FI",
+    "name": "Finland",
+    "count": 293,
+    "pct": 4.39
+   },
+   {
+    "iso2": "SG",
+    "name": "Singapore",
+    "count": 263,
+    "pct": 3.94
+   },
+   {
+    "iso2": "FR",
+    "name": "France",
+    "count": 251,
+    "pct": 3.76
+   },
+   {
+    "iso2": "JP",
+    "name": "Japan",
+    "count": 223,
+    "pct": 3.34
+   },
+   {
+    "iso2": "CA",
+    "name": "Canada",
+    "count": 223,
+    "pct": 3.34
+   },
+   {
+    "iso2": "NL",
+    "name": "Netherlands",
+    "count": 196,
+    "pct": 2.94
+   },
+   {
+    "iso2": "CN",
+    "name": "China",
+    "count": 153,
+    "pct": 2.29
+   },
+   {
+    "iso2": "KR",
+    "name": "South Korea",
+    "count": 138,
+    "pct": 2.07
+   },
+   {
+    "iso2": "IE",
+    "name": "Ireland",
+    "count": 136,
+    "pct": 2.04
+   },
+   {
+    "iso2": "AU",
+    "name": "Australia",
+    "count": 129,
+    "pct": 1.93
+   },
+   {
+    "iso2": "CH",
+    "name": "Switzerland",
+    "count": 94,
+    "pct": 1.41
+   },
+   {
+    "iso2": "AT",
+    "name": "Austria",
+    "count": 89,
+    "pct": 1.33
+   },
+   {
+    "iso2": "ES",
+    "name": "Spain",
+    "count": 79,
+    "pct": 1.18
+   },
+   {
+    "iso2": "RU",
+    "name": "Russia",
+    "count": 76,
+    "pct": 1.14
+   },
+   {
+    "iso2": "PL",
+    "name": "Poland",
+    "count": 71,
+    "pct": 1.06
+   },
+   {
+    "iso2": "CZ",
+    "name": "Czechia",
+    "count": 51,
+    "pct": 0.76
+   },
+   {
+    "iso2": "BE",
+    "name": "Belgium",
+    "count": 49,
+    "pct": 0.73
+   },
+   {
+    "iso2": "HK",
+    "name": "Hong Kong",
+    "count": 47,
+    "pct": 0.7
+   },
+   {
+    "iso2": "TW",
+    "name": "Taiwan",
+    "count": 40,
+    "pct": 0.6
+   },
+   {
+    "iso2": "PT",
+    "name": "Portugal",
+    "count": 38,
+    "pct": 0.57
+   },
+   {
+    "iso2": "IT",
+    "name": "Italy",
+    "count": 33,
+    "pct": 0.49
+   },
+   {
+    "iso2": "SE",
+    "name": "Sweden",
+    "count": 32,
+    "pct": 0.48
+   },
+   {
+    "iso2": "BR",
+    "name": "Brazil",
+    "count": 27,
+    "pct": 0.4
+   },
+   {
+    "iso2": "AR",
+    "name": "Argentina",
+    "count": 26,
+    "pct": 0.39
+   },
+   {
+    "iso2": "TH",
+    "name": "Thailand",
+    "count": 25,
+    "pct": 0.37
+   },
+   {
+    "iso2": "NZ",
+    "name": "New Zealand",
+    "count": 23,
+    "pct": 0.34
+   },
+   {
+    "iso2": "LT",
+    "name": "Lithuania",
+    "count": 23,
+    "pct": 0.34
+   },
+   {
+    "iso2": "RO",
+    "name": "Romania",
+    "count": 23,
+    "pct": 0.34
+   },
+   {
+    "iso2": "IN",
+    "name": "India",
+    "count": 21,
+    "pct": 0.31
+   },
+   {
+    "iso2": "IL",
+    "name": "Israel",
+    "count": 21,
+    "pct": 0.31
+   },
+   {
+    "iso2": "MT",
+    "name": "Malta",
+    "count": 20,
+    "pct": 0.3
+   },
+   {
+    "iso2": "VN",
+    "name": "Vietnam",
+    "count": 20,
+    "pct": 0.3
+   },
+   {
+    "iso2": "NO",
+    "name": "Norway",
+    "count": 19,
+    "pct": 0.28
+   },
+   {
+    "iso2": "DK",
+    "name": "Denmark",
+    "count": 19,
+    "pct": 0.28
+   },
+   {
+    "iso2": "AE",
+    "name": "United Arab Emirates",
+    "count": 18,
+    "pct": 0.27
+   },
+   {
+    "iso2": "BG",
+    "name": "Bulgaria",
+    "count": 18,
+    "pct": 0.27
+   },
+   {
+    "iso2": "MY",
+    "name": "Malaysia",
+    "count": 18,
+    "pct": 0.27
+   },
+   {
+    "iso2": "MX",
+    "name": "Mexico",
+    "count": 17,
+    "pct": 0.25
+   },
+   {
+    "iso2": "UA",
+    "name": "Ukraine",
+    "count": 16,
+    "pct": 0.24
+   },
+   {
+    "iso2": "SI",
+    "name": "Slovenia",
+    "count": 16,
+    "pct": 0.24
+   },
+   {
+    "iso2": "MD",
+    "name": "Moldova",
+    "count": 16,
+    "pct": 0.24
+   },
+   {
+    "iso2": "HR",
+    "name": "Croatia",
+    "count": 15,
+    "pct": 0.22
+   },
+   {
+    "iso2": "HU",
+    "name": "Hungary",
+    "count": 14,
+    "pct": 0.21
+   },
+   {
+    "iso2": "ZA",
+    "name": "South Africa",
+    "count": 13,
+    "pct": 0.19
+   },
+   {
+    "iso2": "GR",
+    "name": "Greece",
+    "count": 11,
+    "pct": 0.16
+   },
+   {
+    "iso2": "ID",
+    "name": "Indonesia",
+    "count": 10,
+    "pct": 0.15
+   },
+   {
+    "iso2": "LU",
+    "name": "Luxembourg",
+    "count": 9,
+    "pct": 0.13
+   },
+   {
+    "iso2": "TR",
+    "name": "Turkey",
+    "count": 9,
+    "pct": 0.13
+   },
+   {
+    "iso2": "EE",
+    "name": "Estonia",
+    "count": 8,
+    "pct": 0.12
+   },
+   {
+    "iso2": "CL",
+    "name": "Chile",
+    "count": 7,
+    "pct": 0.1
+   },
+   {
+    "iso2": "SK",
+    "name": "Slovakia",
+    "count": 6,
+    "pct": 0.09
+   },
+   {
+    "iso2": "LV",
+    "name": "Latvia",
+    "count": 6,
+    "pct": 0.09
+   },
+   {
+    "iso2": "RS",
+    "name": "Serbia",
+    "count": 5,
+    "pct": 0.07
+   },
+   {
+    "iso2": "CY",
+    "name": "Cyprus",
+    "count": 5,
+    "pct": 0.07
+   },
+   {
+    "iso2": "KZ",
+    "name": "Kazakhstan",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "QA",
+    "name": "Qatar",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "BS",
+    "name": "Bahamas",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "CO",
+    "name": "Colombia",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "BY",
+    "name": "Belarus",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "OM",
+    "name": "Oman",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "EC",
+    "name": "Ecuador",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "PE",
+    "name": "Peru",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "BA",
+    "name": "Bosnia And Herzegovina",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "PK",
+    "name": "Pakistan",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "GE",
+    "name": "Georgia",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "IS",
+    "name": "Iceland",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "NP",
+    "name": "Nepal",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "IM",
+    "name": "Isle Of Man",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "DZ",
+    "name": "Algeria",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "GT",
+    "name": "Guatemala",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "MO",
+    "name": "Macao",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "MU",
+    "name": "Mauritius",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "KG",
+    "name": "Kyrgyzstan",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "GP",
+    "name": "Guadeloupe",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "KY",
+    "name": "Cayman Islands",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "PA",
+    "name": "Panama",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "SA",
+    "name": "Saudi Arabia",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "JM",
+    "name": "Jamaica",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "GI",
+    "name": "Gibraltar",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "MK",
+    "name": "North Macedonia",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "IR",
+    "name": "Iran",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "CR",
+    "name": "Costa Rica",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "PH",
+    "name": "Philippines",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "RE",
+    "name": "Reunion",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "PR",
+    "name": "Puerto Rico",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "UY",
+    "name": "Uruguay",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "NG",
+    "name": "Nigeria",
+    "count": 1,
+    "pct": 0.01
+   }
+  ],
+  "clients": [
+   {
+    "name": "Geth",
+    "count": 2864,
+    "pct": 43
+   },
+   {
+    "name": "Nethermind",
+    "count": 1638,
+    "pct": 24.6
+   },
+   {
+    "name": "Reth",
+    "count": 1141,
+    "pct": 17.1
+   },
+   {
+    "name": "Besu",
+    "count": 646,
+    "pct": 9.7
+   },
+   {
+    "name": "Erigon",
+    "count": 214,
+    "pct": 3.2
+   },
+   {
+    "name": "Ethrex",
+    "count": 43,
+    "pct": 0.6
+   },
+   {
+    "name": "Other",
+    "count": 122,
+    "pct": 1.8
+   }
+  ]
+ },
+ "consensus": {
+  "total": 7290,
+  "countries": [
+   {
+    "iso2": "US",
+    "name": "United States",
+    "count": 2316,
+    "pct": 31.77
+   },
+   {
+    "iso2": "DE",
+    "name": "Germany",
+    "count": 1123,
+    "pct": 15.4
+   },
+   {
+    "iso2": "FI",
+    "name": "Finland",
+    "count": 488,
+    "pct": 6.69
+   },
+   {
+    "iso2": "FR",
+    "name": "France",
+    "count": 377,
+    "pct": 5.17
+   },
+   {
+    "iso2": "SG",
+    "name": "Singapore",
+    "count": 306,
+    "pct": 4.2
+   },
+   {
+    "iso2": "GB",
+    "name": "United Kingdom",
+    "count": 292,
+    "pct": 4.01
+   },
+   {
+    "iso2": "CA",
+    "name": "Canada",
+    "count": 274,
+    "pct": 3.76
+   },
+   {
+    "iso2": "JP",
+    "name": "Japan",
+    "count": 225,
+    "pct": 3.09
+   },
+   {
+    "iso2": "NL",
+    "name": "Netherlands",
+    "count": 201,
+    "pct": 2.76
+   },
+   {
+    "iso2": "KR",
+    "name": "South Korea",
+    "count": 170,
+    "pct": 2.33
+   },
+   {
+    "iso2": "AU",
+    "name": "Australia",
+    "count": 149,
+    "pct": 2.04
+   },
+   {
+    "iso2": "AT",
+    "name": "Austria",
+    "count": 127,
+    "pct": 1.74
+   },
+   {
+    "iso2": "CH",
+    "name": "Switzerland",
+    "count": 108,
+    "pct": 1.48
+   },
+   {
+    "iso2": "IE",
+    "name": "Ireland",
+    "count": 101,
+    "pct": 1.39
+   },
+   {
+    "iso2": "PL",
+    "name": "Poland",
+    "count": 82,
+    "pct": 1.12
+   },
+   {
+    "iso2": "ES",
+    "name": "Spain",
+    "count": 78,
+    "pct": 1.07
+   },
+   {
+    "iso2": "RU",
+    "name": "Russia",
+    "count": 77,
+    "pct": 1.06
+   },
+   {
+    "iso2": "CN",
+    "name": "China",
+    "count": 56,
+    "pct": 0.77
+   },
+   {
+    "iso2": "HK",
+    "name": "Hong Kong",
+    "count": 56,
+    "pct": 0.77
+   },
+   {
+    "iso2": "CZ",
+    "name": "Czechia",
+    "count": 48,
+    "pct": 0.66
+   },
+   {
+    "iso2": "TH",
+    "name": "Thailand",
+    "count": 35,
+    "pct": 0.48
+   },
+   {
+    "iso2": "SE",
+    "name": "Sweden",
+    "count": 33,
+    "pct": 0.45
+   },
+   {
+    "iso2": "PT",
+    "name": "Portugal",
+    "count": 33,
+    "pct": 0.45
+   },
+   {
+    "iso2": "ZA",
+    "name": "South Africa",
+    "count": 32,
+    "pct": 0.44
+   },
+   {
+    "iso2": "BE",
+    "name": "Belgium",
+    "count": 27,
+    "pct": 0.37
+   },
+   {
+    "iso2": "TW",
+    "name": "Taiwan",
+    "count": 26,
+    "pct": 0.36
+   },
+   {
+    "iso2": "IL",
+    "name": "Israel",
+    "count": 26,
+    "pct": 0.36
+   },
+   {
+    "iso2": "NO",
+    "name": "Norway",
+    "count": 24,
+    "pct": 0.33
+   },
+   {
+    "iso2": "LT",
+    "name": "Lithuania",
+    "count": 24,
+    "pct": 0.33
+   },
+   {
+    "iso2": "IT",
+    "name": "Italy",
+    "count": 20,
+    "pct": 0.27
+   },
+   {
+    "iso2": "MT",
+    "name": "Malta",
+    "count": 20,
+    "pct": 0.27
+   },
+   {
+    "iso2": "HR",
+    "name": "Croatia",
+    "count": 19,
+    "pct": 0.26
+   },
+   {
+    "iso2": "SI",
+    "name": "Slovenia",
+    "count": 19,
+    "pct": 0.26
+   },
+   {
+    "iso2": "BG",
+    "name": "Bulgaria",
+    "count": 19,
+    "pct": 0.26
+   },
+   {
+    "iso2": "IN",
+    "name": "India",
+    "count": 17,
+    "pct": 0.23
+   },
+   {
+    "iso2": "NZ",
+    "name": "New Zealand",
+    "count": 16,
+    "pct": 0.22
+   },
+   {
+    "iso2": "BR",
+    "name": "Brazil",
+    "count": 15,
+    "pct": 0.21
+   },
+   {
+    "iso2": "AR",
+    "name": "Argentina",
+    "count": 15,
+    "pct": 0.21
+   },
+   {
+    "iso2": "UA",
+    "name": "Ukraine",
+    "count": 15,
+    "pct": 0.21
+   },
+   {
+    "iso2": "DK",
+    "name": "Denmark",
+    "count": 15,
+    "pct": 0.21
+   },
+   {
+    "iso2": "UY",
+    "name": "Uruguay",
+    "count": 14,
+    "pct": 0.19
+   },
+   {
+    "iso2": "RO",
+    "name": "Romania",
+    "count": 14,
+    "pct": 0.19
+   },
+   {
+    "iso2": "LU",
+    "name": "Luxembourg",
+    "count": 13,
+    "pct": 0.18
+   },
+   {
+    "iso2": "MD",
+    "name": "Moldova",
+    "count": 13,
+    "pct": 0.18
+   },
+   {
+    "iso2": "VN",
+    "name": "Vietnam",
+    "count": 11,
+    "pct": 0.15
+   },
+   {
+    "iso2": "MX",
+    "name": "Mexico",
+    "count": 10,
+    "pct": 0.14
+   },
+   {
+    "iso2": "EE",
+    "name": "Estonia",
+    "count": 9,
+    "pct": 0.12
+   },
+   {
+    "iso2": "TR",
+    "name": "Türkiye",
+    "count": 9,
+    "pct": 0.12
+   },
+   {
+    "iso2": "ID",
+    "name": "Indonesia",
+    "count": 8,
+    "pct": 0.11
+   },
+   {
+    "iso2": "BA",
+    "name": "Bosnia And Herzegovina",
+    "count": 8,
+    "pct": 0.11
+   },
+   {
+    "iso2": "HU",
+    "name": "Hungary",
+    "count": 8,
+    "pct": 0.11
+   },
+   {
+    "iso2": "MY",
+    "name": "Malaysia",
+    "count": 8,
+    "pct": 0.11
+   },
+   {
+    "iso2": "LV",
+    "name": "Latvia",
+    "count": 6,
+    "pct": 0.08
+   },
+   {
+    "iso2": "RS",
+    "name": "Serbia",
+    "count": 6,
+    "pct": 0.08
+   },
+   {
+    "iso2": "SK",
+    "name": "Slovakia",
+    "count": 6,
+    "pct": 0.08
+   },
+   {
+    "iso2": "AE",
+    "name": "United Arab Emirates",
+    "count": 6,
+    "pct": 0.08
+   },
+   {
+    "iso2": "MU",
+    "name": "Mauritius",
+    "count": 6,
+    "pct": 0.08
+   },
+   {
+    "iso2": "CL",
+    "name": "Chile",
+    "count": 4,
+    "pct": 0.05
+   },
+   {
+    "iso2": "GR",
+    "name": "Greece",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "KZ",
+    "name": "Kazakhstan",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "IM",
+    "name": "Isle Of Man",
+    "count": 3,
+    "pct": 0.04
+   },
+   {
+    "iso2": "CO",
+    "name": "Colombia",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "GE",
+    "name": "Georgia",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "BY",
+    "name": "Belarus",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "DO",
+    "name": "Dominican Republic",
+    "count": 2,
+    "pct": 0.03
+   },
+   {
+    "iso2": "PR",
+    "name": "Puerto Rico",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "IS",
+    "name": "Iceland",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "GP",
+    "name": "Guadeloupe",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "CY",
+    "name": "Cyprus",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "JE",
+    "name": "Jersey",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "BZ",
+    "name": "Belize",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "PE",
+    "name": "Peru",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "EC",
+    "name": "Ecuador",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "MC",
+    "name": "Monaco",
+    "count": 1,
+    "pct": 0.01
+   },
+   {
+    "iso2": "RE",
+    "name": "Reunion",
+    "count": 1,
+    "pct": 0.01
+   }
+  ],
+  "clients": [
+   {
+    "name": "Lighthouse",
+    "count": 3928,
+    "pct": 53.9
+   },
+   {
+    "name": "Prysm",
+    "count": 1540,
+    "pct": 21.1
+   },
+   {
+    "name": "Teku",
+    "count": 714,
+    "pct": 9.8
+   },
+   {
+    "name": "Nimbus",
+    "count": 587,
+    "pct": 8.1
+   },
+   {
+    "name": "Lodestar",
+    "count": 277,
+    "pct": 3.8
+   },
+   {
+    "name": "Grandine",
+    "count": 47,
+    "pct": 0.6
+   },
+   {
+    "name": "Other",
+    "count": 197,
+    "pct": 2.7
+   }
+  ]
+ }
+}

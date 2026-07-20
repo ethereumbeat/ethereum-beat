@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SectionHeader from '../components/SectionHeader';
+import BlobsChannel from '../components/BlobsChannel';
+import { routeMeta } from '../lib/site';
+
+export const prerender = false;
+const rm = routeMeta('/blobs');
+---
+
+<Layout title={rm.title} description={rm.description}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">3</div>
+  <div class="channel-dock" aria-hidden="true">
+    <SectionHeader index="03" title="blobs" subtitle="the data-availability heartbeat" size="sm" />
+  </div>
+  <main class="mx-auto flex h-dvh max-w-6xl flex-col px-4 pb-28 pt-10 lg:px-8">
+    <div class="min-h-0 flex-1 overflow-hidden">
+      <BlobsChannel client:only="react" />
+    </div>
+  </main>
+</Layout>

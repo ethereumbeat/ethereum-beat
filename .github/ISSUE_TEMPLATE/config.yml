@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability (private)
+    url: mailto:security@ethereumbeat.org
+    about: Do NOT open a public issue for security problems. Report privately by email or via the repo's Security tab — see SECURITY.md.
+  - name: The instrument itself
+    url: https://ethereumbeat.org/about
+    about: What Ethereum Beat is, the CROPS properties, and every data source.

@@ -1,0 +1,109 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BeatStage from '../../components/BeatStage';
+import { fetchSeries, type AggMode } from '../../lib/aggregate';
+import { formatDelta, DELTA_LABELS } from '../../lib/format';
+import { pulseMeta, siteOrigin } from '../../lib/site';
+import { licenseFor } from '../../lib/sources';
+
+export const prerender = false;
+
+const { metric } = Astro.params;
+const { DB } = Astro.locals.runtime.env;
+
+interface MetaRow {
+  metric_key: string;
+  label: string;
+  category: string;
+  unit: string;
+  description: string;
+  source_name: string;
+  source_url: string;
+  agg_mode: AggMode;
+  caption: string | null;
+}
+
+const meta = await DB.prepare('SELECT * FROM metric_meta WHERE metric_key = ?1')
+  .bind(metric)
+  .first<MetaRow>();
+if (!meta) return new Response('Unknown metric', { status: 404 });
+
+const latest = await DB.prepare(
+  'SELECT date, value FROM metrics WHERE metric_key = ?1 ORDER BY date DESC LIMIT 1',
+)
+  .bind(metric)
+  .first<{ date: string; value: number }>();
+
+const initialPoints = await fetchSeries(DB, meta.metric_key, 'm', meta.agg_mode);
+
+// headline delta: latest daily value vs the previous day
+const prevDay = await DB.prepare(
+  'SELECT value FROM metrics WHERE metric_key = ?1 ORDER BY date DESC LIMIT 1 OFFSET 1',
+)
+  .bind(metric)
+  .first<{ value: number }>();
+const delta =
+  latest && prevDay && prevDay.value !== 0
+    ? formatDelta(((latest.value - prevDay.value) / Math.abs(prevDay.value)) * 100)
+    : null;
+
+// the caption line (dp10c): the metric_meta override wins, else the daily
+// delta — the same rule the home arc and share images use
+const caption = meta.caption?.trim()
+  ? meta.caption.trim().toUpperCase()
+  : delta
+    ? `${delta} ${DELTA_LABELS['d']}`
+    : null;
+
+// overlay seed: the dial mounts underneath and this metric's detail opens
+// on load (pass 12). SEO title/description/canonical/OG + the Dataset
+// JSON-LD below all stay server-rendered and unchanged.
+const overlayMetric = {
+  metric_key: meta.metric_key,
+  label: meta.label,
+  category: meta.category,
+  unit: meta.unit,
+  description: meta.description,
+  source_name: meta.source_name,
+  source_url: meta.source_url,
+  caption,
+  agg_mode: meta.agg_mode,
+  latest: latest ?? null,
+};
+
+// Dataset JSON-LD (spec §18.6): coverage from the stored series, licence
+// of the underlying source, distribution pointing at the open API
+const origin = siteOrigin(Astro.locals.runtime.env);
+const coverage = await DB.prepare(
+  'SELECT MIN(date) AS first, MAX(date) AS last FROM metrics WHERE metric_key = ?1',
+)
+  .bind(metric)
+  .first<{ first: string | null; last: string | null }>();
+const dataset = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: `${meta.label} — Ethereum`,
+  description: meta.description,
+  url: `${origin}/pulse/${meta.metric_key}`,
+  ...(coverage?.first && coverage?.last ? { temporalCoverage: `${coverage.first}/${coverage.last}` } : {}),
+  license: licenseFor(meta.source_name, meta.source_url),
+  isAccessibleForFree: true,
+  creditText: `Source: ${meta.source_name}`,
+  creator: { '@type': 'Organization', name: meta.source_name, url: meta.source_url },
+  distribution: [
+    {
+      '@type': 'DataDownload',
+      encodingFormat: 'application/json',
+      contentUrl: `${origin}/api/metric/${meta.metric_key}`,
+    },
+  ],
+};
+---
+
+<Layout title={pulseMeta(meta.label, meta.description).title} description={meta.description} jsonLd={[dataset]}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">1</div>
+  <BeatStage
+    client:load
+    initialOverlay={{ metric: overlayMetric, initialRange: 'm', initialPoints }}
+  />
+</Layout>
