@@ -8,6 +8,11 @@
 # cloudflare local state
 .wrangler/
 
+# generated deploy config with REAL D1/KV ids, substituted from CI secrets at
+# deploy time — must never be committed (the tracked wrangler.toml keeps its
+# REPLACE_WITH_YOUR_* placeholders because this repo is public)
+*.ci.toml
+
 # dependencies
 node_modules/
 

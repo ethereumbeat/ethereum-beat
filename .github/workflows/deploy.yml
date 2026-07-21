@@ -1,0 +1,101 @@
+name: Deploy
+
+# The ONLY workflow that ships. Runs after a merge to main (and on demand),
+# re-runs both audit gates as a hard pre-deploy check, injects the real D1/KV
+# ids from secrets into a throwaway config (the tracked wrangler.toml keeps its
+# REPLACE_WITH_YOUR_* placeholders — this repo is public), deploys the Worker,
+# then smoke-tests production.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# never let two production deploys overlap; don't cancel one mid-flight
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # a GitHub Environment so approval can be required later via a repo setting
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── belt & braces: production never ships if either audit regressed.
+      #    Same composite ci.yml uses, so audits can't drift. ────────────
+      - uses: ./.github/actions/build-and-audit
+
+      # ── inject real ids into a throwaway, git-ignored config. The tracked
+      #    wrangler.toml is read-only here and must stay on its placeholders;
+      #    the cron trigger ([triggers] crons) is copied verbatim, so the
+      #    daily collector ships with the Worker — no separate scheduler. ──
+      - name: Generate deploy config from secrets (never committed)
+        env:
+          CF_D1_DATABASE_ID: ${{ secrets.CF_D1_DATABASE_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+        run: |
+          set -euo pipefail
+          sed -e "s|REPLACE_WITH_YOUR_D1_DATABASE_ID|${CF_D1_DATABASE_ID}|" \
+              -e "s|REPLACE_WITH_YOUR_KV_NAMESPACE_ID|${CF_KV_NAMESPACE_ID}|" \
+              wrangler.toml > wrangler.ci.toml
+
+          # constraint check: the tracked file must NOT have been mutated
+          if ! git diff --quiet -- wrangler.toml; then
+            echo "::error::tracked wrangler.toml was modified — aborting"
+            git --no-pager diff -- wrangler.toml
+            exit 1
+          fi
+          # constraint check: the generated config must be untracked (gitignored)
+          if git ls-files --error-unmatch wrangler.ci.toml >/dev/null 2>&1; then
+            echo "::error::wrangler.ci.toml is tracked — it must stay gitignored"
+            exit 1
+          fi
+          # constraint check: placeholders must actually be gone from the deploy
+          # config (guards against an empty/missing secret shipping a bad id)
+          if grep -q 'REPLACE_WITH_YOUR_' wrangler.ci.toml; then
+            echo "::error::a secret was empty — placeholder still present in deploy config"
+            exit 1
+          fi
+          echo "tracked wrangler.toml unchanged; wrangler.ci.toml generated (untracked)"
+
+      - name: Deploy to Cloudflare (production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy -c wrangler.ci.toml
+
+      # ── post-deploy smoke test: fail the run if production is wrong ─────
+      - name: Smoke test production
+        run: |
+          set -uo pipefail
+          base="https://ethereumbeat.org"
+          code() { curl -s -o /dev/null -w '%{http_code}' "$1"; }
+          # a new version can take a few seconds to roll out — retry each check
+          check() {
+            local url="$1" want="$2" got=""
+            for i in $(seq 1 10); do
+              got="$(code "$url")"
+              if [ "$got" = "$want" ]; then echo "ok   $url -> $got"; return 0; fi
+              sleep 3
+            done
+            echo "::error::$url returned $got, expected $want"
+            return 1
+          }
+          check "$base/"                      200 || exit 1
+          check "$base/pulse/txcount_combined" 200 || exit 1
+          # guards the unknown-metric 404 fix from regressing
+          check "$base/pulse/txcount"          404 || exit 1
+          check "$base/api/snapshot"           200 || exit 1
+          if curl -s "$base/api/snapshot" | python3 -c "import sys,json; json.load(sys.stdin)"; then
+            echo "ok   /api/snapshot is valid JSON"
+          else
+            echo "::error::/api/snapshot did not return valid JSON"
+            exit 1
+          fi
+          echo "all smoke tests passed"

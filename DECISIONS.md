@@ -848,3 +848,43 @@ Measured with `elementFromPoint` sampling across the dock band (respects
 clipping + the dock's `pointer-events: none`): zero visible collisions on
 nodes / blobs / flow / finality / layers at 1280×700, 1440×900, 1920×1080 and
 390×844. Both QA gates green (audit-contrast 0 failures; audit-meta 31 routes).
+
+## Automated deploy: CI/deploy split (2026-07-21)
+
+Merging to `main` now ships to production through a gated pipeline, kept
+separate from PR validation so nothing deploys on a red audit.
+
+- **`ci.yml` = validation only, never deploys.** Runs on every PR (and a
+  re-check on `main` push): gitleaks + the shared build/audit gate. This is
+  what branch protection requires to pass before merge.
+- **`deploy.yml` = the only thing that ships, only from `main`.** Trigger:
+  push to `main` (i.e. after a merge) plus `workflow_dispatch` for a manual
+  re-deploy. Uses a GitHub Environment named `production`, so a reviewer
+  approval can be required later with a single repo setting, no workflow
+  change.
+- **One source of truth for the audits.** The build + both QA gates live in a
+  composite action, `.github/actions/build-and-audit`, used by both workflows.
+  Copy-pasting the seed/serve/audit dance into two files would let them drift;
+  the composite can't. `deploy.yml` re-runs it as a hard pre-deploy check
+  (belt & braces) — production never ships if contrast or metadata regressed.
+- **Real ids never touch a tracked file.** The committed `wrangler.toml` keeps
+  its `REPLACE_WITH_YOUR_*` D1/KV placeholders (this repo is public). At deploy
+  time `deploy.yml` `sed`s the real values from `secrets.CF_D1_DATABASE_ID` /
+  `secrets.CF_KV_NAMESPACE_ID` into a throwaway `wrangler.ci.toml` (git-ignored
+  via `*.ci.toml`) and deploys with `wrangler deploy -c wrangler.ci.toml`. The
+  job asserts the tracked `wrangler.toml` was not modified, that
+  `wrangler.ci.toml` is untracked, and that no placeholder survived (an empty
+  secret fails the run instead of shipping a broken id).
+- **Deploy auth via secrets.** `cloudflare/wrangler-action@v3` with
+  `secrets.CLOUDFLARE_API_TOKEN` + `secrets.CLOUDFLARE_ACCOUNT_ID`. The four
+  secrets (two ids + token + account) live only in GitHub Actions secrets and
+  on the maintainer's machine — never in the repo.
+- **The daily cron ships with the Worker.** `[triggers] crons = ["0 6 * * *"]`
+  is copied verbatim into the generated config, so the collector deploys with
+  the Worker; there is no separate scheduler step.
+- **Post-deploy smoke test (blocking).** After deploy, `deploy.yml` retries
+  `GET /` (200), `/pulse/txcount_combined` (200), `/pulse/txcount` (404 — guards
+  the unknown-metric fix from regressing), and `/api/snapshot` (200 + valid
+  JSON). A failure fails the run.
+- **Concurrency guard.** `concurrency: production-deploy` with
+  `cancel-in-progress: false` so two merges can't deploy on top of each other.

@@ -1,5 +1,7 @@
 name: CI
 
+# PR-only validation (plus a re-check on main). This workflow NEVER deploys —
+# deploy.yml is the only thing that ships. A red audit here blocks the PR.
 on:
   pull_request:
   push:
@@ -22,50 +24,5 @@ jobs:
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" | tar -xz gitleaks
           ./gitleaks dir . --no-banner --redact --exit-code 1
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      # ── type-check + build (blocking) ───────────────────────────────
-      - name: Type-check
-        run: npm run check
-
-      - name: Build
-        run: npm run build
-
-      # ── QA gates: serve the built worker against a seeded local D1, then
-      #    run both audits against it (blocking) ─────────────────────────
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Seed local D1 (schema + metadata + synthetic CI data)
-        run: |
-          npx wrangler d1 execute ethereum_beat --local --file db/schema.sql -y
-          npx wrangler d1 execute ethereum_beat --local --file db/meta.sql -y
-          npx wrangler d1 execute ethereum_beat --local --file db/ci-seed.sql -y
-
-      - name: Start preview server
-        run: |
-          npx wrangler dev --port 8788 >/tmp/wrangler.log 2>&1 &
-          echo "$!" > /tmp/wrangler.pid
-          # readiness poll: wait until the worker + seeded D1 answer the API
-          for i in $(seq 1 90); do
-            if curl -sf -o /dev/null "http://localhost:8788/api/snapshot"; then
-              echo "ready after ${i}s"; exit 0
-            fi
-            sleep 1
-          done
-          echo "server did not become ready"; cat /tmp/wrangler.log; exit 1
-
-      - name: Contrast audit
-        run: node scripts/audit-contrast.mjs --base http://localhost:8788 --ci
-
-      - name: Metadata audit
-        run: node scripts/audit-meta.mjs --base http://localhost:8788
-
-      - name: Stop preview server
-        if: always()
-        run: kill "$(cat /tmp/wrangler.pid)" 2>/dev/null || true
+      # ── build + both QA gates (shared with deploy.yml) ──────────────
+      - uses: ./.github/actions/build-and-audit
