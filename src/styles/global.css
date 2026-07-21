@@ -875,6 +875,16 @@ a {
   }
 }
 
+/* every channel reserves the bottom band that the command bar and the
+   docked section header occupy — plus the mobile safe-area inset — so
+   channel content can never render underneath them. overflow-hidden on a
+   `main` clips at the viewport edge, NOT at this padding edge, so the
+   clipping/scrolling boundary must be an inner element whose box ends at
+   this reserve (dock-collision fix). */
+.channel-body {
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
+}
+
 /* channel identity, docked above the command bar (pass 14: the shared
    SectionHeader lockup, small variant) */
 .channel-dock {
