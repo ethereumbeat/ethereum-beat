@@ -1,9 +1,12 @@
 ---
 /**
- * The CROPS wordmark (pass 13c item 2): all five glyphs show, but C+R are
- * bound into one group (tighter tracking + a hairline red underline) so the
- * eye reads CR · O · P · S — four properties, not five. Optional one-line
- * gloss on first appearance.
+ * The CROPS wordmark. All five glyphs show, but C+R are bound into one group
+ * (tighter tracking + a hairline red underline) so the eye reads
+ * CR · O · P · S — four properties, not five. Optional one-line gloss.
+ *
+ * Pass "type": the letters are LABELS, not live data, so they set in the
+ * grotesk (heavy), not the pixel face — the pixel font is reserved for live
+ * numbers. Consistent with the values / layers / section headers.
  */
 interface Props {
   gloss?: boolean;
@@ -13,9 +16,9 @@ const { gloss = false, class: klass = '' } = Astro.props;
 ---
 
 <span class={`inline-flex flex-col items-center gap-2 ${klass}`}>
-  <span class="font-display inline-flex items-baseline leading-none" aria-label="CROPS" style="letter-spacing: 0.12em">
+  <span class="font-grotesk inline-flex items-baseline font-extrabold leading-none" aria-label="CROPS" style="letter-spacing: 0.04em">
     {/* C + R kept together: tighter tracking + a shared red underline */}
-    <span class="border-b-2 border-[color:var(--accent)] pb-0.5" style="letter-spacing: -0.02em">CR</span>
+    <span class="border-b-2 border-[color:var(--accent)] pb-0.5" style="letter-spacing: -0.03em">CR</span>
     <span aria-hidden="true" class="px-[0.28em] text-[0.7em] text-[color:var(--ink-faint)]">·</span>
     <span>O</span>
     <span aria-hidden="true" class="px-[0.28em] text-[0.7em] text-[color:var(--ink-faint)]">·</span>

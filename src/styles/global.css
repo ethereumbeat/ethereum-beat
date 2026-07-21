@@ -778,6 +778,11 @@ a {
   gap: 0.55rem;
   text-align: left;
 }
+/* the human voice: grotesk for labels/headers (pixel is live data only) */
+.font-grotesk {
+  font-family: var(--font-grotesk);
+}
+
 .section-index {
   font-family: var(--font-grotesk);
   font-weight: 800;
