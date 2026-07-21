@@ -815,3 +815,36 @@ Extending "pixel = numbers only" to the live dial itself would reverse those
 audited/documented decisions and is a larger change than this type pass —
 flagged for a follow-up if wanted, not done here. Both QA gates green after
 the change (audit-contrast 0 failures; audit-meta 31 routes).
+
+## Two pre-launch bug fixes (2026-07-21)
+
+### Unknown-metric 404 (was: bare white page)
+Direct navigation to `/pulse/{unknown-key}` previously returned
+`new Response('Unknown metric', { status: 404 })` — a correct status but an
+unstyled text page outside the site's grammar. Now `src/pages/pulse/[metric].astro`
+sets `Astro.response.status = 404` on an unmatched key and renders the 404 in
+the instrument's own language: the layout's margin frame + command bar, a
+`404 / metric not found / no such series in the registry` SectionHeader lockup,
+a message naming the bad `/pulse/{key}` path, and ESC · back-to-beat / about
+affordances (ESC key wired to navigate home). Title + canonical stay sensible
+on the 404. All metric-dependent DB work is guarded behind the `metric_meta`
+lookup, so a valid key still renders 200. `sitemap.xml` already emits registry
+keys only, so the site never links to its own 404. Verified: `/pulse/txcount`
+→ 404 (styled), `/pulse/txcount_combined` → 200.
+
+### Docked section-header collision (all channels)
+The `.channel-dock` "NN name / descriptor" lockup is `position: fixed`
+bottom-left. `overflow-hidden` on a channel `main` clips at the *viewport*
+edge, not at the padding edge, so tall channel content (worst: the /nodes
+consensus-/execution-client tables) rendered underneath the dock. Fix:
+- a shared `.channel-body` reserve — `padding-bottom: calc(8rem +
+  env(safe-area-inset-bottom, 0px))` — replaces the old fixed `pb-28` on every
+  channel `main`, so the reserved band also clears the mobile safe area.
+- the clipping/scrolling boundary is now an inner element whose box ends at
+  that reserve: /nodes scrolls its map+tables in an `overflow-y-auto` wrapper
+  (no data hidden), and /flow + /finality gained `overflow-hidden` to match
+  /blobs + /layers.
+Measured with `elementFromPoint` sampling across the dock band (respects
+clipping + the dock's `pointer-events: none`): zero visible collisions on
+nodes / blobs / flow / finality / layers at 1280×700, 1440×900, 1920×1080 and
+390×844. Both QA gates green (audit-contrast 0 failures; audit-meta 31 routes).

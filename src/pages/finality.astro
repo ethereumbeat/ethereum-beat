@@ -13,8 +13,8 @@ const rm = routeMeta('/finality');
   <div class="channel-dock" aria-hidden="true">
     <SectionHeader index="05" title="finality" subtitle="proposed to final" size="sm" />
   </div>
-  <main class="mx-auto flex h-dvh max-w-6xl flex-col px-4 pb-28 pt-8 lg:px-8">
-    <div class="min-h-0 flex-1">
+  <main class="mx-auto flex h-dvh max-w-6xl flex-col channel-body px-4 pt-8 lg:px-8">
+    <div class="min-h-0 flex-1 overflow-hidden">
       <FinalityChannel client:only="react" />
     </div>
   </main>

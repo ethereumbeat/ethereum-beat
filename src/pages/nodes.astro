@@ -41,7 +41,7 @@ if (staked)
   <div class="channel-dock" aria-hidden="true">
     <SectionHeader index="02" title="nodes" subtitle="where ethereum lives" size="sm" />
   </div>
-  <main class="mx-auto flex h-dvh max-w-6xl flex-col justify-center overflow-hidden px-4 pb-28 pt-10 lg:px-8">
+  <main class="channel-body mx-auto flex h-dvh max-w-6xl flex-col justify-center overflow-hidden px-4 pt-10 lg:px-8">
 
     <div class="stats-grid mt-2 grid grid-cols-2 gap-6" style={`--stat-cols: ${stats.length}`}>
       {
@@ -60,7 +60,7 @@ if (staked)
       }
     </div>
 
-    <div class="mt-6 min-h-0 flex-1">
+    <div class="mt-6 min-h-0 flex-1 overflow-y-auto">
       <NodeMap client:load />
     </div>
   </main>
