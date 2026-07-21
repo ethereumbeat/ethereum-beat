@@ -783,3 +783,35 @@ Choices, so it passes reliably on a fresh PR:
 Validated locally by replaying the exact CI sequence against an isolated
 `--persist-to` D1: audit-meta green (31 routes), audit-contrast `--ci` zero
 failures.
+
+## Type rule restated (2026-07-21 — CROPS letters + sweep)
+
+**Pixel (Departure Mono) = LIVE DATA only.** KPI numerals, per-block / stat
+numbers, countdowns, and the giant background channel-glyph watermark.
+
+**Grotesk (Inter) = every human label and header.** Section headers,
+eyebrows, category names, the **CROPS letters**, and all /about copy and
+headlines.
+
+Changes this pass:
+- The CR·O·P·S letters (the `CropsWordmark` row and the four /about badge
+  boxes) moved from Departure to grotesk heavy — they are labels, not data.
+  The CR digraph stays bound as one unit (tighter tracking + a red underline
+  under CR only) so the eye still reads four groups: CR · O · P · S.
+- /about panel headlines ("A HEARTBEAT, NOT A TICKER", etc.) moved from
+  Departure to grotesk heavy, so the docs page carries no pixel type.
+- Added a `.font-grotesk` utility so labels can opt into the grotesk voice
+  without inline font-family.
+
+**Documented pixel exceptions on the live BEAT dial** (the instrument's own
+display voice — deliberately NOT converted here):
+- The disc **ArcText** (category + caption on the ring) stays Departure:
+  pass 10 §17.5 switched it to the pixel face specifically for legibility on
+  the curve, and it is audited that way.
+- The **KPI metric label** and the **values-beat / pulse-overlay principle
+  statements** stay Departure as the dial's terminal display type (pass 14).
+
+Extending "pixel = numbers only" to the live dial itself would reverse those
+audited/documented decisions and is a larger change than this type pass —
+flagged for a follow-up if wanted, not done here. Both QA gates green after
+the change (audit-contrast 0 failures; audit-meta 31 routes).
