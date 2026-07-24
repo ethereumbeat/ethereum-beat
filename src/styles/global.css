@@ -1035,6 +1035,7 @@ a {
   .dpad-legend-h,
   .dpad-legend-v { display: none; }
   .dpad-legend-swipe { display: block; }
+}
 /* ═══════════════════════════════════════════════════════════════════════
    Pass 15 item 4 — draggable command bar. Grab the bar background (not the
    chips) and drop near an edge to dock it there, or in the centre for a
@@ -1053,6 +1054,13 @@ a {
   }
 }
 .cmd-handle {
+  /* hidden in the default bottom dock: a drag starts by grabbing the bar
+     background anywhere, so no in-flow handle is needed there — which also
+     keeps the bottom bar's layout byte-identical to before (an in-flow handle
+     shifts every chip a few px and tips borderline white-on-red glyphs on
+     CI's thinner rendering). The handle appears once docked, as the
+     move-grip + double-click-reset target. */
+  display: none;
   flex: none;
   cursor: grab;
   user-select: none;
@@ -1066,13 +1074,11 @@ a {
 .cmd-handle:hover {
   opacity: 1;
 }
-/* dragging is a desktop affordance — the bar is fixed at the bottom on
-   mobile, so the handle has no function there and is dropped (keeps the
-   compact mobile bar uncluttered) */
-@media (max-width: 639px) {
-  .cmd-handle {
-    display: none;
-  }
+#command-bar.cmd-dock-top .cmd-handle,
+#command-bar.cmd-dock-left .cmd-handle,
+#command-bar.cmd-dock-right .cmd-handle,
+#command-bar.cmd-dock-float .cmd-handle {
+  display: inline-flex;
 }
 #command-bar.cmd-dragging,
 #command-bar.cmd-dragging .cmd-handle {
