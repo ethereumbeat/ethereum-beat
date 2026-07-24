@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import CommandBar from '../components/CommandBar.astro';
+import DPad from '../components/DPad.astro';
 import MarginFrame from '../components/MarginFrame';
 import { siteOrigin, ROUTES, SITE_NAME, siteJsonLd } from '../lib/site';
 
@@ -88,6 +89,7 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
 
     <CommandBar path={path} />
 
+    <DPad />
 
     <!-- TV-style OSD on channel switch -->
     <div id="osd" class="osd hidden" transition:persist aria-hidden="true"></div>
@@ -180,6 +182,42 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
         chip.classList.add('cmd-pressed');
       };
 
+      // ── d-pad nav overlay ──────────────────────────────────────────
+      // light the matching keycap on a real key press (restart the flash)
+      const flashDpad = (key: string) => {
+        const cap = document.querySelector(`#dpad .dpad-key[data-key="${key}"]`);
+        if (!cap) return;
+        cap.classList.remove('dpad-pressed');
+        void (cap as HTMLElement).offsetWidth;
+        cap.classList.add('dpad-pressed');
+        cap.addEventListener('animationend', () => cap.classList.remove('dpad-pressed'), { once: true });
+      };
+      // left/right only cycle metrics on BEAT — dim them elsewhere
+      const syncDpad = () => {
+        const pad = document.getElementById('dpad');
+        pad?.classList.toggle('dpad-metric-off', location.pathname !== '/');
+      };
+      // teach that the keys work: one pulse on load / after every swap
+      const pulseDpad = () => {
+        if (reduced) return;
+        const pad = document.getElementById('dpad');
+        if (!pad) return;
+        pad.classList.remove('dpad-pulse');
+        void pad.offsetWidth;
+        pad.classList.add('dpad-pulse');
+        pad.addEventListener('animationend', () => pad.classList.remove('dpad-pulse'), { once: true });
+      };
+
+      // delegation: the d-pad keycaps are real controls — dispatch the
+      // matching arrow key so pointer/touch and keyboard share one path
+      document.addEventListener('click', (e) => {
+        const cap = (e.target as HTMLElement).closest('#dpad .dpad-key') as HTMLElement | null;
+        if (!cap?.dataset.key) return;
+        cap.blur();
+        flashDpad(cap.dataset.key);
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: cap.dataset.key, bubbles: true }));
+      });
+
       // delegation: chips and strip buttons keep working across swaps
       document.addEventListener('click', (e) => {
         const t = e.target as HTMLElement;
@@ -216,6 +254,9 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
           (c as HTMLElement).dataset.keys?.toLowerCase().split('|').includes(lk === ' ' ? ' ' : lk),
         );
         if (chip) flash(chip);
+        // light the d-pad keycap on any real arrow press (dim L/R do nothing
+        // off BEAT, but the flash still shows the key was received)
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') flashDpad(e.key);
         if (lk === 'arrowup' || lk === 'arrowdown') {
           e.preventDefault();
           cycleChannel(lk === 'arrowdown' ? 1 : -1);
@@ -252,6 +293,15 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
         syncThemeColor();
       };
       document.addEventListener('astro:after-swap', applyTheme);
+
+      // d-pad: keep the metric pair's active/dim state route-correct, and
+      // pulse once to teach the keys on every fresh view
+      document.addEventListener('astro:after-swap', syncDpad);
+      // astro:page-load fires on the initial load and after every soft nav
+      document.addEventListener('astro:page-load', () => {
+        syncDpad();
+        pulseDpad();
+      });
 
       // OSD after every soft navigation
       document.addEventListener('astro:after-swap', () => {
