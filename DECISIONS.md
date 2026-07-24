@@ -1023,3 +1023,41 @@ Four independent features, one PR each. Sub-entries added per PR.
 - **Placement**: `right: 0.75rem` on mobile, `right: 3rem` at lg+ to clear the
   vertical right ticker rail; `z-index: 25` (below the command bar's 30) and
   `pointer-events:none` on the container so only the keycaps hit-test.
+### Item 4 — draggable command bar
+
+- **Grab the background, not the chips.** A `pointerdown` on `#command-bar`
+  starts a drag only when the target is the bar background or the `⠿` handle —
+  never a chip or the wordmark link — so all chip clicks keep working. The
+  drag lives in the layout's persistent controller (survives channel switches);
+  the bar re-applies its dock on `astro:after-swap`.
+- **Ghost-preview snap model.** While dragging, a dashed-accent ghost
+  (`#cmd-ghost`) previews the target zone; the bar itself doesn't follow the
+  pointer (simpler + robust). Release near the LEFT / RIGHT / TOP edge docks it
+  there; release in the CENTRE region makes it a floating palette at the drop
+  point. Zones are the outer `min(150px, 18vw)` band of each edge, centre
+  otherwise.
+- **Five dock modes, pure token/class geometry** (`cmd-dock-{top,left,right,
+  float}`; bottom is the default, no class): TOP is the same row pinned up;
+  LEFT/RIGHT are a scrollable vertical column (chips stack, the action labels
+  shorten to their key glyphs, separators become horizontal rules); FLOAT is a
+  compact wrapped palette window with a centred drag handle and a
+  corner-bracket frame, positioned via `--cmd-x/--cmd-y`.
+- **Persistence + reset.** Dock (and float x/y) persist in `localStorage`;
+  double-clicking the handle resets to the bottom and clears the float
+  position.
+- **Content is never covered.** The `.channel-body` reserve adapts to the
+  active dock side via `html[data-dock=…]` (top → top padding, left/right → side
+  padding; float keeps the bottom reserve since the user placed it); the docked
+  channel identity shifts clear of a left bar. Verified at the QA viewports in
+  all four dock positions (+ float) on the channel pages.
+- **Keyboard unaffected.** Docking only moves the bar; every key handler is
+  independent of position, so shortcuts work identically in every dock. The
+  handle is a pointer-only affordance with no keyboard equivalent needed (all
+  actions are already keyed), so it is `aria-hidden` — which also keeps its
+  faint `⠿` glyph out of the contrast audit.
+- **Mobile: fixed bottom.** Dragging is gated behind `pointer: coarse`
+  (dragging disabled) and `restoreDock` forces `bottom` on coarse pointers, so
+  a dock saved on desktop never applies on a phone.
+- **Reduced motion.** The dock position transition is gated behind
+  `prefers-reduced-motion: no-preference`; under reduce, snapping is instant
+  and the ghost has no animation.

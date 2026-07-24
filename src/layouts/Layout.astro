@@ -90,6 +90,8 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
     <CommandBar path={path} />
 
     <DPad />
+    <!-- drag ghost: the snap-zone preview while dragging the command bar -->
+    <div id="cmd-ghost" class="cmd-ghost hidden" transition:persist aria-hidden="true"></div>
 
     <!-- TV-style OSD on channel switch -->
     <div id="osd" class="osd hidden" transition:persist aria-hidden="true"></div>
@@ -315,6 +317,120 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
           osd.classList.add('osd-out');
           osd.addEventListener('animationend', () => osd.classList.add('hidden'), { once: true });
         }, 1200);
+      });
+
+      // ── draggable command bar (pass 15 item 4) ──────────────────────
+      // Grab the bar background (not chips) and drop near an edge to dock
+      // there, or in the centre for a floating palette. A ghost previews the
+      // snap zone; position persists; double-click the handle resets to the
+      // bottom. Keyboard equivalents are unaffected. Mobile keeps it fixed.
+      const coarse = matchMedia('(pointer: coarse)').matches;
+      const bar = () => document.getElementById('command-bar');
+      const ghostEl = () => document.getElementById('cmd-ghost');
+      let dock = localStorage.getItem('cmdDock') ?? 'bottom';
+      let floatPos: { x: number; y: number } | null = (() => {
+        try {
+          return JSON.parse(localStorage.getItem('cmdFloatPos') ?? 'null');
+        } catch {
+          return null;
+        }
+      })();
+
+      const applyDock = (d: string) => {
+        const b = bar();
+        if (!b) return;
+        b.classList.remove('cmd-dock-top', 'cmd-dock-left', 'cmd-dock-right', 'cmd-dock-float');
+        if (d !== 'bottom') b.classList.add('cmd-dock-' + d);
+        document.documentElement.dataset.dock = d;
+        if (d === 'float' && floatPos) {
+          b.style.setProperty('--cmd-x', floatPos.x + 'px');
+          b.style.setProperty('--cmd-y', floatPos.y + 'px');
+        } else {
+          b.style.removeProperty('--cmd-x');
+          b.style.removeProperty('--cmd-y');
+        }
+      };
+      const setDock = (d: string) => {
+        dock = d;
+        localStorage.setItem('cmdDock', d);
+        applyDock(d);
+      };
+      // mobile: always bottom, dragging off; desktop: restore the saved dock
+      const restoreDock = () => applyDock(coarse ? 'bottom' : dock);
+      document.addEventListener('astro:after-swap', restoreDock);
+      restoreDock();
+
+      const EDGE = () => Math.min(150, innerWidth * 0.18);
+      const zoneFor = (x: number, y: number) => {
+        const e = EDGE();
+        if (y > innerHeight - e) return 'bottom';
+        if (y < e) return 'top';
+        if (x < e) return 'left';
+        if (x > innerWidth - e) return 'right';
+        return 'float';
+      };
+      const clampFloat = (x: number, y: number) => ({
+        x: Math.min(Math.max(x - 150, 8), innerWidth - 300),
+        y: Math.min(Math.max(y - 24, 8), innerHeight - 120),
+      });
+      const showGhost = (zone: string, x: number, y: number) => {
+        const g = ghostEl();
+        if (!g) return;
+        const t = 52;
+        let r;
+        if (zone === 'bottom') r = { left: 0, top: innerHeight - t, width: innerWidth, height: t };
+        else if (zone === 'top') r = { left: 0, top: 0, width: innerWidth, height: t };
+        else if (zone === 'left') r = { left: 0, top: 0, width: t * 1.5, height: innerHeight };
+        else if (zone === 'right') r = { left: innerWidth - t * 1.5, top: 0, width: t * 1.5, height: innerHeight };
+        else {
+          const p = clampFloat(x, y);
+          r = { left: p.x, top: p.y, width: 300, height: 92 };
+        }
+        g.classList.remove('hidden');
+        g.style.left = r.left + 'px';
+        g.style.top = r.top + 'px';
+        g.style.width = r.width + 'px';
+        g.style.height = r.height + 'px';
+      };
+
+      let dragging = false;
+      let zone = 'bottom';
+      document.addEventListener('pointerdown', (e) => {
+        if (coarse) return; // mobile: dragging disabled
+        const b = (e.target as HTMLElement).closest?.('#command-bar') as HTMLElement | null;
+        if (!b) return;
+        const t = e.target as HTMLElement;
+        const onHandle = t.closest('[data-cmd-handle]');
+        // grab the background or the handle — never a chip or a link
+        if (!onHandle && (t.closest('.cmd-chip') || t.closest('a'))) return;
+        dragging = true;
+        zone = dock;
+        b.classList.add('cmd-dragging');
+        b.setPointerCapture?.(e.pointerId);
+        e.preventDefault();
+      });
+      document.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        zone = zoneFor(e.clientX, e.clientY);
+        showGhost(zone, e.clientX, e.clientY);
+      });
+      document.addEventListener('pointerup', (e) => {
+        if (!dragging) return;
+        dragging = false;
+        bar()?.classList.remove('cmd-dragging');
+        ghostEl()?.classList.add('hidden');
+        if (zone === 'float') {
+          floatPos = clampFloat(e.clientX, e.clientY);
+          localStorage.setItem('cmdFloatPos', JSON.stringify(floatPos));
+        }
+        setDock(zone);
+      });
+      // double-click the handle: reset to the bottom
+      document.addEventListener('dblclick', (e) => {
+        if (!(e.target as HTMLElement).closest?.('[data-cmd-handle]')) return;
+        floatPos = null;
+        localStorage.removeItem('cmdFloatPos');
+        setDock('bottom');
       });
     </script>
   </body>

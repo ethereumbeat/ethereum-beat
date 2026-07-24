@@ -1035,4 +1035,165 @@ a {
   .dpad-legend-h,
   .dpad-legend-v { display: none; }
   .dpad-legend-swipe { display: block; }
+/* ═══════════════════════════════════════════════════════════════════════
+   Pass 15 item 4 — draggable command bar. Grab the bar background (not the
+   chips) and drop near an edge to dock it there, or in the centre for a
+   floating palette. Snap zones show a ghost preview; position persists;
+   double-click the handle resets to the bottom. Keyboard equivalents are
+   unaffected wherever it docks. Mobile keeps the bar fixed at the bottom.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+#command-bar {
+  touch-action: none; /* the bar background is a drag surface on pointer devices */
+}
+@media (prefers-reduced-motion: no-preference) {
+  #command-bar {
+    transition: left 0.18s var(--ease-snap), right 0.18s var(--ease-snap),
+      top 0.18s var(--ease-snap), bottom 0.18s var(--ease-snap), width 0.18s var(--ease-snap);
+  }
+}
+.cmd-handle {
+  flex: none;
+  cursor: grab;
+  user-select: none;
+  color: var(--bar-text);
+  opacity: 0.6;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 3px;
+  letter-spacing: -2px;
+}
+.cmd-handle:hover {
+  opacity: 1;
+}
+/* dragging is a desktop affordance — the bar is fixed at the bottom on
+   mobile, so the handle has no function there and is dropped (keeps the
+   compact mobile bar uncluttered) */
+@media (max-width: 639px) {
+  .cmd-handle {
+    display: none;
+  }
+}
+#command-bar.cmd-dragging,
+#command-bar.cmd-dragging .cmd-handle {
+  cursor: grabbing;
+}
+
+/* TOP dock: same row, pinned to the top */
+#command-bar.cmd-dock-top {
+  top: 0;
+  bottom: auto;
+  border-top: none;
+  border-bottom: var(--hair) solid var(--hairline);
+  padding-top: calc(0.375rem + env(safe-area-inset-top, 0px));
+  padding-bottom: 0.375rem;
+}
+
+/* LEFT / RIGHT docks: a vertical column of chips */
+#command-bar.cmd-dock-left,
+#command-bar.cmd-dock-right {
+  inset: 0 auto 0 0;
+  height: 100dvh;
+  width: auto;
+  max-width: 46vw;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.4rem 0.5rem;
+  gap: 0.35rem;
+}
+#command-bar.cmd-dock-right {
+  left: auto;
+  right: 0;
+}
+#command-bar.cmd-dock-left .cmd-chip,
+#command-bar.cmd-dock-right .cmd-chip {
+  justify-content: center;
+}
+/* shorten in the narrow column: drop the action labels (keep key glyphs);
+   channel labels are short enough to keep */
+#command-bar.cmd-dock-left .cmd-chip:not(.cmd-channel) .cmd-label,
+#command-bar.cmd-dock-right .cmd-chip:not(.cmd-channel) .cmd-label {
+  display: none;
+}
+/* separators become horizontal rules in a column */
+#command-bar.cmd-dock-left .cmd-sep,
+#command-bar.cmd-dock-right .cmd-sep {
+  width: 100% !important;
+  height: 1px !important;
+  margin: 0.15rem 0 !important;
+}
+
+/* FLOAT: a compact palette window with a drag handle + corner-bracket frame */
+#command-bar.cmd-dock-float {
+  inset: auto;
+  left: var(--cmd-x, 50vw);
+  top: var(--cmd-y, 42vh);
+  right: auto;
+  bottom: auto;
+  width: min(94vw, 34rem);
+  max-width: 34rem;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.4rem;
+  overflow: visible;
+  padding: 0.85rem 0.7rem 0.7rem;
+  border: var(--hair) solid var(--bar-text);
+}
+/* corner brackets on the float window (bar-text strokes) */
+#command-bar.cmd-dock-float::before,
+#command-bar.cmd-dock-float::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: var(--hair) solid var(--bar-text);
+  pointer-events: none;
+}
+#command-bar.cmd-dock-float::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+#command-bar.cmd-dock-float::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+#command-bar.cmd-dock-float .cmd-handle {
+  width: 100%;
+  text-align: center;
+  letter-spacing: 6px;
+  cursor: grab;
+  order: -1;
+}
+
+/* the drag ghost: a dashed accent preview of the target snap zone */
+.cmd-ghost {
+  position: fixed;
+  z-index: 29;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border: 1px dashed var(--accent);
+}
+
+/* the channel-body reserve adapts to the active dock side, so the bar never
+   covers channel content wherever it lands (float keeps the bottom reserve). */
+html[data-dock='top'] .channel-body {
+  padding-top: calc(8rem + env(safe-area-inset-top, 0px));
+  padding-bottom: 2.5rem;
+}
+html[data-dock='left'] .channel-body {
+  padding-left: 8rem;
+}
+html[data-dock='right'] .channel-body {
+  padding-right: 8rem;
+}
+/* keep the docked channel identity clear of a left/right bar */
+html[data-dock='left'] .channel-dock {
+  left: 8.25rem;
 }
