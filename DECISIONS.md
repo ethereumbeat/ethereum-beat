@@ -966,3 +966,26 @@ separate from PR validation so nothing deploys on a red audit.
   hardening pass. Runtime exposure is limited: undici/ws live inside
   wrangler/miniflare (dev + build tooling), which do not ship to the Cloudflare
   Worker runtime.
+## 24. Pass 15 — personality
+
+Four independent features, one PR each. Sub-entries added per PR.
+
+### Item 2 — stablecoins off the homepage
+
+- **`stables_supply` unfeatured from the BEAT rotation** (`featured` 1→0 in
+  `db/meta.sql`, plus `db/migrations/003_unfeature_stables.sql` for existing
+  DBs; KV snapshot rebuild on deploy, same as every prior featured change).
+  The metric, the `/api/metric/stables_supply` endpoint and the
+  `/pulse/stables_supply` detail page are all untouched — only the home
+  feature flag changes, so sitemap/OG/JSON-LD need no edits.
+- **Rationale**: stablecoin supply is a financial/economic figure, off-tone
+  for a protocol-vitals beat that avoids money-market framing. It belongs in
+  the onchain-economy channel, so it moves to CH6 LAYERS as a dedicated panel
+  (headline `$` value in red + a small monthly trend line) sitting beside the
+  VALUE SECURED block, both part of the "onchain economy" cluster. Follows the
+  pass-9 precedent that moved L2 metrics off the home carousel to keep it a
+  protocol-vitals instrument.
+- **No new endpoint**: the panel reuses `/api/metric/stables_supply?range=m`
+  (already edge-cached), so no collector or API change. It lives in the
+  `lg:flex` side column with the other economy widgets (desktop parity with
+  CombinedChart / VALUE SECURED).
