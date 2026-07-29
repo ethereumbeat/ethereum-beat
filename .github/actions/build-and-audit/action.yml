@@ -1,0 +1,68 @@
+name: Build and audit
+description: >-
+  Install, type-check, build, then run both QA gates (contrast + metadata)
+  against the built Worker served over a hermetically-seeded local D1. This is
+  the single source of truth for how the audits run — shared by ci.yml (PR
+  validation) and deploy.yml (the hard pre-deploy gate), so the two can never
+  drift apart.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+
+    - name: Install dependencies
+      run: npm ci
+      shell: bash
+
+    # ── type-check + build (blocking) ───────────────────────────────
+    - name: Type-check
+      run: npm run check
+      shell: bash
+
+    - name: Build
+      run: npm run build
+      shell: bash
+
+    # ── QA gates: serve the built worker against a seeded local D1, then
+    #    run both audits against it (blocking) ─────────────────────────
+    - name: Install Playwright Chromium
+      run: npx playwright install --with-deps chromium
+      shell: bash
+
+    - name: Seed local D1 (schema + metadata + synthetic CI data)
+      shell: bash
+      run: |
+        npx wrangler d1 execute ethereum_beat --local --file db/schema.sql -y
+        npx wrangler d1 execute ethereum_beat --local --file db/meta.sql -y
+        npx wrangler d1 execute ethereum_beat --local --file db/ci-seed.sql -y
+
+    - name: Start preview server
+      shell: bash
+      run: |
+        npx wrangler dev --port 8788 >/tmp/wrangler.log 2>&1 &
+        echo "$!" > /tmp/wrangler.pid
+        # readiness poll: wait until the worker + seeded D1 answer the API
+        for i in $(seq 1 90); do
+          if curl -sf -o /dev/null "http://localhost:8788/api/snapshot"; then
+            echo "ready after ${i}s"; exit 0
+          fi
+          sleep 1
+        done
+        echo "server did not become ready"; cat /tmp/wrangler.log; exit 1
+
+    - name: Contrast audit
+      run: node scripts/audit-contrast.mjs --base http://localhost:8788 --ci
+      shell: bash
+
+    - name: Metadata audit
+      run: node scripts/audit-meta.mjs --base http://localhost:8788
+      shell: bash
+
+    - name: Stop preview server
+      if: always()
+      shell: bash
+      run: kill "$(cat /tmp/wrangler.pid)" 2>/dev/null || true
