@@ -1155,3 +1155,50 @@ Four independent features, one PR each. Sub-entries added per PR.
   `⇪` share glyph (a symbol has no weight variation, so bolding it does
   nothing; larger renders its cores over AA). Verified fluffy/sketch green at a
   +0.9 CI-safety strict margin (vs the 4.5 gate) across all viewports.
+
+## PR D — detail overlay → sci-fi HUD modal, two-column (2026-08-01)
+
+The pass-12 overlay was a full-bleed centred document column over a 95%-paper
+backdrop — it read like a page, not a modal. Rebuilt as a bounded instrument
+that hovers over the still-live dial.
+
+- **Bounded panel + dimmed scrim.** The scrim drops to 82% paper so the dial
+  stays faintly visible (≈18% through) behind a `min(1100px, …)` panel. The
+  panel is solid `--paper` (every theme legible) with an SVG HUD frame,
+  `overflow: hidden`. Click-outside (pointer on the scrim) closes.
+- **Two columns at ≥1024px, stacked on mobile.** CSS grid
+  `minmax(0,.88fr) 1px minmax(0,1.12fr)` with a hairline divider column: LEFT =
+  category `SectionHeader`, metric label, giant pixel numeral + unit, caption/
+  delta (matte red) + AS OF, CROPS badge + principle line, one-line description
+  + `[?]` EXPLAIN; RIGHT = the existing `PulseChart` (D/W/M/Q/Y chips + scrub
+  readout). Mobile collapses to one column (left over right, divider goes
+  horizontal). `min-height:0` on the grid body so it scrolls internally and the
+  title bar + footer stay pinned at short heights (the flexbox overflow trap).
+- **HUD chrome.** An SVG frame (`pathLength=1` + `stroke-dashoffset`) whose edge
+  and two accent corner-tick strokes **draw in on open**; a title bar reading
+  `PULSE // {METRIC}` with a red `//`, a barcode strip and the share/close
+  controls; a thin red scan line sweeping the panel; a barcode + SOURCE footer.
+- **Open/close motion.** Panel scales/fades from 0.96 over ~350ms with a
+  one-frame displacement glitch folded into the `hud-in` keyframes; the frame
+  lines draw in alongside. Close reverses (lines retract, panel fades) via a
+  `closing` state that delays the real `onClose` by 300ms. **Reduced motion:**
+  instant open/close, no line-draw, no scan line (the element isn't even
+  mounted), no glitch — the frame strokes render static (`stroke-dashoffset:0`
+  by default; the draw-in only applies under `.pulse-overlay--anim`).
+- **Keyboard unchanged.** Esc closes (now via the animated `requestClose`),
+  Left/Right cycle metrics without closing (replaceState + scramble swap),
+  D/W/M/Q/Y switch ranges, X shares; capture-phase + nested-modal check kept.
+  Verified: txcount→throughput on ArrowRight (overlay stays, URL+title update),
+  Esc returns to the dial.
+- **Metadata preserved (no SEO regression).** Only `PulseOverlay.tsx` + CSS
+  changed; `pulse/[metric].astro` (title, canonical on ethereumbeat.org, OG,
+  Dataset JSON-LD with distribution → `/api/metric`) is untouched and still
+  server-rendered. The kpi-morph shared `view-transition-name` on the left
+  numeral is kept for the open-from-BEAT morph. Verified on a direct
+  `/pulse/txcount_combined` URL.
+- **New audit surface covered.** `scripts/audit-contrast.mjs` ROUTES gained
+  `/pulse/txcount_combined`, so the overlay is now a permanent contrast gate in
+  all seven themes (the audit runs reduced-motion, where the overlay opens on
+  load and the dial behind the scrim is occluded/exempt). Legibility also
+  reviewed via `scripts/build-overlay-contact-sheet.mjs` (seven-theme sheet,
+  PNG git-ignored). Both gates green + CSP; `npm run check` clean.

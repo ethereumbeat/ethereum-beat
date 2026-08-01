@@ -37,7 +37,9 @@ const BASE = process.argv.includes('--base')
 // sandbox). Playwright's bundled Chromium is used either way.
 const CI = process.argv.includes('--ci');
 
-const ROUTES = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/about'];
+// /pulse/* opens the detail overlay on load (PR D sci-fi HUD modal), so the
+// audit covers that new surface in every theme too.
+const ROUTES = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/about', '/pulse/txcount_combined'];
 const VIEWPORTS = [
   [1280, 700],
   [1440, 900],
