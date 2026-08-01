@@ -914,3 +914,125 @@ a {
   pointer-events: none;
   user-select: none;
 }
+
+/* ── videogame nav overlay: the d-pad (pass 15 item 1) ──────────────
+   Corner-docked bottom-right, above the command bar. Four arrow keycaps
+   in a cross that light up on real key press and are themselves tappable
+   controls. It is UI, not decoration, so it survives reduced motion —
+   only the pulse/press animations go static. */
+.dpad {
+  position: fixed;
+  right: 0.75rem;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  pointer-events: none; /* only the keycaps take pointer events */
+  user-select: none;
+}
+/* clear the vertical right ticker rail, which only appears at lg+ */
+@media (min-width: 1024px) {
+  .dpad {
+    right: 3rem;
+  }
+}
+.dpad-cross {
+  display: grid;
+  grid-template-columns: repeat(3, 1.75rem);
+  grid-template-rows: repeat(3, 1.75rem);
+  grid-template-areas:
+    '.    up    .'
+    'left hub   right'
+    '.    down  .';
+  gap: 2px;
+}
+.dpad-up { grid-area: up; }
+.dpad-left { grid-area: left; }
+.dpad-right { grid-area: right; }
+.dpad-down { grid-area: down; }
+.dpad-hub {
+  grid-area: hub;
+  align-self: center;
+  justify-self: center;
+  width: 5px;
+  height: 5px;
+  background: var(--ink-ghost);
+}
+.dpad-key {
+  pointer-events: auto;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--hair) solid var(--hairline);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  color: var(--ink);
+  font-size: 0.6875rem;
+  line-height: 1;
+  padding: 0;
+  transition: border-color 120ms, color 120ms, background 120ms;
+}
+.dpad-key:hover {
+  border-color: var(--ink-soft);
+}
+.dpad-key:active {
+  transform: translateY(1px);
+}
+/* pressed: the physical keycap flash — same grammar as the command bar */
+.dpad-pressed {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--bar-text) !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dpad-pressed {
+    animation: dpad-press 240ms var(--ease-settle) 1;
+  }
+  @keyframes dpad-press {
+    0% { transform: translateY(1px) scale(0.9); }
+    100% { transform: none; }
+  }
+}
+/* left/right cycle metrics on BEAT only — dim them off BEAT */
+.dpad-metric-off .dpad-left,
+.dpad-metric-off .dpad-right {
+  opacity: 0.32;
+  pointer-events: none;
+  border-style: dashed;
+}
+/* the legend: decorative (aria-hidden), duplicates the aria-labels + bar */
+.dpad-legend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: var(--tracking-micro);
+  color: var(--ink-faint);
+  text-align: center;
+}
+.dpad-legend-swipe { display: none; }
+/* one teaching pulse on load / after each channel switch */
+@media (prefers-reduced-motion: no-preference) {
+  .dpad-pulse .dpad-cross {
+    animation: dpad-pulse 900ms var(--ease-settle) 1;
+  }
+  @keyframes dpad-pulse {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+}
+/* mobile: smaller, and it reads as the swipe affordance hint */
+@media (max-width: 639px) {
+  .dpad-cross {
+    grid-template-columns: repeat(3, 1.4rem);
+    grid-template-rows: repeat(3, 1.4rem);
+  }
+  .dpad-legend-h,
+  .dpad-legend-v { display: none; }
+  .dpad-legend-swipe { display: block; }
+}

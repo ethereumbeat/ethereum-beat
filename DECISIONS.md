@@ -989,3 +989,37 @@ Four independent features, one PR each. Sub-entries added per PR.
   (already edge-cached), so no collector or API change. It lives in the
   `lg:flex` side column with the other economy widgets (desktop parity with
   CombinedChart / VALUE SECURED).
+### Item 1 — videogame nav overlay (d-pad)
+
+- **A persistent d-pad in the instrument grammar** (`src/components/DPad.astro`),
+  corner-docked bottom-right above the command bar. Four arrow keycaps in a
+  cross: up/down cycle CHANNEL, left/right cycle METRIC. It is genuine UI, so
+  its behaviour lives in the layout's one persistent controller (no per-page
+  re-bind) and it is `transition:persist`ed across channel switches.
+- **One input path, keyboard-truthful**: the keycaps are real `<button>`s that
+  dispatch the matching `ArrowUp/Down/Left/Right` `KeyboardEvent` on `window` —
+  the exact pattern the command-bar chips already use — so pointer, touch and
+  keyboard share one code path (BeatStage handles ←/→, the layout handles
+  ↑/↓ = channel). Every real arrow key press also lights the matching keycap
+  (`flashDpad`), so keys the user presses on the physical keyboard are mirrored
+  on the on-screen control.
+- **Left/right dim off BEAT** (`.dpad-metric-off`, toggled by `syncDpad` on load
+  + `astro:after-swap`): metric cycling only exists on BEAT, so off-channel the
+  pair goes dashed + faded + `pointer-events:none`, matching how the command
+  bar dims its home-only actions.
+- **Teaching pulse**: one scale pulse on `astro:page-load` (fires on the initial
+  load and after every soft nav) so the control announces itself each view.
+- **Reduced motion keeps the control, drops only motion**: the pulse and press
+  keyframes are gated behind `prefers-reduced-motion: no-preference`; the
+  pressed state still lands as a static accent highlight, and the dim/active
+  states are unaffected — it stays because it is UI, not decoration.
+- **Mobile = swipe affordance hint**: under 640px the cross shrinks and the
+  METRIC/CHANNEL legend is replaced by a "SWIPE TO NAVIGATE" line (the keycaps
+  remain tappable as touch controls).
+- **No contrast surface added**: the arrow glyphs and the legend are
+  `aria-hidden` (the buttons carry full `aria-label`s and the actions are also
+  in the command bar + manual overlay), so the pixel audit skips the d-pad by
+  construction — it introduces no new auditable text nodes.
+- **Placement**: `right: 0.75rem` on mobile, `right: 3rem` at lg+ to clear the
+  vertical right ticker rail; `z-index: 25` (below the command bar's 30) and
+  `pointer-events:none` on the container so only the keycaps hit-test.

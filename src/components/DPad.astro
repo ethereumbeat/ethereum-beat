@@ -1,0 +1,41 @@
+---
+/**
+ * The videogame nav overlay — a d-pad in the instrument grammar. Four arrow
+ * keycaps in a cross: up/down cycle CHANNEL, left/right cycle METRIC (BEAT
+ * only). The keys light up on real key press (same press flash as the
+ * command-bar chips) and are themselves clickable/tappable controls that
+ * dispatch the matching arrow key. On non-BEAT channels the left/right pair
+ * dims (inactive). It pulses once on page load to teach that keys work.
+ *
+ * It is UI, not decoration, so reduced motion keeps it — only its pulse and
+ * press animations go static. On mobile it shrinks and reads as the swipe
+ * affordance hint (still tappable).
+ *
+ * Persisted across channel switches; all behaviour lives in the layout's
+ * single persistent controller (keydown flash, click dispatch, route dim,
+ * load pulse), so nothing re-binds after a soft navigation.
+ */
+---
+
+<div id="dpad" class="dpad" transition:persist="dpad" aria-label="Navigation d-pad">
+  <div class="dpad-cross">
+    <button class="dpad-key dpad-up" data-key="ArrowUp" aria-label="Previous channel">
+      <span aria-hidden="true">▲</span>
+    </button>
+    <button class="dpad-key dpad-left" data-key="ArrowLeft" aria-label="Previous metric (beat channel)">
+      <span aria-hidden="true">◀</span>
+    </button>
+    <span class="dpad-hub" aria-hidden="true"></span>
+    <button class="dpad-key dpad-right" data-key="ArrowRight" aria-label="Next metric (beat channel)">
+      <span aria-hidden="true">▶</span>
+    </button>
+    <button class="dpad-key dpad-down" data-key="ArrowDown" aria-label="Next channel">
+      <span aria-hidden="true">▼</span>
+    </button>
+  </div>
+  <div class="dpad-legend" aria-hidden="true">
+    <span class="dpad-legend-h">◀▶ METRIC</span>
+    <span class="dpad-legend-v">▲▼ CHANNEL</span>
+    <span class="dpad-legend-swipe">SWIPE TO NAVIGATE</span>
+  </div>
+</div>
