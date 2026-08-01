@@ -3,7 +3,7 @@ import type { BeatEngine } from '../lib/beat';
 import { BPM } from '../lib/beat';
 import type { Snapshot } from '../lib/metrics';
 import { findMetric } from '../lib/metrics';
-import { compact, monoBar, pad2, truncHex } from '../lib/format';
+import { compact, fmtGwei, pad2, truncHex } from '../lib/format';
 import type { BlockStats } from '../lib/rpc';
 import * as blockfeed from '../lib/blockfeed';
 import { lazy, Suspense } from 'react';
@@ -162,9 +162,12 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
       const changed = !prev || prev.number !== latest.number;
       set('block', String(latest.number), changed);
       set('hash', truncHex(latest.hash, 8, 4), changed);
-      set('basefee', `${latest.baseFeeGwei.toFixed(2)} GWEI`, changed);
+      // PR C: base fee in gwei is the primary "what it costs now" number;
+      // gas-% is a small secondary readout (the disc GAS ring carries the % bar
+      // visually, so the peripheral drops the mono-bar and just states the %).
+      set('basefee', fmtGwei(latest.baseFeeGwei), changed);
       const pct = latest.gasUsed / latest.gasLimit;
-      set('gas', `${monoBar(pct, 8)} ${Math.round(pct * 100)}%`, false);
+      set('gas', `${Math.round(pct * 100)}%`, false);
       set('tx', String(latest.txCount).padStart(4, ' '), changed);
       set('blobs', String(latest.blobCount), changed);
       set('burned', `${latest.burnedEth.toFixed(4)} ETH`, changed);
@@ -192,7 +195,7 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
   const tier2 = (
     <>
       <Item label="BASEFEE" id="basefee" width={10} refs={refs} onOpen={setOpenId} accent />
-      <Item label="GAS" id="gas" width={11} refs={refs} onOpen={setOpenId} />
+      <Item label="GAS" id="gas" width={4} refs={refs} onOpen={setOpenId} />
       <Item label="TX" id="tx" width={4} refs={refs} onOpen={setOpenId} />
       <Item label="BLOBS" id="blobs" width={2} refs={refs} onOpen={setOpenId} />
     </>

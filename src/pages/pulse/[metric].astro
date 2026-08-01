@@ -4,7 +4,8 @@ import BeatStage from '../../components/BeatStage';
 import type { OverlayMetric } from '../../components/PulseOverlay';
 import SectionHeader from '../../components/SectionHeader';
 import { fetchSeries, type AggMode } from '../../lib/aggregate';
-import { formatDelta, DELTA_LABELS } from '../../lib/format';
+import { computeDeltas, type CompareWindow } from '../../lib/deltas';
+import { metricCaption } from '../../lib/format';
 import { pulseMeta, siteOrigin } from '../../lib/site';
 import { licenseFor } from '../../lib/sources';
 
@@ -23,6 +24,7 @@ interface MetaRow {
   source_url: string;
   agg_mode: AggMode;
   caption: string | null;
+  compare_window: CompareWindow | null;
 }
 
 const meta = await DB.prepare('SELECT * FROM metric_meta WHERE metric_key = ?1')
@@ -51,24 +53,19 @@ if (meta) {
 
   initialPoints = await fetchSeries(DB, meta.metric_key, 'm', meta.agg_mode);
 
-  // headline delta: latest daily value vs the previous day
-  const prevDay = await DB.prepare(
-    'SELECT value FROM metrics WHERE metric_key = ?1 ORDER BY date DESC LIMIT 1 OFFSET 1',
+  // the caption line: the metric_meta override wins, else the delta over the
+  // metric's own comparison window (PR C) — the same rule (and the same
+  // computeDeltas) the home arc and share images use, so all three agree. The
+  // window genuinely aggregates over its span, so daily rows are needed.
+  const raw = await DB.prepare(
+    'SELECT date, value FROM metrics WHERE metric_key = ?1 ORDER BY date DESC LIMIT 731',
   )
     .bind(metric)
-    .first<{ value: number }>();
-  const delta =
-    latest && prevDay && prevDay.value !== 0
-      ? formatDelta(((latest.value - prevDay.value) / Math.abs(prevDay.value)) * 100)
-      : null;
-
-  // the caption line (dp10c): the metric_meta override wins, else the daily
-  // delta — the same rule the home arc and share images use
-  const caption = meta.caption?.trim()
-    ? meta.caption.trim().toUpperCase()
-    : delta
-      ? `${delta} ${DELTA_LABELS['d']}`
-      : null;
+    .all<{ date: string; value: number }>();
+  const rows = [...raw.results].reverse();
+  const deltas = computeDeltas(rows, meta.agg_mode);
+  const caption =
+    metricCaption({ caption: meta.caption, compare_window: meta.compare_window, deltas }) || null;
 
   // overlay seed: the dial mounts underneath and this metric's detail opens
   // on load (pass 12). SEO title/description/canonical/OG + the Dataset
