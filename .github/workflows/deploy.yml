@@ -24,7 +24,7 @@ jobs:
     # a GitHub Environment so approval can be required later via a repo setting
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # ── belt & braces: production never ships if either audit regressed.
       #    Same composite ci.yml uses, so audits can't drift. ────────────
@@ -64,7 +64,7 @@ jobs:
           echo "tracked wrangler.toml unchanged; wrangler.ci.toml generated (untracked)"
 
       - name: Deploy to Cloudflare (production)
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -27,6 +27,26 @@ const today = new Date().toISOString().slice(0, 10);
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// wrangler's `d1 execute` (used below via --file) has no parameter binding, so
+// downloaded values are serialised through strict, type-checked encoders and
+// escaped — no source value can break out of its SQL literal. This keeps
+// "bind, don't interpolate" uniform for the seed path.
+function sqlText(v: string, field: string): string {
+  if (typeof v !== 'string') throw new Error(`${field}: expected string, got ${typeof v}`);
+  return "'" + v.replace(/'/g, "''") + "'";
+}
+function sqlNumber(v: number, field: string): string {
+  if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error(`${field}: expected finite number, got ${v}`);
+  return String(v);
+}
+/** one `(metric_key, date, value)` tuple, every field validated + escaped */
+function metricsTuple(r: Row): string {
+  // shape guards on the downloaded fields (defence in depth on top of escaping)
+  if (!/^[A-Za-z0-9_]+$/.test(r.metric_key)) throw new Error(`bad metric_key: ${JSON.stringify(r.metric_key)}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(r.date)) throw new Error(`bad date: ${JSON.stringify(r.date)}`);
+  return `(${sqlText(r.metric_key, 'metric_key')},${sqlText(r.date, 'date')},${sqlNumber(r.value, 'value')})`;
+}
+
 async function getJson<T>(url: string): Promise<T> {
   process.stdout.write(`  fetch ${url} ... `);
   const res = await fetch(url, { headers: { accept: 'application/json' } });
@@ -89,7 +109,7 @@ async function main() {
     for (let j = 0; j < fileRows.length; j += CHUNK) {
       const values = fileRows
         .slice(j, j + CHUNK)
-        .map((r) => `('${r.metric_key}','${r.date}',${r.value})`)
+        .map(metricsTuple)
         .join(',');
       sql += `INSERT OR REPLACE INTO metrics (metric_key, date, value) VALUES ${values};\n`;
     }

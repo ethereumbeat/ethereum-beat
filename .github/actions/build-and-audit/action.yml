@@ -9,7 +9,7 @@ description: >-
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: 22
         cache: npm
@@ -60,6 +60,13 @@ runs:
 
     - name: Metadata audit
       run: node scripts/audit-meta.mjs --base http://localhost:8788
+      shell: bash
+
+    # CSP + security-header gate: verifies every inline script is hash-covered
+    # by the policy (worker/index.ts) and the baseline headers are present, so
+    # a script/Astro change can't silently break the policy in production.
+    - name: CSP + security-header audit
+      run: node scripts/audit-csp.mjs --base http://localhost:8788
       shell: bash
 
     - name: Stop preview server
