@@ -91,7 +91,10 @@ for (const route of routes) {
       fail(route, `og:image not served (${img.status})`);
   }
 
-  const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  // tolerate extra attributes on the tag (the Worker adds a CSP nonce="…")
+  const blocks = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(
+    (m) => m[1],
+  );
   const parsed = [];
   for (const b of blocks) {
     try {

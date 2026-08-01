@@ -888,3 +888,81 @@ separate from PR validation so nothing deploys on a red audit.
   JSON). A failure fails the run.
 - **Concurrency guard.** `concurrency: production-deploy` with
   `cancel-in-progress: false` so two merges can't deploy on top of each other.
+
+## Security hardening pass (2026-08-01, post public review)
+
+### 1. Security headers + CSP (in the Worker, not _headers)
+
+- Every page is server-rendered (`prerender = false`), so `public/_headers`
+  (which only applies to static assets) cannot cover HTML. Baseline headers are
+  stamped in `worker/index.ts` on every `text/html` response; JSON `/api/*`
+  responses keep their intentionally-open CORS untouched.
+- Headers: `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, and a CSP that also
+  sets `frame-ancestors 'none'`.
+- **Script CSP is a per-request nonce + `'strict-dynamic'`, not hashes and not
+  `unsafe-inline`.** Astro's ClientRouter (view transitions) re-executes inline
+  scripts on soft navigation *and* injects a runtime `data:application/javascript,`
+  script-ordering sentinel. A hash/allowlist policy blocks that sentinel unless
+  `data:` is opened up (an XSS hole), and a bare nonce doesn't survive a
+  navigation. `strict-dynamic` trusts the nonce'd scripts in each response and
+  anything they inject afterwards, with no host/scheme widening. HTMLRewriter
+  stamps the nonce onto every `<script>`; HTML carries no `Cache-Control` (not
+  edge-cached), so per-request nonces stay fresh. (`'self'` is kept as a legacy
+  fallback for engines without `strict-dynamic`.)
+- `style-src 'self' 'unsafe-inline'` — inline `style=` attributes (React style
+  props, Astro `style=`) and view-transition styles are pervasive and low-risk.
+  `img-src 'self' data:` (data: SVG textures + OG). `font-src 'self'`.
+- **`connect-src` is exactly the browser's hosts**: the three RPCs
+  (publicnode / dRPC / 1RPC), the PublicNode beacon API, and the two mempool
+  WSS endpoints. growthepie / DefiLlama / ultrasound / ethernodes are fetched
+  *server-side* by the collector and reach the client only via same-origin
+  `/api/*`, so they are deliberately absent.
+- New permanent gate `scripts/audit-csp.mjs` (wired into the shared
+  `build-and-audit` action, so both CI and the deploy gate run it): asserts the
+  CSP shape (nonce + strict-dynamic, no `unsafe-*`), the baseline headers, the
+  `connect-src` hosts, and that every `<script>` in each route carries the
+  response nonce — so a script slipping through un-nonced fails the build
+  instead of silently breaking in production. It caught a real gap on the first
+  run: the `/pulse` 404 page's inline ESC-handler.
+- Verified in-browser (Playwright): **zero CSP violations and zero console
+  errors** on a fresh `/flow` load (WSS + RPC + hydration) and across a full
+  soft-navigation round trip of all six channels; theme and hydration stayed
+  intact. The metadata audit's JSON-LD regex was too strict for the new
+  `nonce` attribute and was made attribute-tolerant.
+
+### 2. Seed inserts parameterised (scripts/seed.ts)
+
+- `wrangler d1 execute` has **no parameter binding** (only `--command` / `--file`
+  raw SQL), and remote seeding depends on it, so genuine bound statements are
+  not reachable through the seed's execution path. The security-equivalent:
+  every downloaded field is serialised through strict, type-checked encoders
+  (`sqlText` / `sqlNumber`) with shape guards (`metric_key` `^[A-Za-z0-9_]+$`,
+  `date` `^\d{4}-\d{2}-\d{2}$`, `value` finite) — no source value can break out
+  of its SQL literal. Verified: the seed still runs against real downloaded data
+  and is idempotent (26,694 rows, unchanged across two runs).
+
+### 3. CI supply chain
+
+- All external GitHub Actions are pinned to commit SHAs (with `# vN` comments):
+  `actions/checkout`, `actions/setup-node`, `cloudflare/wrangler-action`. The
+  local composite action needs no pin.
+- gitleaks: the version is pinned (8.30.1) and the tarball is **SHA256-verified**
+  (`sha256sum -c`) before the binary is extracted or executed.
+
+### 4. Dependency audit
+
+- `npm audit`: 8 advisories, all **transitive via the build/dev toolchain**
+  (astro / @astrojs/cloudflare → wrangler / miniflare / undici / ws / esbuild /
+  sharp) — none in the deployed Worker runtime bundle.
+- **Fixed the one non-breaking advisory**: `fast-uri` 3.1.3 → 3.1.5 (dev-only,
+  reached via `@astrojs/check` → ajv). Lockfile-only; `package.json` unchanged.
+- **Deferred (need major bumps, not forced)**:
+  - `astro` 5 → 7.1.6 — define:vars XSS + server-island replay; also pulls the
+    `sharp` (libvips CVEs) and `esbuild` dev-server fixes.
+  - `@astrojs/cloudflare` 12 → 14.1.7 — image-binding SSRF; pulls the
+    `miniflare` / `undici` / `ws` / `wrangler` fixes.
+  Both are breaking framework/adapter upgrades — deliberate, out of scope for a
+  hardening pass. Runtime exposure is limited: undici/ws live inside
+  wrangler/miniflare (dev + build tooling), which do not ship to the Cloudflare
+  Worker runtime.
