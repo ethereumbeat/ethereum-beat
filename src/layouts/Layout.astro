@@ -72,17 +72,31 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
     <ClientRouter fallback="animate" />
     <script is:inline>
       // theme before first paint; system preference as the default.
-      // theme-color follows --paper so the browser chrome matches.
+      // theme-color follows each theme's --paper so the browser chrome matches.
+      // (pass 15: seven themes, cycled with +/-; T still toggles the first two.)
+      window.THEME_COLORS = {
+        light: '#fbfbf9', dark: '#0a0a0a', swiss: '#ffffff', terminal: '#050805',
+        fluffy: '#f7f1ff', sketch: '#f4f1e8', splitflap: '#14140f',
+      };
       const t =
         localStorage.getItem('theme') ??
         (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.dataset.theme = t;
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute('content', t === 'dark' ? '#0a0a0a' : '#fbfbf9');
+        ?.setAttribute('content', window.THEME_COLORS[t] ?? '#fbfbf9');
     </script>
   </head>
   <body class="grain crt">
+    <!-- SKETCH theme: a cheap wobble filter for stroke geometry (applied to
+         svg strokes only, never <text>, so numerals/labels stay crisp) -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <filter id="sketch-wobble" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" />
+      </filter>
+    </svg>
+
     <slot />
 
     <MarginFrame client:only="react" transition:persist="margin-frame" />
@@ -123,6 +137,7 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
                 ['ESC', 'step out: modal → detail → page → channel 1'],
                 ['S', 'sound on / off (beat)'],
                 ['T', 'toggle ink / bone'],
+                ['+ / −', 'cycle theme (seven: ink · bone · swiss · terminal · fluffy · sketch · split-flap)'],
                 ['?', 'this overlay'],
               ].map(([k, what]) => (
                 <tr class="hairline-t">
@@ -155,18 +170,69 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
         void navigate(href);
       };
 
+      // ── seven themes (pass 15) ──────────────────────────────────────
+      // +/- (and = for + without shift) cycle; T still toggles the first two
+      // (INK/BONE). The current theme name flashes as an OSD on switch and
+      // the command-bar chip shows it. Choice persists in localStorage.
+      const THEME_ORDER = ['light', 'dark', 'swiss', 'terminal', 'fluffy', 'sketch', 'splitflap'];
+      const THEME_NAMES: Record<string, string> = {
+        light: 'INK', dark: 'BONE', swiss: 'SWISS', terminal: 'TERMINAL',
+        fluffy: 'FLUFFY', sketch: 'SKETCH', splitflap: 'SPLIT-FLAP',
+      };
+      const THEME_COLORS: Record<string, string> = (window as any).THEME_COLORS;
+
+      const currentTheme = () => document.documentElement.dataset.theme ?? 'light';
+      const themeNum = (t: string) => String(THEME_ORDER.indexOf(t) + 1).padStart(2, '0');
+
       const syncThemeColor = () => {
         document
           .querySelector('meta[name="theme-color"]')
-          ?.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#0a0a0a' : '#fbfbf9');
+          ?.setAttribute('content', THEME_COLORS[currentTheme()] ?? '#fbfbf9');
       };
 
-      const toggleTheme = () => {
-        const html = document.documentElement;
-        const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
-        html.dataset.theme = next;
+      // the command-bar theme chip shows the current theme name
+      const syncThemeChip = () => {
+        const label = document.querySelector('#command-bar [data-theme-name]');
+        if (label) label.textContent = THEME_NAMES[currentTheme()] ?? 'INK';
+      };
+
+      const applyThemeChoice = (next: string, announce: boolean) => {
+        document.documentElement.dataset.theme = next;
         localStorage.setItem('theme', next);
         syncThemeColor();
+        syncThemeChip();
+        if (announce) flashOsd(`THEME ${themeNum(next)} — ${THEME_NAMES[next]}`);
+      };
+
+      // T: toggle between the first two (INK/BONE)
+      const toggleTheme = () => {
+        applyThemeChoice(currentTheme() === 'dark' ? 'light' : 'dark', true);
+      };
+      // +/-: cycle forward/back through all seven
+      const cycleTheme = (dir: number) => {
+        const i = THEME_ORDER.indexOf(currentTheme());
+        const next = THEME_ORDER[(((i === -1 ? 0 : i) + dir) % THEME_ORDER.length + THEME_ORDER.length) % THEME_ORDER.length];
+        applyThemeChoice(next, true);
+      };
+
+      // the shared OSD: huge pixel type, bottom-left, glitch-cuts out. Used by
+      // channel switches and theme switches. Under reduced motion it appears
+      // and hides statically (the CSS animations are gated off).
+      let osdTimer: ReturnType<typeof setTimeout>;
+      const flashOsd = (text: string) => {
+        const osd = document.getElementById('osd');
+        if (!osd) return;
+        clearTimeout(osdTimer);
+        osd.textContent = text;
+        osd.classList.remove('hidden', 'osd-out');
+        osdTimer = setTimeout(() => {
+          if (reduced) {
+            osd.classList.add('hidden');
+            return;
+          }
+          osd.classList.add('osd-out');
+          osd.addEventListener('animationend', () => osd.classList.add('hidden'), { once: true });
+        }, 1200);
       };
 
       const overlay = () => document.getElementById('kbd-overlay');
@@ -280,6 +346,16 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
           case 't':
             toggleTheme();
             break;
+          case '+':
+          case '=': // = is + without shift
+            e.preventDefault();
+            cycleTheme(1);
+            break;
+          case '-':
+          case '_':
+            e.preventDefault();
+            cycleTheme(-1);
+            break;
           case 'b':
           case 'n':
             (window as any).channelCut(lk === 'b' ? '/' : '/nodes');
@@ -293,8 +369,12 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
         const t = localStorage.getItem('theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.dataset.theme = t;
         syncThemeColor();
+        syncThemeChip();
       };
       document.addEventListener('astro:after-swap', applyTheme);
+      // the command bar re-renders per page, so re-label its theme chip
+      document.addEventListener('astro:page-load', syncThemeChip);
+      syncThemeChip();
 
       // d-pad: keep the metric pair's active/dim state route-correct, and
       // pulse once to teach the keys on every fresh view
@@ -305,18 +385,11 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
         pulseDpad();
       });
 
-      // OSD after every soft navigation
+      // OSD after every soft navigation (channel name)
       document.addEventListener('astro:after-swap', () => {
         if (reduced) return;
         const label = CHANNEL_NAMES[Object.keys(CHANNEL_NAMES).find(here) ?? ''];
-        const osd = document.getElementById('osd');
-        if (!label || !osd) return;
-        osd.textContent = label;
-        osd.classList.remove('hidden', 'osd-out');
-        setTimeout(() => {
-          osd.classList.add('osd-out');
-          osd.addEventListener('animationend', () => osd.classList.add('hidden'), { once: true });
-        }, 1200);
+        if (label) flashOsd(label);
       });
 
       // ── draggable command bar (pass 15 item 4) ──────────────────────

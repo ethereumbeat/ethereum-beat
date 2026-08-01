@@ -82,8 +82,8 @@ export default function KpiCard({ metric, companionText, reducedMotion, onOpen }
         </div>
         <div
           data-kpi-number
-          className="whitespace-nowrap font-display font-normal leading-none tracking-normal tabular-nums"
-          style={{ fontSize: 'var(--text-kpi)', fontVariantNumeric: 'tabular-nums' }}
+          className="whitespace-nowrap font-normal leading-none tracking-normal tabular-nums"
+          style={{ fontSize: 'var(--text-kpi)', fontFamily: 'var(--font-num)', fontVariantNumeric: 'tabular-nums' }}
         >
           {display}
           {suffix && (

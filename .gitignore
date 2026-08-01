@@ -34,3 +34,6 @@ scan-report.txt
 audit-report.md
 AUDIT-*.md
 .seed-tmp/
+
+# generated theme review artifact (large; reproduce via scripts/build-themes-contact-sheet.mjs)
+themes-contact-sheet.png
