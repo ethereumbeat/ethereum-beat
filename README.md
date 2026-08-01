@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-black" /></a>
-  <img alt="Built with Astro on Cloudflare Workers" src="https://img.shields.io/badge/astro-cloudflare%20workers-black" />
+  <a href="https://github.com/ethereumbeat/ethereum-beat/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ethereumbeat/ethereum-beat/actions/workflows/ci.yml/badge.svg" /></a>
   <a href="https://ethereumbeat.org"><img alt="Live at ethereumbeat.org" src="https://img.shields.io/badge/live-ethereumbeat.org-c90500" /></a>
 </p>
 
@@ -43,7 +43,7 @@ browser ─────────► Astro pages + /api/snapshot + /api/metric
 Requirements: Node 22+, a Cloudflare account, `npm i -g wrangler` (or use `npx`).
 
 ```sh
-git clone https://github.com/nloureiro/ethereum-beat && cd ethereum-beat
+git clone https://github.com/ethereumbeat/ethereum-beat && cd ethereum-beat
 npm install
 ```
 
