@@ -58,6 +58,13 @@ runs:
       run: node scripts/audit-contrast.mjs --base http://localhost:8788 --ci
       shell: bash
 
+    # surface the exact failing rows in the log when the contrast audit fails
+    # (the macOS→Linux font-rendering gap is only diagnosable from CI's pixels)
+    - name: Show contrast report on failure
+      if: failure()
+      shell: bash
+      run: cat audit-report.md 2>/dev/null || echo "(no audit-report.md — audit did not run)"
+
     - name: Metadata audit
       run: node scripts/audit-meta.mjs --base http://localhost:8788
       shell: bash
