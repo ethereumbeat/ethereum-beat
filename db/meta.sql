@@ -64,9 +64,12 @@ VALUES
   -- SECURITY (value secured — things do what they claim; pass 13c: the
   -- old combined "privacy & security" bucket becomes S. No metric today
   -- measures Privacy (P); the property still exists as a badge and on /about.)
+  -- pass 15: unfeatured from the BEAT rotation (too financial for the beat);
+  -- it lives on CH6 LAYERS as the onchain-economy panel. Metric, API and
+  -- /pulse/stables_supply keep working.
   ('stables_supply', 'Stablecoin supply', 'security', 'usd',
    'Value of stablecoins issued on Ethereum and its layer 2 networks. Everyday money settling on neutral rails.',
-   'growthepie', 'https://www.growthepie.com', 1, 150, 'last'),
+   'growthepie', 'https://www.growthepie.com', 0, 150, 'last'),
   ('rwa_value', 'Real-world assets', 'security', 'usd',
    'Value of tokenised real-world assets, such as treasury bills and bonds, secured by Ethereum.',
    'DefiLlama', 'https://defillama.com', 1, 160, 'last'),

@@ -56,6 +56,51 @@ function CombinedChart() {
   );
 }
 
+/**
+ * Stablecoin supply — the everyday-money layer of the onchain economy.
+ * Unfeatured from the BEAT rotation in pass 15 (too financial for the beat);
+ * it lives here beside the value-secured block. Headline + small trend.
+ */
+function StablecoinsPanel() {
+  const [points, setPoints] = useState<{ date: string; value: number }[] | null>(null);
+  useEffect(() => {
+    fetch('/api/metric/stables_supply?range=m')
+      .then((r) => r.json() as Promise<{ points: { date: string; value: number }[] }>)
+      .then((d) => setPoints(d.points))
+      .catch(() => setPoints([]));
+  }, []);
+  const latest = points?.at(-1)?.value ?? null;
+  const W = 240;
+  const H = 40;
+  let trend: string | null = null;
+  let endY = H;
+  if (points && points.length >= 2) {
+    const values = points.map((p) => p.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = max - min || 1;
+    endY = H - 4 - ((values[values.length - 1]! - min) / span) * (H - 8);
+    trend = values
+      .map((v, i) => `${i === 0 ? 'M' : 'L'}${((i / (values.length - 1)) * W).toFixed(1)},${(H - 4 - ((v - min) / span) * (H - 8)).toFixed(1)}`)
+      .join('');
+  }
+  return (
+    <div className="brackets p-3">
+      <p className="micro mb-1">STABLECOIN SUPPLY · ETHEREUM + L2</p>
+      <p className="label-huge tabular-nums text-[color:var(--accent)]">
+        {latest !== null ? `$${compact(latest, 1)}` : '—'}
+      </p>
+      {trend && (
+        <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 block w-full">
+          <path d={trend} fill="none" stroke="var(--ink)" strokeWidth="1.5" />
+          <circle cx={W} cy={endY} r="2.5" fill="var(--accent)" />
+        </svg>
+      )}
+      <p className="micro mt-1 text-[color:var(--ink-faint)]">EVERYDAY MONEY ON NEUTRAL RAILS · MONTHLY</p>
+    </div>
+  );
+}
+
 /** the motif: three offset layer plates */
 function LayersMotif() {
   return (
@@ -163,6 +208,7 @@ export default function LayersChannel() {
         {/* side: combined activity + TVS leaders */}
         <div className="hidden w-72 flex-col gap-4 lg:flex">
           <CombinedChart />
+          <StablecoinsPanel />
           <div className="brackets p-3">
             <p className="micro mb-2">VALUE SECURED · TOP 5</p>
             {(board?.chains ?? [])
