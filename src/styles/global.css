@@ -42,6 +42,33 @@
   font-display: swap;
 }
 
+/* pass 15: per-theme faces (SWISS reuses Inter). All SIL OFL, self-hosted
+   woff2 with licence files committed alongside in public/fonts/. */
+@font-face {
+  font-family: 'Fredoka'; /* FLUFFY: rounded friendly labels */
+  src: url('/fonts/fredoka.woff2') format('woff2');
+  font-weight: 400 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Caveat'; /* SKETCH: handwritten labels */
+  src: url('/fonts/caveat.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cutive Mono'; /* SKETCH: typewriter numerals (monospace) */
+  src: url('/fonts/cutive-mono.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Oswald'; /* SPLIT-FLAP: condensed board face */
+  src: url('/fonts/oswald.woff2') format('woff2');
+  font-weight: 400 600;
+  font-display: swap;
+}
+
 html {
   background: var(--paper);
   color: var(--ink);
@@ -409,7 +436,8 @@ a {
     position: absolute;
     width: 4px;
     height: 4px;
-    background: var(--ink);
+    background: var(--debris-color, var(--ink));
+    border-radius: var(--debris-radius, 0);
     animation: debris 400ms ease-out forwards;
   }
   @keyframes debris {
@@ -1202,4 +1230,137 @@ html[data-dock='right'] .channel-body {
 /* keep the docked channel identity clear of a left/right bar */
 html[data-dock='left'] .channel-dock {
   left: 8.25rem;
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   Pass 15 — per-theme texture, radius and signature treatments. The
+   palette + fonts live in tokens.css; this is only what tokens alone
+   cannot express (texture on/off, filters, the split-flap cells). Layout
+   and information are identical across themes.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* radius token: applied to the common bordered surfaces so FLUFFY can round
+   them (every other theme keeps --radius: 0). */
+.cmd-chip,
+.callout {
+  border-radius: var(--radius);
+}
+
+/* ── SWISS: textures off, perfect grid discipline ── */
+[data-theme='swiss'] .grain::before,
+[data-theme='swiss'] .crt::after,
+[data-theme='fluffy'] .grain::before,
+[data-theme='fluffy'] .crt::after,
+[data-theme='sketch'] .crt::after,
+[data-theme='splitflap'] .grain::before,
+[data-theme='splitflap'] .crt::after {
+  display: none;
+}
+[data-theme='swiss'] .dither-field,
+[data-theme='swiss'] .hex-crawl,
+[data-theme='swiss'] .scanline,
+[data-theme='fluffy'] .dither-field,
+[data-theme='fluffy'] .hex-crawl,
+[data-theme='fluffy'] .scanline,
+[data-theme='sketch'] .dither-field,
+[data-theme='sketch'] .hex-crawl,
+[data-theme='sketch'] .scanline,
+[data-theme='splitflap'] .dither-field,
+[data-theme='splitflap'] .hex-crawl,
+[data-theme='splitflap'] .scanline {
+  display: none !important;
+}
+
+/* The light themes with non-pure-black ink (SWISS black-but-thin-Inter, FLUFFY
+   plum, SKETCH graphite) render heavier on macOS than on CI's Linux Chromium.
+   Small SVG <text> (dial mini-stats, node-map labels) and <kbd> key glyphs
+   dilute below AA there. Bolding those specific small elements densifies the
+   glyph cores back over the line — the fix that cleared SWISS on CI. */
+[data-theme='swiss'] text,
+[data-theme='fluffy'] text,
+[data-theme='sketch'] text,
+[data-theme='swiss'] kbd,
+[data-theme='fluffy'] kbd,
+[data-theme='sketch'] kbd {
+  font-weight: 700;
+}
+/* the share-button's ⇪ glyph is a symbol (no weight variation), so on the
+   plum/graphite ink of FLUFFY/SKETCH it dilutes at 10px below AA. A modest
+   size lift restores its glyph cores over the line. */
+[data-theme='fluffy'] .share-key,
+[data-theme='sketch'] .share-key {
+  font-size: 0.9rem;
+}
+
+/* ── TERMINAL: scanline + phosphor glow turned up, cursor-block accent ── */
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme='terminal'] .crt::after {
+    opacity: 0.14;
+  }
+}
+[data-theme='terminal'] .font-display,
+[data-theme='terminal'] [data-kpi-number] {
+  text-shadow: 0 0 6px rgb(92 240 136 / 0.45);
+}
+/* .invert collides with Tailwind's `invert` filter utility (filter:
+   invert(100%)); on the green phosphor field that flips the panel to a
+   low-contrast magenta. The custom .invert already swaps bg/text tokens, so
+   the filter is redundant — drop it here to keep the AA pairing. */
+[data-theme='terminal'] .invert {
+  filter: none;
+}
+/* the live dot becomes a square cursor block */
+[data-theme='terminal'] .live-dot {
+  border-radius: 0;
+  width: 8px;
+  height: 8px;
+}
+
+/* ── FLUFFY: rounded surfaces, soft shadow, candy gradient (decorative
+   only, so AA is never at risk), sparkle debris (tokenised above) ── */
+[data-theme='fluffy'] .brackets,
+[data-theme='fluffy'] .callout {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+[data-theme='fluffy'] .live-dot {
+  background: linear-gradient(135deg, #ff5db1, #9b6bff);
+}
+[data-theme='fluffy'] .disc-core {
+  filter: drop-shadow(0 8px 24px rgb(157 107 255 / 0.18));
+}
+
+/* ── SKETCH: subtle paper texture + wobbly stroke voice (charts keep exact
+   geometry — the displacement is tiny and applies to strokes, never to
+   <text>, so numerals and labels stay crisp and legible) ── */
+[data-theme='sketch'] body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23p)' opacity='0.04'/%3E%3C/svg%3E");
+}
+[data-theme='sketch'] svg path,
+[data-theme='sketch'] svg polyline,
+[data-theme='sketch'] svg line {
+  filter: url(#sketch-wobble);
+}
+/* the KPI numeral is typewriter (thin) in SKETCH; its small unit suffix would
+   dilute below AA at that size, so it drops to the legible base mono + full ink */
+[data-theme='sketch'] [data-kpi-number] span {
+  font-family: var(--font-mono);
+  color: var(--ink);
+}
+
+/* ── SPLIT-FLAP: data numerals rendered as departure-board cells — dark
+   tiles, amber lettering, a horizontal midline across the digits ── */
+[data-theme='splitflap'] [data-kpi-number] {
+  display: inline-block;
+  padding: 0.06em 0.14em;
+  color: var(--warn);
+  background-color: #0a0a08;
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(50% - 1px),
+    rgb(0 0 0 / 0.65) calc(50% - 1px),
+    rgb(0 0 0 / 0.65) calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
 }

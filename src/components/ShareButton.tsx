@@ -18,7 +18,7 @@ export default function ShareButton({ data, compact = false, hotkey = 'x' }: { d
   return (
     <>
       <button onClick={() => setOpen(true)} className="cmd-chip" aria-label={`Share ${data.label}`}>
-        <kbd>⇪</kbd>
+        <kbd className="share-key">⇪</kbd>
         {!compact && <span>SHARE</span>}
       </button>
       {open && (

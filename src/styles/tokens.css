@@ -55,6 +55,18 @@
   --dur-swap: 420ms;         /* KPI crossfade */
   --ease-settle: cubic-bezier(0.2, 0.9, 0.25, 1);
   --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
+
+  /* pass 15: theme-varying surface tokens (default = INK/BONE look). Only
+     these, fonts, textures and micro-animations change across themes; the
+     layout and information are identical everywhere (spec §24 item 3). */
+  --radius: 0;              /* FLUFFY turns this up; every other theme is square */
+  --shadow-soft: none;      /* FLUFFY adds a soft shadow */
+  --debris-color: var(--accent);
+  --debris-radius: 0;
+  /* the big KPI numerals: their own face so a theme can give data a distinct
+     voice from the small dial/arc labels (SKETCH: typewriter numerals but
+     legible Martian for the tiny arc readouts). Defaults to --font-display. */
+  --font-num: var(--font-display);
 }
 
 [data-theme='dark'] {
@@ -75,4 +87,157 @@
   --ok: #46d97a;      /* phosphor on black */
   --warn: #eeba52; /* brighter amber: micro-size cores on near-black need the headroom */
   --disc-fill: rgb(244 242 236 / 0.045);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Pass 15 — seven themes. 01 INK (:root) and 02 BONE ([data-theme=dark])
+   above are unchanged. The five below are pure token overrides: palette,
+   fonts, texture intensities, radii, motion. Semantic colours keep their
+   meaning everywhere — --accent = live/active/alert, --ok = confirmed,
+   --warn = pending — re-tuned per palette to pass WCAG AA.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 03 SWISS — International Style. Pure white field, near-black ink, one red.
+   All type is a neutral grotesk (Inter); the pixel font is retired here and
+   data is set in heavy grotesk tabular. Textures off, perfect grid. The
+   joke is that it is the "designed" one. */
+[data-theme='swiss'] {
+  --paper: #ffffff;
+  --paper-raise: #f1f1f1;
+  --ink: #0a0a0a;
+  --ink-soft: rgb(10 10 10 / 0.82);
+  --ink-faint: rgb(10 10 10 / 0.7);
+  --ink-ghost: rgb(10 10 10 / 0.28);
+  --hairline: rgb(10 10 10 / 0.14); /* thinner hairlines */
+  --hairline-faint: rgb(10 10 10 / 0.07);
+  --line-data: rgb(10 10 10 / 0.5);
+  --accent: #cc0000; /* the one red — 5.9:1 on white */
+  --accent-soft: rgb(204 0 0 / 0.12);
+  --bar-text: #ffffff;
+  --bar-bg: #cc0000;
+  --bar-on-white: #cc0000;
+  --ok: #09702d;
+  --warn: #705000;
+  --disc-fill: rgb(10 10 10 / 0.03);
+  /* all one neutral grotesk — pixel retired */
+  --font-display: 'Inter Var', ui-sans-serif, system-ui, sans-serif;
+  --font-grotesk: 'Inter Var', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Inter Var', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* 04 TERMINAL — phosphor. Near-black, green phosphor text, amber for
+   pending. Everything mono; scanline + glow turned up; cursor-block
+   accents. */
+[data-theme='terminal'] {
+  --paper: #050805;
+  --paper-raise: #0c130c;
+  --ink: #5cf088; /* phosphor green: bright enough that even thin 12px SVG map labels clear AA */
+  --ink-soft: rgb(92 240 136 / 0.84);
+  --ink-faint: rgb(92 240 136 / 0.74);
+  --ink-ghost: rgb(92 240 136 / 0.3);
+  --hairline: rgb(92 240 136 / 0.24);
+  --hairline-faint: rgb(92 240 136 / 0.12);
+  --line-data: rgb(92 240 136 / 0.44);
+  --accent: #ff5545; /* rare red signal, 5:1 on near-black */
+  --accent-soft: rgb(255 85 69 / 0.18);
+  --bar-text: #b6ffce;
+  --bar-bg: #0c1a0c;
+  --bar-on-white: #04120a;
+  --ok: #8dffab; /* confirmed: a brighter phosphor than the base ink */
+  --warn: #ffb000; /* pending amber */
+  --disc-fill: rgb(92 240 136 / 0.05);
+  --font-display: 'JetBrains Mono Var', ui-monospace, monospace;
+  --font-grotesk: 'JetBrains Mono Var', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono Var', ui-monospace, monospace;
+}
+
+/* 05 FLUFFY — unicorns. Soft lavender/pink pastel field, rounded corners
+   everywhere, soft shadows, a candy accent (the only theme allowed a
+   gradient), rounded friendly labels. Contrast STILL passes AA — pastel is
+   not an excuse. Sparkle debris replaces the red debris on systole. */
+[data-theme='fluffy'] {
+  --paper: #f7f1ff;
+  --paper-raise: #efe6ff;
+  --ink: #2a1a3a; /* deep plum near-black: ~12:1 on the lavender field */
+  --ink-soft: rgb(42 26 58 / 0.84);
+  --ink-faint: rgb(42 26 58 / 0.72);
+  --ink-ghost: rgb(42 26 58 / 0.3);
+  --hairline: rgb(42 26 58 / 0.2);
+  --hairline-faint: rgb(42 26 58 / 0.1);
+  --line-data: rgb(42 26 58 / 0.5);
+  --accent: #a8005f; /* deep candy magenta — 6.6:1 on the pastel field (CI-safe) */
+  --accent-soft: rgb(168 0 95 / 0.12);
+  --bar-text: #ffffff;
+  --bar-bg: #a8005f;
+  --bar-on-white: #a8005f;
+  --ok: #06602c; /* deepened: the 5:1 green failed CI's thinner rendering */
+  --warn: #664000; /* deepened amber */
+  --disc-fill: rgb(42 26 58 / 0.035);
+  --font-display: 'Martian Mono Var', ui-monospace, monospace; /* rounded data framing */
+  --font-grotesk: 'Fredoka', ui-rounded, 'Inter Var', sans-serif;
+  --font-mono: 'Martian Mono Var', ui-monospace, monospace;
+  --radius: 14px;
+  --shadow-soft: 0 6px 18px rgb(42 26 58 / 0.12);
+  --debris-color: #ff5db1; /* candy sparkle */
+  --debris-radius: 50%;
+}
+
+/* 06 SKETCH — handwritten skeuomorphic. Subtle paper texture, pencil-grey
+   ink, hand-drawn labels, typewriter numerals, wobbly hairlines (cheap SVG
+   filter), red-pencil accent. Charts keep exact geometry, only the stroke
+   voice changes. */
+[data-theme='sketch'] {
+  --paper: #f4f1e8;
+  --paper-raise: #ebe7db;
+  --ink: #171714; /* dark graphite pencil: thin hand/typewriter strokes dilute
+                     hard on pixels, so the base must be near-black to clear AA
+                     even on CI's thinner rendering (the paper texture + wobble
+                     + handwritten face carry the sketch character, not a light ink) */
+  --ink-soft: rgb(23 23 20 / 0.82);
+  --ink-faint: rgb(23 23 20 / 0.7);
+  --ink-ghost: rgb(23 23 20 / 0.3);
+  --hairline: rgb(23 23 20 / 0.28);
+  --hairline-faint: rgb(23 23 20 / 0.13);
+  --line-data: rgb(23 23 20 / 0.55);
+  --accent: #972a20; /* red pencil — ~6.8:1 on paper */
+  --accent-soft: rgb(151 42 32 / 0.12);
+  --bar-text: #f4f1e8;
+  --bar-bg: #972a20;
+  --bar-on-white: #972a20;
+  --ok: #2f5a22;
+  --warn: #573c00;
+  --disc-fill: rgb(23 23 20 / 0.04);
+  /* the typewriter face is reserved for the big data numerals; the small dial
+     labels, tickers and map text stay in the legible base mono (Martian). The
+     handwritten face carries the human labels/headers. */
+  --font-num: 'Cutive Mono', ui-monospace, monospace;
+  --font-display: 'Martian Mono Var', ui-monospace, monospace;
+  --font-grotesk: 'Caveat', ui-rounded, cursive;
+  --font-mono: 'Martian Mono Var', ui-monospace, monospace;
+}
+
+/* 07 SPLIT-FLAP — airport departure board. Near-black board, warm white +
+   amber lettering, condensed display face (Oswald). Data numerals are
+   rendered as split-flap cells (dark tiles with a horizontal midline). */
+[data-theme='splitflap'] {
+  --paper: #14140f;
+  --paper-raise: #20201a;
+  --ink: #f4ecd8; /* warm white: ~15:1 on the board */
+  --ink-soft: rgb(244 236 216 / 0.84);
+  --ink-faint: rgb(244 236 216 / 0.72);
+  --ink-ghost: rgb(244 236 216 / 0.28);
+  --hairline: rgb(244 236 216 / 0.22);
+  --hairline-faint: rgb(244 236 216 / 0.11);
+  --line-data: rgb(244 236 216 / 0.42);
+  --accent: #e85c46; /* alert red on the dark board */
+  --accent-soft: rgb(232 92 70 / 0.16);
+  --bar-text: #f4ecd8;
+  --bar-bg: #2a2118;
+  --bar-on-white: #14140f;
+  --ok: #46d97a;
+  --warn: #e8b04a; /* the board's amber lettering */
+  --disc-fill: rgb(244 236 216 / 0.05);
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-grotesk: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-mono: 'Martian Mono Var', ui-monospace, monospace; /* tickers stay mono */
 }

@@ -38,7 +38,6 @@ const BASE = process.argv.includes('--base')
 const CI = process.argv.includes('--ci');
 
 const ROUTES = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/about'];
-const THEMES = ['light', 'dark'];
 const VIEWPORTS = [
   [1280, 700],
   [1440, 900],
@@ -46,6 +45,29 @@ const VIEWPORTS = [
   [1920, 1080],
   [390, 844],
 ];
+// pass 15: seven themes. The audit runs against ALL of them. The original
+// two (INK/BONE) keep the full five viewports; the five new themes run a
+// trimmed three (widest desktop, a mid desktop, mobile) to keep CI time
+// sane — the spec (§24 item 3) permits this trim; noted in DECISIONS.
+const TRIM = [
+  [1280, 700],
+  [1536, 960],
+  [390, 844],
+];
+let THEMES = [
+  { key: 'light', viewports: VIEWPORTS },
+  { key: 'dark', viewports: VIEWPORTS },
+  { key: 'swiss', viewports: TRIM },
+  { key: 'terminal', viewports: TRIM },
+  { key: 'fluffy', viewports: TRIM },
+  { key: 'sketch', viewports: TRIM },
+  { key: 'splitflap', viewports: TRIM },
+];
+// --only swiss,terminal  → audit just those themes (local iteration)
+if (process.argv.includes('--only')) {
+  const keep = process.argv[process.argv.indexOf('--only') + 1].split(',');
+  THEMES = THEMES.filter((t) => keep.includes(t.key));
+}
 
 /**
  * Decorative allowlist — every entry justified. These are ambient
@@ -211,10 +233,10 @@ const browser = await chromium.launch(CI ? { args: ['--no-sandbox', '--disable-d
 const ctx = await browser.newContext({ reducedMotion: 'reduce' });
 const page = await ctx.newPage();
 
-for (const [w, h] of VIEWPORTS) {
-  await page.setViewportSize({ width: w, height: h });
-  for (const route of ROUTES) {
-    for (const theme of THEMES) {
+for (const { key: theme, viewports } of THEMES) {
+  for (const [w, h] of viewports) {
+    await page.setViewportSize({ width: w, height: h });
+    for (const route of ROUTES) {
       await page.goto('about:blank');
       await page.addInitScript((th) => localStorage.setItem('theme', th), theme);
       await page.goto(BASE + route, { waitUntil: 'networkidle' }).catch(() => page.goto(BASE + route));
@@ -240,7 +262,12 @@ for (const [w, h] of VIEWPORTS) {
           const s = sampleBox(shot, b);
           if (!s) continue;
           n++;
-          const need = b.fontSize >= 24 ? 3 : 4.5;
+          // --strict [margin] adds a safety margin so borderline elements that
+          // pass on macOS but fail on CI's thinner Linux font rendering are
+          // surfaced locally (not for CI use; a hardening aid). Default 0.5.
+          const strictI = process.argv.indexOf('--strict');
+          const strictMargin = strictI === -1 ? 0 : (parseFloat(process.argv[strictI + 1]) || 0.5);
+          const need = (b.fontSize >= 24 ? 3 : 4.5) + strictMargin;
           const r = ratio(s.fg, s.bg);
           if (r < need) fails.push({ sel: b.sel, text: b.text, ratio: +r.toFixed(2), need, fg: s.fg.join(','), bg: s.bg.join(',') });
         }
@@ -272,7 +299,7 @@ const lines = [
   '# Pixel-truth contrast audit',
   '',
   `- Base: ${BASE}`,
-  `- Matrix: ${ROUTES.length} routes x ${THEMES.length} themes x ${VIEWPORTS.length} viewports`,
+  `- Matrix: ${ROUTES.length} routes x ${THEMES.length} themes (INK/BONE at ${VIEWPORTS.length} viewports, the five new themes at ${TRIM.length}) = ${ROUTES.length * THEMES.reduce((s, t) => s + t.viewports.length, 0)} cells`,
   `- Text nodes sampled: ${checked}`,
   `- Failures: **${failures.length}**`,
   '',

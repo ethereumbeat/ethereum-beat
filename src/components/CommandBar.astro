@@ -20,13 +20,13 @@ const channels = [
 ];
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 
-const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolean }[] = [
+const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolean; theme?: boolean }[] = [
   { keys: ['ArrowLeft', 'ArrowRight'], glyph: '←/→', label: 'PREV·NEXT', homeOnly: true },
   { keys: ['Enter'], glyph: 'ENTER', label: 'DIVE', homeOnly: true },
   { keys: [' '], glyph: 'SPACE', label: 'HOLD', homeOnly: true },
   { keys: ['s'], glyph: 'S', label: 'SOUND', homeOnly: true },
   { keys: ['x'], glyph: 'X', label: 'SHARE' },
-  { keys: ['t'], glyph: 'T', label: 'INK/BONE' },
+  { keys: ['t'], glyph: 'T', label: 'THEME', theme: true },
   { keys: ['?'], glyph: '?', label: 'MANUAL' },
 ];
 ---
@@ -86,7 +86,13 @@ const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolea
         aria-disabled={c.homeOnly && path !== '/' ? 'true' : undefined}
       >
         <kbd class="hidden sm:inline">{c.glyph}</kbd>
-        <span class="cmd-label hidden sm:inline">{c.label}</span>
+        {
+          c.theme ? (
+            <span class="cmd-label hidden sm:inline" data-theme-name>{c.label}</span>
+          ) : (
+            <span class="cmd-label hidden sm:inline">{c.label}</span>
+          )
+        }
         <span class="sm:hidden">{c.glyph}</span>
       </button>
     ))

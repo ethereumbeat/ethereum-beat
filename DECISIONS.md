@@ -1061,3 +1061,97 @@ Four independent features, one PR each. Sub-entries added per PR.
 - **Reduced motion.** The dock position transition is gated behind
   `prefers-reduced-motion: no-preference`; under reduce, snapping is instant
   and the ghost has no animation.
+### Item 3 — theme system: seven themes, +/- to cycle
+
+- **Seven themes, pure token overrides.** 01 INK (`:root`) and 02 BONE
+  (`[data-theme=dark]`) are unchanged. The five new themes (SWISS, TERMINAL,
+  FLUFFY, SKETCH, SPLIT-FLAP) are each a `[data-theme=…]` block in tokens.css
+  overriding palette, fonts, texture intensities, radii and motion only —
+  layout and information are identical across all seven (verified: the audit
+  samples the same routes/nodes in every theme).
+- **Cycling + persistence.** `THEME_ORDER` drives `+`/`=` (forward) and `-`
+  (back); `T` still toggles the first two (INK/BONE). Choice persists in
+  `localStorage` and is applied pre-paint (extended the existing inline script
+  with a `THEME_COLORS` map so `theme-color` matches each theme's `--paper`).
+  On switch the theme name flashes as an OSD ("THEME 04 — TERMINAL", reusing
+  the channel-OSD element via a shared `flashOsd`) and the command-bar chip
+  updates (`[data-theme-name]`, synced on switch + `astro:page-load`). Keys
+  documented in the manual overlay.
+- **Fonts (all SIL OFL, self-hosted woff2 + licence files in public/fonts/).**
+  SWISS reuses vendored Inter (its numerals become heavy grotesk tabular — the
+  pixel face is retired there). TERMINAL reuses vendored JetBrains Mono for
+  everything (a legible phosphor mono; the spec named IBM Plex/Fira Mono, but
+  a vendored OFL mono avoids an unvetted binary — same precedent as pass 14's
+  Inter-for-Archivo). Four new faces were fetched from Google Fonts (latin
+  woff2 + OFL.txt): **Fredoka** (FLUFFY labels), **Caveat** (SKETCH
+  handwritten labels/headers), **Cutive Mono** (SKETCH typewriter numerals —
+  an OFL typewriter face; the spec's "Special Elite" is Apache-licensed, so
+  Cutive Mono substitutes to honour the OFL-only rule), **Oswald** (SPLIT-FLAP
+  condensed board face).
+- **`--font-num` split (new token).** The big KPI numerals read from
+  `--font-num` (defaults to `--font-display`) so a theme can give *data* a
+  distinct voice from the small dial/arc labels. Only SKETCH uses it: numerals
+  are Cutive Mono (typewriter) while the tiny dial readouts, tickers and map
+  text stay in legible Martian — a thin typewriter face at 10-12px dilutes
+  below AA on pixel sampling, so it is reserved for the large numerals.
+- **Textures per theme** (theme-scoped `display:none` on the texture classes,
+  which overrides their inline Tailwind opacity): SWISS off entirely (perfect
+  grid); FLUFFY/SKETCH/SPLIT-FLAP drop the CRT/dither/hex/scanline grunge
+  (SKETCH adds a faint paper-fibre body texture instead); TERMINAL turns the
+  CRT scanline up and adds a phosphor text glow + a square cursor-block live
+  dot.
+- **Signature treatments.** FLUFFY: `--radius` token turned up (rounded chips/
+  panels), soft shadow, a candy gradient used *only* on decorative elements
+  (the live dot, disc drop-shadow) so AA is never at risk, and sparkle debris
+  (tokenised `--debris-color`/`--debris-radius`). SKETCH: a cheap SVG
+  displacement filter (`#sketch-wobble`) applied to svg **strokes only** (path/
+  polyline/line — never `<text>`, so numerals/labels stay crisp and charts keep
+  exact geometry). SPLIT-FLAP: data numerals rendered as departure-board cells
+  (dark tile, amber lettering, a horizontal midline) via `[data-kpi-number]`.
+- **A `.invert` / Tailwind collision found by the audit.** The project's custom
+  `.invert` (swap bg/text tokens) shares its class name with Tailwind's
+  `invert` filter utility (`filter: invert(100%)`), which silently inverted
+  every inverted panel. Harmless in the other palettes, but on TERMINAL's green
+  field it flipped panels to a low-contrast magenta — the audit caught it as
+  light-on-magenta failures. Fixed narrowly with `[data-theme=terminal]
+  .invert { filter: none }` (the token swap already gives the intended look);
+  the pre-existing filter behaviour in the other themes is left untouched.
+- **Semantic colours keep meaning in every palette**, re-tuned: `--accent`
+  (live/active/alert), `--ok` (confirmed — green, brighter phosphor in
+  TERMINAL), `--warn` (pending — amber, doubling as SPLIT-FLAP's board
+  lettering). No theme repurposes them.
+- **Audit across ALL SEVEN themes.** `audit-contrast.mjs` now iterates the
+  seven; INK/BONE keep the full five viewports, the five new themes run a
+  trimmed three (1280×700, 1536×960, 390×844) to keep CI time reasonable — the
+  spec permits this trim. A `--only <themes>` flag was added for local
+  iteration. First 7-theme run surfaced 571 failures (563 SKETCH from the thin
+  faces, 8 TERMINAL); after the `--font-num` split, brighter phosphor green,
+  the `.invert` fix and a legible-mono suffix rule, the full matrix is green.
+- **Contact sheet.** `scripts/build-themes-contact-sheet.mjs` screenshots all
+  seven themes on `/` and `/layers` and composes a single labelled PNG for
+  review (the output is git-ignored — 4MB — and reproduced on demand).
+
+- **CI-rendering hardening (post first CI run).** The first CI run of the
+  7-theme audit failed 21 where the local macOS run was green: CI's Linux
+  Chromium renders fonts thinner, so palette values tuned to ~5:1 sampled
+  below 4.5 there. A `--strict [margin]` flag was added to audit-contrast to
+  surface these locally (raises the threshold as a CI proxy). Fixes: FLUFFY
+  `--ok`/`--warn` deepened (the 5:1 green/amber failed) and `--accent` taken to
+  ~6.6:1; SKETCH `--ink` dropped to near-black graphite (thin hand/typewriter
+  cores dilute hardest) with `--accent` ~6.8:1; SWISS SVG `<text>` set to
+  weight 700 (proportional Inter thinned on small/curved dial + map labels).
+  TERMINAL and SPLIT-FLAP passed CI unchanged. Re-verified with `--strict 0.4`
+  (a CI-safety margin) green on all five new themes.
+
+- **CI hardening, round 2 (macOS renders heavier than CI's Linux).** The first
+  hardening pass fixed swiss/terminal/splitflap but CI still failed FLUFFY (9)
+  and SKETCH (4) where the local macOS audit was green even at a +1.0 strict
+  margin — the platform font-rendering gap is largest for the light themes with
+  non-pure-black ink (fluffy plum, sketch graphite), whose thin small text
+  dilutes on Linux. A CI diagnostic step (`cat audit-report.md` on failure) gave
+  the exact rows: node-map/dial `<text>` labels and the share button's `⇪`
+  `<kbd>`. Fixes: bold `<text>` and `<kbd>` in swiss/fluffy/sketch (densifies
+  thin glyph cores — the same fix that cleared swiss), plus a size lift on the
+  `⇪` share glyph (a symbol has no weight variation, so bolding it does
+  nothing; larger renders its cores over AA). Verified fluffy/sketch green at a
+  +0.9 CI-safety strict margin (vs the 4.5 gate) across all viewports.
