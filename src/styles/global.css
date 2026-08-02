@@ -781,8 +781,212 @@ a {
 /* pass 12: the pulse detail overlay. 95% opaque paper so the live dial
    stays faintly visible through the 5% transparency underneath. Sits below
    the margin frame (z-20) and command bar (z-30) so both stay on top. */
+/* PR D: the detail is a sci-fi HUD modal. The scrim dims the dial but keeps it
+   faintly visible behind (≈18% through); the panel is a bounded instrument that
+   hovers over it, not a full-bleed document. */
 .pulse-overlay {
-  background: color-mix(in srgb, var(--paper) 95%, transparent);
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+}
+.pulse-overlay--anim {
+  animation: pulse-scrim-in 260ms ease-out;
+}
+@keyframes pulse-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.pulse-overlay--closing {
+  animation: pulse-scrim-out 300ms ease-in forwards;
+}
+@keyframes pulse-scrim-out {
+  to { opacity: 0; }
+}
+
+/* the panel: bounded instrument box, solid paper so every theme stays legible */
+.pulse-hud {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1100px, 100%);
+  max-height: min(92dvh, 860px);
+  background: var(--paper);
+  border: var(--hair) solid var(--hairline);
+  overflow: hidden;
+}
+.pulse-overlay--anim .pulse-hud {
+  animation: hud-in 350ms var(--ease-settle) both;
+}
+/* the open flourish: scale/fade up from 96% with a one-frame displacement glitch */
+@keyframes hud-in {
+  0% { opacity: 0; transform: scale(0.96); }
+  24% { opacity: 1; transform: scale(1.008) translateX(6px); }
+  30% { transform: scale(1.006) translateX(-5px); }
+  36% { transform: scale(1) translateX(2px); }
+  100% { opacity: 1; transform: scale(1) translateX(0); }
+}
+.pulse-hud--closing {
+  animation: hud-out 300ms ease-in forwards;
+}
+@keyframes hud-out {
+  to { opacity: 0; transform: scale(0.97); }
+}
+
+/* HUD frame: an SVG whose edge + corner-tick strokes draw in on open */
+.hud-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+.hud-edge {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0; /* static (drawn) by default; --anim draws it in */
+}
+.hud-tick {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.pulse-overlay--anim .hud-edge {
+  animation: hud-line-draw 460ms ease-out both;
+}
+.pulse-overlay--anim .hud-tick {
+  animation: hud-line-draw 300ms ease-out 140ms both;
+}
+@keyframes hud-line-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+.pulse-hud--closing .hud-edge,
+.pulse-hud--closing .hud-tick {
+  animation: hud-line-retract 260ms ease-in forwards;
+}
+@keyframes hud-line-retract {
+  to { stroke-dashoffset: 1; }
+}
+
+/* a thin scan line sweeping the panel (only mounted when motion is allowed) */
+.hud-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--accent);
+  opacity: 0.45;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hud-scan { animation: hud-scan 4.5s linear infinite; }
+}
+@keyframes hud-scan {
+  0% { top: 0; opacity: 0; }
+  8% { opacity: 0.45; }
+  92% { opacity: 0.45; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* title bar */
+.hud-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem 0.6rem 1.25rem;
+  border-bottom: var(--hair) solid var(--hairline);
+  flex: none;
+}
+.hud-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+  font-weight: 650;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 55%;
+}
+.hud-slash { color: var(--accent); }
+.hud-barcode {
+  flex: 1;
+  height: 10px;
+  min-width: 24px;
+  opacity: 0.55;
+}
+.hud-titlebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+.hud-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: var(--hair) solid var(--hairline);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.hud-icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* body: two columns on desktop, stacked on mobile */
+.hud-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+  /* flex child of the panel column: needs min-height:0 to actually scroll,
+     otherwise it overflows and pushes the footer past the clipped edge */
+  min-height: 0;
+}
+.hud-divider {
+  width: 100%;
+  height: var(--hair);
+  background: var(--hairline);
+}
+@media (min-width: 1024px) {
+  .hud-body {
+    grid-template-columns: minmax(0, 0.88fr) var(--hair) minmax(0, 1.12fr);
+    gap: 1.75rem;
+    padding: 1.75rem;
+  }
+  .hud-divider {
+    width: var(--hair);
+    height: auto;
+  }
+}
+.hud-col-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* footer */
+.hud-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.25rem 0.75rem;
+  border-top: var(--hair) solid var(--hairline);
+  flex: none;
 }
 
 /* barcode block separator (irregular vertical bars, ink) */

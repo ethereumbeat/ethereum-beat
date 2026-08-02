@@ -196,8 +196,8 @@ export default function PulseChart({ metricKey, unit, range, onRange, seedRange,
                   x={M.left - 8}
                   y={t.y + 3}
                   textAnchor="end"
-                  fill="var(--ink-soft)"
-                  style={{ fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', fontWeight: 600 }}
+                  fill="var(--ink)"
+                  style={{ fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', fontWeight: 700 }}
                 >
                   {axisValue(t.v, unit)}
                 </text>
@@ -229,15 +229,15 @@ export default function PulseChart({ metricKey, unit, range, onRange, seedRange,
             <circle cx={geom.xs[points.length - 1]} cy={geom.ys[points.length - 1]} r="3.4" fill="var(--accent)" />
 
             {/* x labels: first and last date */}
-            <text x={M.left} y={H - 8} fill="var(--ink-soft)" style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+            <text x={M.left} y={H - 8} fill="var(--ink)" style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
               {points[0]!.date}
             </text>
             <text
               x={W - M.right}
               y={H - 8}
               textAnchor="end"
-              fill="var(--ink-soft)"
-              style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 600 }}
+              fill="var(--ink)"
+              style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 700 }}
             >
               {points[points.length - 1]!.date}
             </text>
