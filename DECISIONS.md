@@ -1404,3 +1404,63 @@ that hovers over the still-live dial.
   load and the dial behind the scrim is occluded/exempt). Legibility also
   reviewed via `scripts/build-overlay-contact-sheet.mjs` (seven-theme sheet,
   PNG git-ignored). Both gates green + CSP; `npm run check` clean.
+
+## PR E — overlay metadata + layout cleanup (2026-08-02)
+
+### 1. Soft-nav head sync (bug)
+
+Opening `/pulse/…` client-side (Enter/click) and cycling metrics updated the URL
+but not the document head: canonical stayed on `/` and the Dataset JSON-LD was
+absent (direct loads were always correct). Fixed in `PulseOverlay`:
+- **One shared Dataset builder.** `pulseDataset()` (`src/lib/dataset.ts`) is now
+  the single source of truth; the astro page and the client both call it, so the
+  soft-nav LD is byte-identical to a direct load (verified with a JSON compare —
+  same name/url/temporalCoverage/license/distribution).
+- **`temporalCoverage` needs the first/last stored date**, which the client
+  didn't have, so `/api/metric/[key]` now also returns `coverage {first,last}`
+  (one MIN/MAX query). The head effect fetches `?range=m` — the *same* request
+  PulseChart makes, so it shares the browser/edge cache.
+- **Head effects.** A mount effect captures the original title / canonical /
+  whether a Dataset already exists (direct load renders one server-side), and a
+  per-metric effect sets `document.title` (via `pulseMeta`), the canonical
+  `href`, and upserts a `<script id="pulse-dataset">`. On close the mount
+  cleanup restores the homepage head and removes the injected LD (only if *we*
+  created it). The canonical HOST is read off the existing canonical link, so
+  the injected LD emits `ethereumbeat.org` even on localhost/workers.dev.
+- The Layout stamps `id="pulse-dataset"` on the Dataset block so the client can
+  find/replace the server-rendered one instead of duplicating it. The redundant
+  `document.title` set in `BeatStage.cycleOverlay` was removed — the overlay
+  effect now owns the head on cycle.
+- CSP note: the injected `<script type="application/ld+json">` is inert data
+  (not executed), lives only in the live DOM (never in served HTML), so it needs
+  no nonce and the SSR-based CSP gate is unaffected; the SSR Dataset script still
+  gets its nonce, and `id` didn't disturb the audit's JSON-LD parse.
+- Verified (soft-nav): open → title/canonical/Dataset match the metric; L/R
+  cycle → all update; Esc close → homepage head restored (title, canonical,
+  Dataset removed).
+
+### 2. Two-column layout — verified correct, separation strengthened
+
+The report was "renders as flex at 1200px." It does not reproduce: `.hud-body`
+is a genuine two-column grid at ≥1024px (`grid-template-columns` resolves to
+`~433px 1px ~552px`, columns side-by-side) — verified local + production, direct
+load *and* soft-nav, at 1024/1200/1440. The breakpoint is correct and the layout
+landed. The real weakness was the **1px `--hairline` divider being too faint to
+read as separation**; it's now `--ink-faint` (clearly visible in every theme,
+incl. TERMINAL's `92,240,136 @ 0.74`), the inter-column gap went 1.75→2.25rem and
+the split to 0.86/1.14fr. Mobile stays stacked. (Divider is aria-hidden, so it's
+outside the contrast gate by construction.)
+
+### 3. Sci-fi frame across seven themes — confirmed, no fix needed
+
+Verified the frame renders AND its animations are applied in all seven themes:
+`hud-in` (panel scale/fade + one glitch frame), `hud-line-draw` on the edge
+(`--ink`) and corner ticks (`--accent`), `hud-scan` on the scan line, plus the
+`PULSE // {METRIC}` title bar + barcode. The animation CSS is theme-independent
+(gated only on `prefers-reduced-motion`), and every theme gives the strokes real
+contrast against the panel (checked TERMINAL explicitly: edge green, ticks/scan
+red on near-black). Seven-theme contact sheet regenerated
+(`scripts/build-overlay-contact-sheet.mjs`, PNG git-ignored).
+
+QA: audit-contrast 0 failures (7 themes incl. `/pulse`), audit-meta 31 routes,
+audit-csp intact, `npm run check` clean.

@@ -956,15 +956,17 @@ a {
      otherwise it overflows and pushes the footer past the clipped edge */
   min-height: 0;
 }
+/* clearer than a hairline so the two columns read as genuinely separated
+   (PR E item 2): a visible ink-faint rule instead of the faint --hairline */
 .hud-divider {
   width: 100%;
   height: var(--hair);
-  background: var(--hairline);
+  background: var(--ink-faint);
 }
 @media (min-width: 1024px) {
   .hud-body {
-    grid-template-columns: minmax(0, 0.88fr) var(--hair) minmax(0, 1.12fr);
-    gap: 1.75rem;
+    grid-template-columns: minmax(0, 0.86fr) var(--hair) minmax(0, 1.14fr);
+    gap: 2.25rem;
     padding: 1.75rem;
   }
   .hud-divider {

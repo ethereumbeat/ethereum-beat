@@ -7,7 +7,7 @@ import { fetchSeries, type AggMode } from '../../lib/aggregate';
 import { computeDeltas, type CompareWindow } from '../../lib/deltas';
 import { metricCaption } from '../../lib/format';
 import { pulseMeta, siteOrigin } from '../../lib/site';
-import { licenseFor } from '../../lib/sources';
+import { pulseDataset } from '../../lib/dataset';
 
 export const prerender = false;
 
@@ -90,25 +90,8 @@ if (meta) {
   )
     .bind(metric)
     .first<{ first: string | null; last: string | null }>();
-  dataset = {
-    '@context': 'https://schema.org',
-    '@type': 'Dataset',
-    name: `${meta.label} — Ethereum`,
-    description: meta.description,
-    url: `${origin}/pulse/${meta.metric_key}`,
-    ...(coverage?.first && coverage?.last ? { temporalCoverage: `${coverage.first}/${coverage.last}` } : {}),
-    license: licenseFor(meta.source_name, meta.source_url),
-    isAccessibleForFree: true,
-    creditText: `Source: ${meta.source_name}`,
-    creator: { '@type': 'Organization', name: meta.source_name, url: meta.source_url },
-    distribution: [
-      {
-        '@type': 'DataDownload',
-        encodingFormat: 'application/json',
-        contentUrl: `${origin}/api/metric/${meta.metric_key}`,
-      },
-    ],
-  };
+  // shared builder, so the soft-nav overlay (client) emits identical Dataset LD
+  dataset = pulseDataset(meta, coverage, origin);
 
   title = pulseMeta(meta.label, meta.description).title;
   description = meta.description;

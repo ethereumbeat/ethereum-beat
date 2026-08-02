@@ -30,5 +30,12 @@ const handle = async ({ params, url, locals }: Parameters<APIRoute>[0]) => {
   }
 
   const points = await fetchSeries(DB, key, range, (meta['agg_mode'] as AggMode) ?? 'mean');
-  return new Response(JSON.stringify({ meta, range, points }), { headers: HEADERS });
+  // coverage (first/last stored date) lets the soft-nav overlay build a Dataset
+  // JSON-LD with the same temporalCoverage a direct /pulse load produces (PR E)
+  const coverage = await DB.prepare(
+    'SELECT MIN(date) AS first, MAX(date) AS last FROM metrics WHERE metric_key = ?1',
+  )
+    .bind(key)
+    .first<{ first: string | null; last: string | null }>();
+  return new Response(JSON.stringify({ meta, range, points, coverage }), { headers: HEADERS });
 };

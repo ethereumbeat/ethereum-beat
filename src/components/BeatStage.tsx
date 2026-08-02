@@ -251,7 +251,8 @@ export default function BeatStage({ initialOverlay }: Props = {}) {
       if (i < 0) return;
       const next = metrics[(i + dir + metrics.length) % metrics.length]!;
       history.replaceState({ ov: next.metric_key }, '', `/pulse/${next.metric_key}`);
-      document.title = `Ethereum Beat — PULSE · ${next.label.toLowerCase()}`;
+      // the overlay's head-sync effect (PR E) owns title/canonical/Dataset on
+      // metric change, so nothing to set here
       setOverlayKey(next.metric_key);
     },
     [overlayKey, metrics],

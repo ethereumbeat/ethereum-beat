@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type { Point, Range } from '../lib/aggregate';
 import { kpiValue } from '../lib/format';
 import { CATEGORY_LABELS, categoryIndex } from '../lib/metrics';
+import { pulseMeta } from '../lib/site';
+import { pulseDataset } from '../lib/dataset';
 import { principleFor } from '../lib/values';
 import CropsBadge from './CropsBadge';
 import ExplainChip from './ExplainChip';
@@ -110,6 +112,56 @@ export default function PulseOverlay({
 
   // range follows the metric's default when the metric changes on cycle
   useEffect(() => setRange(initialRange), [metric.metric_key, initialRange]);
+
+  // ── head sync (PR E) ──────────────────────────────────────────────────
+  // A client-side (soft-nav) overlay open changes the URL but not the head, so
+  // the canonical stayed on "/" and the Dataset JSON-LD was absent. Keep the
+  // title, canonical link and Dataset LD correct on open AND on Left/Right
+  // cycle, matching what a direct /pulse load produces; restore the underlying
+  // page's head on close. Defined BEFORE the per-metric effect so it captures
+  // the original (homepage) head before that effect overwrites it.
+  useEffect(() => {
+    const canonicalEl = document.querySelector('link[rel="canonical"]');
+    const origTitle = document.title;
+    const origCanonical = canonicalEl?.getAttribute('href') ?? null;
+    // a direct load renders its own Dataset server-side; a soft-nav open has none
+    const preexistingDataset = !!document.getElementById('pulse-dataset');
+    return () => {
+      document.title = origTitle;
+      if (canonicalEl && origCanonical !== null) canonicalEl.setAttribute('href', origCanonical);
+      if (!preexistingDataset) document.getElementById('pulse-dataset')?.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const canonicalEl = document.querySelector('link[rel="canonical"]');
+    // use the canonical HOST (not location.origin) so the injected LD matches
+    // the server-rendered origin even on workers.dev / localhost
+    const canonicalOrigin = canonicalEl ? new URL(canonicalEl.href).origin : location.origin;
+    document.title = pulseMeta(metric.label, metric.description).title;
+    canonicalEl?.setAttribute('href', `${canonicalOrigin}/pulse/${metric.metric_key}`);
+
+    let cancelled = false;
+    const upsertDataset = (coverage: { first: string | null; last: string | null } | null) => {
+      let el = document.getElementById('pulse-dataset') as HTMLScriptElement | null;
+      if (!el) {
+        el = document.createElement('script');
+        el.id = 'pulse-dataset';
+        el.type = 'application/ld+json';
+        document.head.appendChild(el);
+      }
+      el.textContent = JSON.stringify(pulseDataset(metric, coverage, canonicalOrigin));
+    };
+    // temporalCoverage needs the stored first/last date; this fetch shares the
+    // browser/edge cache with PulseChart's identical request
+    fetch(`/api/metric/${metric.metric_key}?range=m`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => !cancelled && upsertDataset(d?.coverage ?? null))
+      .catch(() => !cancelled && upsertDataset(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [metric.metric_key, metric.label, metric.description, metric.source_name, metric.source_url]);
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const shareData = {
