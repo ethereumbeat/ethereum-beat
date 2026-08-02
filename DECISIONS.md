@@ -1156,6 +1156,106 @@ Four independent features, one PR each. Sub-entries added per PR.
   nothing; larger renders its cores over AA). Verified fluffy/sketch green at a
   +0.9 CI-safety strict margin (vs the 4.5 gate) across all viewports.
 
+## PR A — dial polish (2026-08-01)
+
+Three small dial/nav finishes. Both QA gates + the CSP gate green on the final
+build (audit-contrast 0 failures across all seven themes; audit-meta 31 routes;
+audit-csp intact). Rebased clean onto `main` after PR #13 (the CI-diagnostic/
+README `chore`) squash-merged the same base commit this branch was cut from —
+the duplicate base was dropped so the branch is a 5-file diff, no re-adds.
+
+### Item 1 — section-index numeral → pixel
+
+- **Only the *numeral* index goes pixel; letter/mark indices stay grotesk.**
+  The shared `SectionHeader` index can be a number ("02"), a CROPS letter
+  ("CR"/"O"/"P"/"S"), or a mark ("?", "~", "↗", "∞", "A"). A `/^\d+$/` test
+  adds `section-index--num` on numerals only, which switches that glyph to
+  `var(--font-num)` and resets the grotesk's `-0.03em` tracking to 0 (pixel/
+  mono faces want no negative tracking). The two-line lowercase name+descriptor
+  stay grotesk throughout. This threads the needle between "structural indices
+  are pixel" (this pass) and "the CROPS letters are grotesk labels, not data"
+  (the 2026-07-21 type-rule entry) — the CR digraph and the O/P/S badges keep
+  their grotesk voice; only the channel numbers do the pixel switch.
+- **`--font-num`, not `--font-display`, so SWISS follows its own rule for
+  free.** SWISS retires the pixel face; `--font-num` inherits SWISS's Inter
+  `--font-display`, so the section numeral is heavy grotesk tabular there by
+  construction (verified). SKETCH's numeral face (Cutive Mono) applies too, but
+  only at the header sizes (≥28px audited locations), well over the ≥24px 3:1
+  bar — the audit confirmed no regression.
+- **Verified rendering the pixel numeral on**: every channel dock (nodes "02" …
+  layers "06" → Departure Mono), the /pulse overlay header ("03" → Departure),
+  the /pulse 404 ("404"), and /about panels (01–05); and the grotesk-preserved
+  path on the CROPS values modal ("O" → Inter Var), the "A" about dock, and the
+  ?/~/↗/∞ modal marks.
+
+### New type rule (restated, supersedes the 2026-07-21 exceptions list)
+
+**Pixel (`--font-num`, default Departure Mono) = LIVE DATA *and* STRUCTURAL
+INDICES.** KPI numerals, per-block / stat numbers, countdowns, the giant
+background channel-glyph watermark — and now the shared `SectionHeader`'s large
+index *numeral* (channel numbers, category numbers, the 404 code).
+
+**Grotesk lowercase (`--font-grotesk`, Inter) = every HUMAN LABEL.** Section
+header name+descriptor lines, eyebrows, category names, the **CROPS letters**
+(CR·O·P·S, a digraph + three — labels for the four properties, never data),
+and all /about copy. Non-numeric `SectionHeader` indices (the CROPS letters and
+the ?/~/↗/∞/A marks) are labels and stay grotesk.
+
+**Theme note**: SWISS retires the pixel face — `--font-num` resolves to its
+grotesk `--font-display` (Inter), so the "structural indices are pixel" rule
+degrades to heavy grotesk there automatically, honouring SWISS's own rule.
+
+### Item 2 — ENTER on the d-pad
+
+- The decorative 5px hub dot becomes a real `dpad-key dpad-enter` control (⏎
+  glyph, `data-key="Enter"`, aria-label "Dive into detail"). It reuses the
+  d-pad's existing one-input path: a click blurs it and dispatches a synthetic
+  `Enter` keydown on `window`, which BeatStage's dive handler picks up (the
+  blur returns focus to `<body>`, satisfying that handler's
+  `activeElement === document.body` guard). Keyboard behaviour is unchanged —
+  pressing Enter still dives; the new code only *lights* the keycap on real
+  Enter presses (added `Enter` to the arrow-flash condition in the layout
+  controller).
+- **Dims off BEAT like the L/R arrows**: dive only exists on BEAT, so
+  `dpad-enter` joins the `.dpad-metric-off` dim rule (opacity 0.32, dashed,
+  `pointer-events:none`). Verified: dives on `/` (→ `/pulse/staked_eth`),
+  dimmed+inert on `/flow`.
+- The ⏎ glyph reads slightly larger than the arrows for presence; the word
+  "ENTER · DIVE" lives in the desktop legend and the aria-label (matching the
+  arrow keycaps' glyph-only convention). Reduced motion keeps the control and
+  the press flash; only the pulse/press *animation* is gated, as with the rest
+  of the d-pad. Mobile hides the legend line (swipe hint shows instead), keycap
+  stays tappable.
+
+### Item 3 — visible dive `+` button on the dial
+
+- **Placement: the disc's lower edge**, centred (the spec's sanctioned
+  alternative to "just below the numeral"). Absolute inside `.disc-core`,
+  `bottom:-1.35rem`, `z-20` — above the left/right click zones (z-10), below the
+  pulse overlay (z-16 at the stage-root level, so the button never pokes through
+  an open overlay). Centred at 6 o'clock it clears the diagonal mini-stats
+  (45°/135°/225°/315°) and the caption arc (radius 235, ~73% down); it sits over
+  the single 6-o'clock epoch tick, which reads as an intentional control on the
+  dial edge. Chosen over an in-flow button below the disc because the home route
+  is a strict no-scroll 100dvh grid — an absolute overlay adds zero flow height.
+- **Instrument grammar, visible at rest**: 1px `--accent` ring, `--accent` +
+  glyph, solid `--paper` fill — not ghosted. Hover fills red (`--bar-text`
+  glyph for AA on the fill). The `+` rotates 135° on hover/focus (a "quarter-to-
+  half turn" that lands on a distinct `×`, eased), gated behind
+  `prefers-reduced-motion: no-preference` so reduced motion drops only the spin.
+- **Tooltip ABOVE it**: "view details", micro mono (10px, weight 650), corner-
+  bracket frame (`.brackets`), solid `--paper` background so ink-on-paper stays
+  AA over the busy dial; hidden until `:hover`/`:focus-visible` (kept on hover/
+  focus under reduced motion). On mobile the button grows to 3rem and the
+  tooltip is always shown (no hover there) — the "larger tap target, always-
+  labelled" requirement.
+- **Click *and* Enter open the overlay**: native `<button>` semantics give
+  Enter/Space activation; an `onKeyDown` `stopPropagation`s Enter/Space so the
+  dial's global Space=hold / Enter=dive handlers can't double-fire when the
+  button is focused. Keyboard-focusable with the site-wide `:focus-visible`
+  accent ring. Verified: visible at rest, rotates to × + tooltip on hover,
+  focus ring on Tab, opens the overlay on click.
+
 ## PR B — dissolve the values card (2026-08-01)
 
 The values beat rendered as an `invert brackets` block: a solid ink-filled,
