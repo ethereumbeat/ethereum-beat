@@ -370,14 +370,19 @@ export default function BeatStage({ initialOverlay }: Props = {}) {
   // one face of the cylinder: a KPI numeral or the VALUES card
   const renderSlot = (idx: number) =>
     idx === valuesSlot ? (
-      <div key={`values-${principleIdx}`} className="invert brackets mx-auto max-w-2xl px-6 py-8 text-center sm:px-10">
+      // PR B: the values beat dissolved into the dial — no filled panel, no
+      // bracket frame. It reads like one more beat in the rotation: the ∞
+      // section-header where a KPI's label sits, the principle where the big
+      // numeral sits, the gloss where the caption goes. All ink-on-paper; the
+      // disc keeps beating behind it.
+      <div key={`values-${principleIdx}`} className="values-beat mx-auto max-w-2xl px-6 text-center sm:px-10">
         <div className="mb-3 flex justify-center">
           <SectionHeader index="∞" title="values" subtitle="one principle per beat" />
         </div>
-        <div className="whitespace-normal font-display leading-tight" style={{ fontSize: 'clamp(1.5rem, 4.2vw, 3.6rem)' }}>
+        <div className="values-principle whitespace-normal font-display leading-tight" style={{ fontSize: 'clamp(1.5rem, 4.2vw, 3.6rem)' }}>
           {PRINCIPLES[principleIdx]!.title}
         </div>
-        <p className="mono-label mx-auto mt-4 max-w-md opacity-85">{PRINCIPLES[principleIdx]!.gloss}</p>
+        <p className="values-gloss mx-auto mt-4 max-w-md">{PRINCIPLES[principleIdx]!.gloss}</p>
       </div>
     ) : metrics[idx] ? (
       <KpiCard metric={metrics[idx]!} companionText={companionFor(metrics[idx])} reducedMotion={reducedMotion} onOpen={openOverlay} />
@@ -575,6 +580,40 @@ export default function BeatStage({ initialOverlay }: Props = {}) {
               )}
             </div>
           </div>
+
+          {/* visible dive affordance: a circular + on the disc's lower edge.
+              Click or Enter opens the detail overlay; hover/focus rotates the +
+              and reveals a bracketed "view details" tooltip above it. Red accent,
+              visible at rest; keyboard-focusable (global focus ring). */}
+          {metric && (
+            <button
+              type="button"
+              className="dive-btn"
+              aria-label={`View details for ${metric.label}`}
+              onClick={() => openOverlay(metric.metric_key)}
+              onKeyDown={(e) => {
+                // native Enter/Space still activate the button; stop the event
+                // reaching the dial's global Space=hold / Enter=dive handlers so
+                // it never double-fires
+                if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+              }}
+            >
+              <span className="dive-tip brackets" aria-hidden="true">view details</span>
+              <svg
+                className="dive-plus"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {shareOpen && metric && (
