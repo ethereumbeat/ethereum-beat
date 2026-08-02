@@ -867,6 +867,22 @@ a {
   font-size: 0.6875rem;
 }
 
+/* PR B: the values beat, dissolved into the dial — no filled panel, it is one
+   more beat in the rotation. Principle is the pixel display voice (where the
+   KPI numeral sits); gloss is bold mono (where the caption goes). Both ink on
+   paper so they read over the beating disc in every theme; bold guards the
+   thinner-rendered small gloss against the CI Linux font gap. */
+.values-principle {
+  color: var(--ink);
+}
+.values-gloss {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-wide);
+  font-weight: 700;
+  color: var(--ink);
+}
+
 /* mid-size pixel labels: break the uniformity */
 .label-big {
   font-family: var(--font-display);

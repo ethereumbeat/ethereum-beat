@@ -1255,3 +1255,39 @@ degrades to heavy grotesk there automatically, honouring SWISS's own rule.
   button is focused. Keyboard-focusable with the site-wide `:focus-visible`
   accent ring. Verified: visible at rest, rotates to × + tooltip on hover,
   focus ring on Tab, opens the overlay on click.
+
+## PR B — dissolve the values card (2026-08-01)
+
+The values beat rendered as an `invert brackets` block: a solid ink-filled,
+corner-bracketed panel dropped over the dial. It read like a stray modal that
+had opened over the beat, not like part of the rotation.
+
+- **Dissolved in-dial, no fallback needed.** The filled panel (`.invert`) and
+  the bracket frame (`.brackets`, `py-8`) are gone. The values beat now renders
+  as one more face in the KPI carousel: the `∞ values / one principle per beat`
+  `SectionHeader` where a KPI's label sits, the principle title where the big
+  numeral sits (kept in the pixel display voice — the documented values-beat
+  exception), and the gloss where the caption goes. The disc keeps beating
+  behind it; margins, rings and tickers are untouched. The spec's hairline-
+  frame fallback was not needed — the plain in-dial dissolve belongs.
+- **Contrast without the panel's guarantee.** The old `.invert` panel forced
+  paper-on-ink, so legibility was free. Ink-on-paper over the live disc needs
+  care, so both new roles are full `--ink`: the principle is large pixel type
+  (3:1 large-text, same treatment as the KPI numeral it replaces), and the
+  gloss (`.values-gloss`) is bold (weight 700) mono at the label size — the
+  bolding pre-empts the macOS→Linux CI thin-font gap the shared rules call out.
+  No threshold was loosened.
+- **Audit coverage note**: `audit-contrast` runs under `reducedMotion: reduce`,
+  where BeatStage renders only the single active face (a KPI on load) — the 3D
+  carousel and its values ghost-face don't exist in the DOM, so the audit never
+  samples the values beat in either state. Its legibility is therefore verified
+  visually via the seven-theme contact sheet
+  (`scripts/build-values-contact-sheet.mjs`, output git-ignored, reproduced on
+  demand), not by the pixel gate. Both permanent gates stay green because no
+  sampled node changed.
+- **Skippable like any KPI**: unchanged — it is still the extra virtual slot in
+  the carousel, so arrows/swipe/click cycle past it exactly as before.
+- **Seven themes** verified on the contact sheet: ink/bone (ink↔bone on paper/
+  black), swiss (heavy grotesk), terminal (phosphor green on near-black),
+  fluffy (plum on lavender), sketch (graphite on cream), split-flap (bone on
+  near-black). No panel in any; each reads as a beat, not an overlay.
