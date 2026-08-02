@@ -103,3 +103,24 @@ VALUES
 -- dp10c: per-metric arc caption overrides (fallback is the delta line).
 -- uptime is the first user: its daily delta is meaningless.
 UPDATE metric_meta SET caption = '100% UPTIME SINCE 2015' WHERE metric_key = 'uptime_days';
+
+-- PR C: per-metric comparison window (d|w|m|q|none). A daily "vs yesterday"
+-- delta is meaningless on slow metrics (staked ETH barely moves in a day), so
+-- each metric declares the window over which its change is legible; the delta
+-- genuinely aggregates over that span. Monotonic metrics (uptime, the finalised
+-- epoch counter) use `none` and show their caption or nothing — never 0.0%.
+--   none: monotonic / counter — no meaningful % change
+UPDATE metric_meta SET compare_window = 'none' WHERE metric_key IN ('uptime_days', 'finality_ok');
+--   m: slow protocol/economy figures — a month is the legible unit of change
+UPDATE metric_meta SET compare_window = 'm' WHERE metric_key IN
+  ('staked_eth', 'staked_pct', 'validators_active', 'tvs', 'stables_supply', 'rwa_value',
+   'client_diversity_cl', 'client_diversity_el');
+--   w: fee/queue figures — weekly smooths daily noise
+UPDATE metric_meta SET compare_window = 'w' WHERE metric_key IN
+  ('median_l2_fee', 'builder_share', 'validator_queue_entry', 'validator_queue_exit', 'blob_chains');
+--   q: very slow counts — a quarter is the shortest window that ever moves
+UPDATE metric_meta SET compare_window = 'q' WHERE metric_key IN ('l2_count', 'node_countries');
+--   d: genuinely daily-volatile usage/liveness metrics
+UPDATE metric_meta SET compare_window = 'd' WHERE metric_key IN
+  ('participation_rate', 'daa_combined', 'txcount_combined', 'throughput', 'blobs_daily',
+   'blobs_per_block_avg', 'contracts_deployed');

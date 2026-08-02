@@ -1291,3 +1291,69 @@ had opened over the beat, not like part of the rotation.
   black), swiss (heavy grotesk), terminal (phosphor green on near-black),
   fluffy (plum on lavender), sketch (graphite on cream), split-flap (bone on
   near-black). No panel in any; each reads as a beat, not an overlay.
+
+## PR C — honest comparisons (2026-08-01)
+
+### 1. Per-metric comparison window
+
+A daily "vs yesterday" delta is noise on slow metrics (staked ETH is ~0.0%
+day to day). Each metric now declares the window over which its change is
+legible, in a new `metric_meta.compare_window` column (`d|w|m|q|none`).
+
+- **The delta genuinely aggregates over the window, it is not a relabelled
+  daily number.** `computeDeltas` already bucketed all of d/w/m/q/y with the
+  metric's `agg_mode` (mean/sum/last); PR C just makes the caption *select*
+  the declared window instead of hardcoding daily. `none` (and any window whose
+  delta is null) shows the caption or nothing — never a 0.0% delta.
+- **One source of truth for the delta maths.** `computeDeltas`/`WINDOWS`/
+  `pctChange` moved out of `worker/snapshot.ts` into `src/lib/deltas.ts`; the
+  worker re-exports it and the server-rendered detail page
+  (`pulse/[metric].astro`) imports it too, so the homepage arc, the detail
+  view and the share images compute the same delta. The detail page previously
+  computed its own *daily* delta inline (latest vs previous day) — that is
+  gone; it now fetches the daily rows and runs `computeDeltas` +
+  `metricCaption` like everything else.
+- **`metricCaption(m)` reads `m.compare_window`** (default `d` for any
+  pre-PR-C snapshot that lacks the field) and labels with the existing
+  `DELTA_LABELS` ("VS LAST MONTH", "VS LAST QUARTER", …). `SELECT *` carries the
+  column through `buildSnapshot` into KV for free.
+
+**Final per-metric mapping** (verified end-to-end against the seeded series that
+each metric uses its declared window; real-magnitude tuning happens on the KV
+rebuild after merge — the synthetic CI seed can't validate real percentages):
+
+| window | metrics | why |
+|---|---|---|
+| `none` | uptime_days, finality_ok | monotonic counters — uptime shows its "100% SINCE 2015" caption; the finalised-epoch counter shows nothing rather than a meaningless +epochs delta |
+| `m` | staked_eth, staked_pct, validators_active, tvs, stables_supply, rwa_value, client_diversity_cl, client_diversity_el | slow protocol/economy figures — a month is the legible unit of change |
+| `w` | median_l2_fee, builder_share, validator_queue_entry, validator_queue_exit, blob_chains | fee/queue figures — weekly smooths daily noise |
+| `q` | l2_count, node_countries | very slow counts — a quarter is the shortest window that ever moves (chose `q` over `none` so the detail page can still show real growth) |
+| `d` | participation_rate, daa_combined, txcount_combined, throughput, blobs_daily, blobs_per_block_avg, contracts_deployed | genuinely daily-volatile usage/liveness |
+
+- **Deploy step (metadata lives in D1, so merging code does not make it live).**
+  After merge, apply the migration and rebuild the snapshot on the remote:
+  - `wrangler d1 execute ethereum_beat --remote --file db/migrations/004_compare_window.sql`
+  - `wrangler kv key delete --binding=SNAP snapshot:latest --remote` (self-heals
+    on next read; the KV binding is `SNAP`).
+  `db/schema.sql` gains the column for fresh installs and `db/meta.sql` sets the
+  windows, so CI's hermetic DB and any new deploy get it without the migration.
+  (Local gotcha reconfirmed: `CREATE TABLE IF NOT EXISTS` won't add the column
+  to a persisted dev DB — the local D1 state had to be wiped and re-seeded to
+  pick it up, exactly the pass-10c caption lesson.)
+
+### 2. Peripheral: gwei primary, gas-% secondary
+
+- The EXECUTION margin rail led visually with GAS because its value carried an
+  8-char `monoBar` (`████░░░░ 66%`) — the bar read as the column headline while
+  the base fee sat quiet beside it. Base fee in gwei is the legible "what it
+  costs now" number, so it stays the primary (first, accent dot) and GAS drops
+  the bar to a compact `%` secondary readout. Nothing is lost: the disc's GAS
+  ring already carries the % as a visual gauge.
+- **`fmtGwei(g)`** formats sensibly by magnitude: `≥100 → "129 GWEI"`,
+  `≥1 → "42.3 GWEI"`, `≥0.01 → "0.08 GWEI"`, and sub-0.01 keeps a significant
+  figure (`"0.004 GWEI"`) instead of collapsing to `0.00`. Replaces the old
+  fixed `toFixed(2)`. (The BASEFEE ticker modal keeps its own chart-axis
+  formatting — unrelated to the headline.)
+
+Both permanent gates green (audit-contrast 0 failures across seven themes,
+audit-meta 31 routes) plus the CSP gate; `npm run check` clean.

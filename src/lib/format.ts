@@ -74,24 +74,42 @@ export function formatDelta(pct: number | null): string | null {
 
 /**
  * The numeral's caption line (dp10c): a metric_meta caption override wins,
- * else the daily (or weekly) delta in "▾ 5.7% VS YESTERDAY" form. Returns
- * '' when there is neither — the caption arc then renders nothing.
- * Shared by the home arc, the detail page and share images so all three
- * always agree.
+ * else the delta over the metric's own comparison window (PR C) in
+ * "▾ 5.7% VS LAST MONTH" form. A daily "vs yesterday" is meaningless on slow
+ * metrics, so each metric declares `compare_window` (d|w|m|q|none); `none`
+ * (and any window whose delta is null) shows nothing — never a 0.0% delta.
+ * Returns '' when there is nothing to show. Shared by the home arc, the detail
+ * page and share images so all three always agree.
  */
 export function metricCaption(m: {
   caption?: string | null;
+  compare_window?: 'd' | 'w' | 'm' | 'q' | 'none' | null;
   deltas: Record<'d' | 'w' | 'm' | 'q' | 'y', number | null>;
 }): string {
   if (m.caption && m.caption.trim()) return m.caption.trim().toUpperCase();
-  const key = m.deltas.d !== null ? 'd' : m.deltas.w !== null ? 'w' : null;
-  if (!key) return '';
-  const d = formatDelta(m.deltas[key]);
-  return d ? `${d} ${DELTA_LABELS[key]!.toUpperCase()}` : '';
+  // default to daily for pre-PR-C snapshots that carry no window
+  const win = m.compare_window ?? 'd';
+  if (win === 'none') return '';
+  const d = formatDelta(m.deltas[win]);
+  return d ? `${d} ${DELTA_LABELS[win]!.toUpperCase()}` : '';
 }
 
 export function gwei(wei: bigint): string {
   return nf2.format(Number(wei) / 1e9);
+}
+
+/**
+ * Base fee in gwei as a peripheral headline — the legible "what it costs now"
+ * number (PR C). Scales precision to magnitude so both a busy 120 gwei and a
+ * quiet 0.08 gwei read cleanly, and sub-0.01 keeps a couple of significant
+ * figures rather than collapsing to "0.00".
+ */
+export function fmtGwei(g: number): string {
+  if (!Number.isFinite(g) || g <= 0) return '0 GWEI';
+  if (g >= 100) return `${Math.round(g)} GWEI`;
+  if (g >= 1) return `${g.toFixed(1)} GWEI`;
+  if (g >= 0.01) return `${g.toFixed(2)} GWEI`;
+  return `${Number(g.toPrecision(1))} GWEI`;
 }
 
 export function eth(wei: bigint, digits = 4): string {
