@@ -324,7 +324,7 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
         if (chip) flash(chip);
         // light the d-pad keycap on any real arrow press (dim L/R do nothing
         // off BEAT, but the flash still shows the key was received)
-        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') flashDpad(e.key);
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Enter') flashDpad(e.key);
         if (lk === 'arrowup' || lk === 'arrowdown') {
           e.preventDefault();
           cycleChannel(lk === 'arrowdown' ? 1 : -1);

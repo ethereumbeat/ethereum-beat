@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS metric_meta (
   featured INTEGER DEFAULT 0,
   sort INTEGER DEFAULT 0,
   agg_mode TEXT DEFAULT 'mean',  -- mean | sum | last
-  caption TEXT                   -- optional arc caption; overrides the delta line (dp10c)
+  caption TEXT,                  -- optional arc caption; overrides the delta line (dp10c)
+  compare_window TEXT DEFAULT 'd' -- d|w|m|q|none: which window the delta compares over (PR C)
 );
 
 CREATE INDEX IF NOT EXISTS idx_metrics_date ON metrics (date);

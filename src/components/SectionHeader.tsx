@@ -23,9 +23,17 @@ interface Props {
 }
 
 export default function SectionHeader({ index, title, subtitle, accent, size = 'md', className = '' }: Props) {
+  // Type rule: the large index numeral is a structural index → pixel face
+  // (var(--font-num)). Letter/mark indices (CROPS letters, ?, ~, ↗, ∞, A)
+  // are human labels and stay grotesk. Numerals only opt into the pixel voice.
+  const isNumeral = /^\d+$/.test(index);
   return (
     <div className={`section-header section-header--${size} ${className}`}>
-      <span className={`section-index${accent ? ' section-index--accent' : ''}`}>{index}</span>
+      <span
+        className={`section-index${isNumeral ? ' section-index--num' : ''}${accent ? ' section-index--accent' : ''}`}
+      >
+        {index}
+      </span>
       <span className="section-header-text">
         <span className="section-title">{title}</span>
         {subtitle && <span className="section-sub">{subtitle}</span>}

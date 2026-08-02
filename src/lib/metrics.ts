@@ -13,6 +13,8 @@ export interface SnapshotMetric {
   agg_mode: 'mean' | 'sum' | 'last';
   /** optional arc caption; overrides the delta line (dp10c) */
   caption?: string | null;
+  /** which window the caption/detail delta compares over: d|w|m|q|none (PR C) */
+  compare_window?: 'd' | 'w' | 'm' | 'q' | 'none' | null;
   latest: { date: string; value: number };
   spark: number[];
   deltas: Record<'d' | 'w' | 'm' | 'q' | 'y', number | null>;

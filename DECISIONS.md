@@ -1156,6 +1156,208 @@ Four independent features, one PR each. Sub-entries added per PR.
   nothing; larger renders its cores over AA). Verified fluffy/sketch green at a
   +0.9 CI-safety strict margin (vs the 4.5 gate) across all viewports.
 
+## PR A — dial polish (2026-08-01)
+
+Three small dial/nav finishes. Both QA gates + the CSP gate green on the final
+build (audit-contrast 0 failures across all seven themes; audit-meta 31 routes;
+audit-csp intact). Rebased clean onto `main` after PR #13 (the CI-diagnostic/
+README `chore`) squash-merged the same base commit this branch was cut from —
+the duplicate base was dropped so the branch is a 5-file diff, no re-adds.
+
+### Item 1 — section-index numeral → pixel
+
+- **Only the *numeral* index goes pixel; letter/mark indices stay grotesk.**
+  The shared `SectionHeader` index can be a number ("02"), a CROPS letter
+  ("CR"/"O"/"P"/"S"), or a mark ("?", "~", "↗", "∞", "A"). A `/^\d+$/` test
+  adds `section-index--num` on numerals only, which switches that glyph to
+  `var(--font-num)` and resets the grotesk's `-0.03em` tracking to 0 (pixel/
+  mono faces want no negative tracking). The two-line lowercase name+descriptor
+  stay grotesk throughout. This threads the needle between "structural indices
+  are pixel" (this pass) and "the CROPS letters are grotesk labels, not data"
+  (the 2026-07-21 type-rule entry) — the CR digraph and the O/P/S badges keep
+  their grotesk voice; only the channel numbers do the pixel switch.
+- **`--font-num`, not `--font-display`, so SWISS follows its own rule for
+  free.** SWISS retires the pixel face; `--font-num` inherits SWISS's Inter
+  `--font-display`, so the section numeral is heavy grotesk tabular there by
+  construction (verified). SKETCH's numeral face (Cutive Mono) applies too, but
+  only at the header sizes (≥28px audited locations), well over the ≥24px 3:1
+  bar — the audit confirmed no regression.
+- **Verified rendering the pixel numeral on**: every channel dock (nodes "02" …
+  layers "06" → Departure Mono), the /pulse overlay header ("03" → Departure),
+  the /pulse 404 ("404"), and /about panels (01–05); and the grotesk-preserved
+  path on the CROPS values modal ("O" → Inter Var), the "A" about dock, and the
+  ?/~/↗/∞ modal marks.
+
+### New type rule (restated, supersedes the 2026-07-21 exceptions list)
+
+**Pixel (`--font-num`, default Departure Mono) = LIVE DATA *and* STRUCTURAL
+INDICES.** KPI numerals, per-block / stat numbers, countdowns, the giant
+background channel-glyph watermark — and now the shared `SectionHeader`'s large
+index *numeral* (channel numbers, category numbers, the 404 code).
+
+**Grotesk lowercase (`--font-grotesk`, Inter) = every HUMAN LABEL.** Section
+header name+descriptor lines, eyebrows, category names, the **CROPS letters**
+(CR·O·P·S, a digraph + three — labels for the four properties, never data),
+and all /about copy. Non-numeric `SectionHeader` indices (the CROPS letters and
+the ?/~/↗/∞/A marks) are labels and stay grotesk.
+
+**Theme note**: SWISS retires the pixel face — `--font-num` resolves to its
+grotesk `--font-display` (Inter), so the "structural indices are pixel" rule
+degrades to heavy grotesk there automatically, honouring SWISS's own rule.
+
+### Item 2 — ENTER on the d-pad
+
+- The decorative 5px hub dot becomes a real `dpad-key dpad-enter` control (⏎
+  glyph, `data-key="Enter"`, aria-label "Dive into detail"). It reuses the
+  d-pad's existing one-input path: a click blurs it and dispatches a synthetic
+  `Enter` keydown on `window`, which BeatStage's dive handler picks up (the
+  blur returns focus to `<body>`, satisfying that handler's
+  `activeElement === document.body` guard). Keyboard behaviour is unchanged —
+  pressing Enter still dives; the new code only *lights* the keycap on real
+  Enter presses (added `Enter` to the arrow-flash condition in the layout
+  controller).
+- **Dims off BEAT like the L/R arrows**: dive only exists on BEAT, so
+  `dpad-enter` joins the `.dpad-metric-off` dim rule (opacity 0.32, dashed,
+  `pointer-events:none`). Verified: dives on `/` (→ `/pulse/staked_eth`),
+  dimmed+inert on `/flow`.
+- The ⏎ glyph reads slightly larger than the arrows for presence; the word
+  "ENTER · DIVE" lives in the desktop legend and the aria-label (matching the
+  arrow keycaps' glyph-only convention). Reduced motion keeps the control and
+  the press flash; only the pulse/press *animation* is gated, as with the rest
+  of the d-pad. Mobile hides the legend line (swipe hint shows instead), keycap
+  stays tappable.
+
+### Item 3 — visible dive `+` button on the dial
+
+- **Placement: the disc's lower edge**, centred (the spec's sanctioned
+  alternative to "just below the numeral"). Absolute inside `.disc-core`,
+  `bottom:-1.35rem`, `z-20` — above the left/right click zones (z-10), below the
+  pulse overlay (z-16 at the stage-root level, so the button never pokes through
+  an open overlay). Centred at 6 o'clock it clears the diagonal mini-stats
+  (45°/135°/225°/315°) and the caption arc (radius 235, ~73% down); it sits over
+  the single 6-o'clock epoch tick, which reads as an intentional control on the
+  dial edge. Chosen over an in-flow button below the disc because the home route
+  is a strict no-scroll 100dvh grid — an absolute overlay adds zero flow height.
+- **Instrument grammar, visible at rest**: 1px `--accent` ring, `--accent` +
+  glyph, solid `--paper` fill — not ghosted. Hover fills red (`--bar-text`
+  glyph for AA on the fill). The `+` rotates 135° on hover/focus (a "quarter-to-
+  half turn" that lands on a distinct `×`, eased), gated behind
+  `prefers-reduced-motion: no-preference` so reduced motion drops only the spin.
+- **Tooltip ABOVE it**: "view details", micro mono (10px, weight 650), corner-
+  bracket frame (`.brackets`), solid `--paper` background so ink-on-paper stays
+  AA over the busy dial; hidden until `:hover`/`:focus-visible` (kept on hover/
+  focus under reduced motion). On mobile the button grows to 3rem and the
+  tooltip is always shown (no hover there) — the "larger tap target, always-
+  labelled" requirement.
+- **Click *and* Enter open the overlay**: native `<button>` semantics give
+  Enter/Space activation; an `onKeyDown` `stopPropagation`s Enter/Space so the
+  dial's global Space=hold / Enter=dive handlers can't double-fire when the
+  button is focused. Keyboard-focusable with the site-wide `:focus-visible`
+  accent ring. Verified: visible at rest, rotates to × + tooltip on hover,
+  focus ring on Tab, opens the overlay on click.
+
+## PR B — dissolve the values card (2026-08-01)
+
+The values beat rendered as an `invert brackets` block: a solid ink-filled,
+corner-bracketed panel dropped over the dial. It read like a stray modal that
+had opened over the beat, not like part of the rotation.
+
+- **Dissolved in-dial, no fallback needed.** The filled panel (`.invert`) and
+  the bracket frame (`.brackets`, `py-8`) are gone. The values beat now renders
+  as one more face in the KPI carousel: the `∞ values / one principle per beat`
+  `SectionHeader` where a KPI's label sits, the principle title where the big
+  numeral sits (kept in the pixel display voice — the documented values-beat
+  exception), and the gloss where the caption goes. The disc keeps beating
+  behind it; margins, rings and tickers are untouched. The spec's hairline-
+  frame fallback was not needed — the plain in-dial dissolve belongs.
+- **Contrast without the panel's guarantee.** The old `.invert` panel forced
+  paper-on-ink, so legibility was free. Ink-on-paper over the live disc needs
+  care, so both new roles are full `--ink`: the principle is large pixel type
+  (3:1 large-text, same treatment as the KPI numeral it replaces), and the
+  gloss (`.values-gloss`) is bold (weight 700) mono at the label size — the
+  bolding pre-empts the macOS→Linux CI thin-font gap the shared rules call out.
+  No threshold was loosened.
+- **Audit coverage note**: `audit-contrast` runs under `reducedMotion: reduce`,
+  where BeatStage renders only the single active face (a KPI on load) — the 3D
+  carousel and its values ghost-face don't exist in the DOM, so the audit never
+  samples the values beat in either state. Its legibility is therefore verified
+  visually via the seven-theme contact sheet
+  (`scripts/build-values-contact-sheet.mjs`, output git-ignored, reproduced on
+  demand), not by the pixel gate. Both permanent gates stay green because no
+  sampled node changed.
+- **Skippable like any KPI**: unchanged — it is still the extra virtual slot in
+  the carousel, so arrows/swipe/click cycle past it exactly as before.
+- **Seven themes** verified on the contact sheet: ink/bone (ink↔bone on paper/
+  black), swiss (heavy grotesk), terminal (phosphor green on near-black),
+  fluffy (plum on lavender), sketch (graphite on cream), split-flap (bone on
+  near-black). No panel in any; each reads as a beat, not an overlay.
+
+## PR C — honest comparisons (2026-08-01)
+
+### 1. Per-metric comparison window
+
+A daily "vs yesterday" delta is noise on slow metrics (staked ETH is ~0.0%
+day to day). Each metric now declares the window over which its change is
+legible, in a new `metric_meta.compare_window` column (`d|w|m|q|none`).
+
+- **The delta genuinely aggregates over the window, it is not a relabelled
+  daily number.** `computeDeltas` already bucketed all of d/w/m/q/y with the
+  metric's `agg_mode` (mean/sum/last); PR C just makes the caption *select*
+  the declared window instead of hardcoding daily. `none` (and any window whose
+  delta is null) shows the caption or nothing — never a 0.0% delta.
+- **One source of truth for the delta maths.** `computeDeltas`/`WINDOWS`/
+  `pctChange` moved out of `worker/snapshot.ts` into `src/lib/deltas.ts`; the
+  worker re-exports it and the server-rendered detail page
+  (`pulse/[metric].astro`) imports it too, so the homepage arc, the detail
+  view and the share images compute the same delta. The detail page previously
+  computed its own *daily* delta inline (latest vs previous day) — that is
+  gone; it now fetches the daily rows and runs `computeDeltas` +
+  `metricCaption` like everything else.
+- **`metricCaption(m)` reads `m.compare_window`** (default `d` for any
+  pre-PR-C snapshot that lacks the field) and labels with the existing
+  `DELTA_LABELS` ("VS LAST MONTH", "VS LAST QUARTER", …). `SELECT *` carries the
+  column through `buildSnapshot` into KV for free.
+
+**Final per-metric mapping** (verified end-to-end against the seeded series that
+each metric uses its declared window; real-magnitude tuning happens on the KV
+rebuild after merge — the synthetic CI seed can't validate real percentages):
+
+| window | metrics | why |
+|---|---|---|
+| `none` | uptime_days, finality_ok | monotonic counters — uptime shows its "100% SINCE 2015" caption; the finalised-epoch counter shows nothing rather than a meaningless +epochs delta |
+| `m` | staked_eth, staked_pct, validators_active, tvs, stables_supply, rwa_value, client_diversity_cl, client_diversity_el | slow protocol/economy figures — a month is the legible unit of change |
+| `w` | median_l2_fee, builder_share, validator_queue_entry, validator_queue_exit, blob_chains | fee/queue figures — weekly smooths daily noise |
+| `q` | l2_count, node_countries | very slow counts — a quarter is the shortest window that ever moves (chose `q` over `none` so the detail page can still show real growth) |
+| `d` | participation_rate, daa_combined, txcount_combined, throughput, blobs_daily, blobs_per_block_avg, contracts_deployed | genuinely daily-volatile usage/liveness |
+
+- **Deploy step (metadata lives in D1, so merging code does not make it live).**
+  After merge, apply the migration and rebuild the snapshot on the remote:
+  - `wrangler d1 execute ethereum_beat --remote --file db/migrations/004_compare_window.sql`
+  - `wrangler kv key delete --binding=SNAP snapshot:latest --remote` (self-heals
+    on next read; the KV binding is `SNAP`).
+  `db/schema.sql` gains the column for fresh installs and `db/meta.sql` sets the
+  windows, so CI's hermetic DB and any new deploy get it without the migration.
+  (Local gotcha reconfirmed: `CREATE TABLE IF NOT EXISTS` won't add the column
+  to a persisted dev DB — the local D1 state had to be wiped and re-seeded to
+  pick it up, exactly the pass-10c caption lesson.)
+
+### 2. Peripheral: gwei primary, gas-% secondary
+
+- The EXECUTION margin rail led visually with GAS because its value carried an
+  8-char `monoBar` (`████░░░░ 66%`) — the bar read as the column headline while
+  the base fee sat quiet beside it. Base fee in gwei is the legible "what it
+  costs now" number, so it stays the primary (first, accent dot) and GAS drops
+  the bar to a compact `%` secondary readout. Nothing is lost: the disc's GAS
+  ring already carries the % as a visual gauge.
+- **`fmtGwei(g)`** formats sensibly by magnitude: `≥100 → "129 GWEI"`,
+  `≥1 → "42.3 GWEI"`, `≥0.01 → "0.08 GWEI"`, and sub-0.01 keeps a significant
+  figure (`"0.004 GWEI"`) instead of collapsing to `0.00`. Replaces the old
+  fixed `toFixed(2)`. (The BASEFEE ticker modal keeps its own chart-axis
+  formatting — unrelated to the headline.)
+
+Both permanent gates green (audit-contrast 0 failures across seven themes,
+audit-meta 31 routes) plus the CSP gate; `npm run check` clean.
+
 ## PR D — detail overlay → sci-fi HUD modal, two-column (2026-08-01)
 
 The pass-12 overlay was a full-bleed centred document column over a 95%-paper

@@ -1025,6 +1025,14 @@ a {
   color: var(--ink);
   flex: none;
 }
+/* the large structural index numeral speaks in the pixel/live-data voice
+   (var(--font-num)); letter/mark indices keep the grotesk above. Pixel/mono
+   faces want no negative tracking, so reset it. SWISS retires the pixel face,
+   and --font-num follows it there (heavy grotesk tabular) by construction. */
+.section-index--num {
+  font-family: var(--font-num);
+  letter-spacing: 0;
+}
 .section-index--accent {
   color: var(--accent);
 }
@@ -1061,6 +1069,22 @@ a {
 }
 .section-header--sm .section-sub {
   font-size: 0.6875rem;
+}
+
+/* PR B: the values beat, dissolved into the dial — no filled panel, it is one
+   more beat in the rotation. Principle is the pixel display voice (where the
+   KPI numeral sits); gloss is bold mono (where the caption goes). Both ink on
+   paper so they read over the beating disc in every theme; bold guards the
+   thinner-rendered small gloss against the CI Linux font gap. */
+.values-principle {
+  color: var(--ink);
+}
+.values-gloss {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-wide);
+  font-weight: 700;
+  color: var(--ink);
 }
 
 /* mid-size pixel labels: break the uniformity */
@@ -1184,13 +1208,13 @@ a {
 .dpad-left { grid-area: left; }
 .dpad-right { grid-area: right; }
 .dpad-down { grid-area: down; }
-.dpad-hub {
+/* the centre ENTER keycap — dives into the active metric's detail (BEAT only).
+   Shares the keycap grammar; the ⏎ glyph reads slightly larger for presence. */
+.dpad-enter {
   grid-area: hub;
-  align-self: center;
-  justify-self: center;
-  width: 5px;
-  height: 5px;
-  background: var(--ink-ghost);
+}
+.dpad-enter span {
+  font-size: 0.8125rem;
 }
 .dpad-key {
   pointer-events: auto;
@@ -1227,9 +1251,10 @@ a {
     100% { transform: none; }
   }
 }
-/* left/right cycle metrics on BEAT only — dim them off BEAT */
+/* left/right cycle metrics and ENTER dives — all BEAT-only, dim them off BEAT */
 .dpad-metric-off .dpad-left,
-.dpad-metric-off .dpad-right {
+.dpad-metric-off .dpad-right,
+.dpad-metric-off .dpad-enter {
   opacity: 0.32;
   pointer-events: none;
   border-style: dashed;
@@ -1265,9 +1290,89 @@ a {
     grid-template-rows: repeat(3, 1.4rem);
   }
   .dpad-legend-h,
+  .dpad-legend-e,
   .dpad-legend-v { display: none; }
   .dpad-legend-swipe { display: block; }
 }
+
+/* ── the dive affordance: a circular + on the dial's lower edge (PR A) ──────
+   The detail view had no visible cue (Enter/click only). This is the cue:
+   visible at rest in red accent (not ghosted), rotating + on hover with a
+   bracketed "view details" tooltip above. Click/Enter open the overlay;
+   keyboard-focusable with the global focus ring. Reduced motion drops only
+   the rotation. Mobile: larger tap target, tooltip always shown. */
+.dive-btn {
+  position: absolute;
+  left: 50%;
+  bottom: -1.35rem;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: var(--hair) solid var(--accent);
+  background: var(--paper);
+  color: var(--accent);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 160ms, color 160ms;
+}
+.dive-btn:hover {
+  background: var(--accent);
+  color: var(--bar-text);
+}
+.dive-plus {
+  transition: transform 260ms var(--ease-settle);
+}
+/* the rotation is motion only — gated behind reduced motion (tooltip stays) */
+@media (prefers-reduced-motion: no-preference) {
+  .dive-btn:hover .dive-plus,
+  .dive-btn:focus-visible .dive-plus {
+    transform: rotate(135deg);
+  }
+}
+/* tooltip above the button: bracketed micro mono, solid paper so it stays
+   legible over the busy dial; hidden until hover/focus */
+.dive-tip {
+  position: absolute;
+  bottom: calc(100% + 0.55rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.25rem 0.55rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms;
+  pointer-events: none;
+}
+.dive-btn:hover .dive-tip,
+.dive-btn:focus-visible .dive-tip {
+  opacity: 1;
+  visibility: visible;
+}
+@media (max-width: 639px) {
+  .dive-btn {
+    width: 3rem;
+    height: 3rem;
+    bottom: -1.6rem;
+  }
+  /* always-labelled on mobile: no hover there */
+  .dive-tip {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    Pass 15 item 4 — draggable command bar. Grab the bar background (not the
    chips) and drop near an edge to dock it there, or in the centre for a
