@@ -134,7 +134,7 @@ export default function PulseOverlay({
   }, []);
 
   useEffect(() => {
-    const canonicalEl = document.querySelector('link[rel="canonical"]');
+    const canonicalEl = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     // use the canonical HOST (not location.origin) so the injected LD matches
     // the server-rendered origin even on workers.dev / localhost
     const canonicalOrigin = canonicalEl ? new URL(canonicalEl.href).origin : location.origin;
@@ -155,7 +155,7 @@ export default function PulseOverlay({
     // temporalCoverage needs the stored first/last date; this fetch shares the
     // browser/edge cache with PulseChart's identical request
     fetch(`/api/metric/${metric.metric_key}?range=m`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => (r.ok ? (r.json() as Promise<{ coverage?: { first: string | null; last: string | null } | null }>) : null))
       .then((d) => !cancelled && upsertDataset(d?.coverage ?? null))
       .catch(() => !cancelled && upsertDataset(null));
     return () => {
