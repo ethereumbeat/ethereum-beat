@@ -1564,3 +1564,95 @@ attribution). This pass adds only the genuine gaps, without touching the design.
 - **QA:** `npm run build` clean, `npm run check` 0 errors, audit-meta 32 routes,
   audit-csp green (beacon nonced), audit-contrast 0/7 themes (home SSR summary
   sampled, passes). No design language changed; no new dependencies.
+
+## 25. Pass 16 — project contact surfaces (2026-08-04)
+
+Added the project's public contact + security-reporting surfaces. Spec §24 (this
+is Pass 16 — "personality" was Pass 15, DECISIONS §24; the numbered pass takes
+the next SPEC section number, 24, and the next DECISIONS section number, 25).
+
+### Single-mailbox contact scheme (why two published addresses)
+
+- **One real mailbox, one Cloudflare Email Routing rule.** Mail is live on
+  ethereumbeat.org with a single routing rule for `beat@` plus subaddressing
+  enabled, so **`beat+security@ethereumbeat.org` is a subaddress of the same
+  box** — no second mailbox, no second rule to maintain.
+- **The two published addresses differ on purpose; they are NOT normalised to
+  one.** Security reporting (SECURITY.md + security.txt) publishes the
+  `beat+security@` subaddress so security mail is self-labelling and
+  filterable/routable on its own — and it matches the RFC 9116 convention of a
+  dedicated security `Contact` — while still landing in the one mailbox. General
+  / human contact (footer + /about) publishes the plain `beat@`, because a
+  subaddress reads as odd for "just say hello". Same inbox, two front doors.
+- **Every other address bounces and is swept out.** `hello@`, `contact@`,
+  `security@` (plain), and anything on `ethereumbeat.com` do not route. The
+  pre-existing `SECURITY.md` and `.github/ISSUE_TEMPLATE/config.yml` both pointed
+  at the bouncing `security@ethereumbeat.org`; both moved to `beat+security@`. A
+  repo-wide grep for the bouncing forms is clean in shipping surfaces (the one
+  remaining `security@` hit is a historical DECISIONS log line recording the
+  prior config state — left intact rather than falsifying the changelog).
+
+### security.txt — endpoint over static file (a flagged deviation)
+
+- **The spec preferred `public/.well-known/security.txt` if publicDir copies
+  dot-directories; it does** — verified empirically with a probe: a build copied
+  `public/.well-known/probe.txt` to `dist/.well-known/probe.txt`, served as
+  `text/plain`. So the static-file branch was genuinely available.
+- **Chose the Astro endpoint (`src/pages/.well-known/security.txt.ts`) anyway**,
+  because the brief also hard-requires `Expires` to be *generated at build time
+  and never hardcoded* — which a raw static asset cannot do without an added
+  prebuild generator writing a git-ignored artifact into a source dir. The
+  endpoint meets every constraint in one committed, reviewable file: exact route
+  `/.well-known/security.txt` (verified it compiles + serves), `text/plain`,
+  build-time `Expires` = build date + 350 days from `__BUILD_TIME__` (a
+  `new Date().toISOString()` injected via a Vite `define` in astro.config, so a
+  redeploy always refreshes it well under RFC 9116's one-year ceiling), and a
+  canonical-host-aware `Canonical` via `siteOrigin(env)`. `Policy` points at the
+  SECURITY.md blob on the real remote (`github.com/ethereumbeat/ethereum-beat`;
+  the stale `nloureiro/…` link on /about is a separate pre-existing issue, left
+  out of scope). Verified: `Expires: 2027-07-20…` on a 2026-08-04 build.
+- **No audit/gate impact.** security.txt is `text/plain` and absent from the
+  sitemap, so audit-meta (sitemap-driven) and audit-csp (HTML-route list) don't
+  touch it; the Worker only stamps CSP/headers on `text/html`, so it passes
+  through untouched.
+
+### Footer contact line (spec item 3)
+
+- **Inline next to the source-registry credit, not a new row.** A `ContactCredit`
+  sits beside `SourceCredit` in the `LiveTickers` bottom strip (desktop + mobile
+  variants); the strip's existing `hairline-t` **is** the "1px rule above matching
+  the existing footer divider". Kept it in-row (no extra sub-row) so the strict
+  home `100dvh` no-scroll lock is undisturbed. It rides `MarginFrame`, so it
+  renders on every channel, not just BEAT.
+- **Label grotesk lowercase, address in the pixel display voice** (`var(--font-num)`
+  — Departure in the default themes, each theme's display face otherwise). This
+  is a deliberate task-directed exception to the standing type rule (addresses
+  are labels, not "data") — the brief explicitly asked for Departure on the
+  address. Plain underlined `mailto:` (no icon, no button): default link styling
+  is underlined, so simply omitting `!no-underline` gives it.
+- **Contrast: size lift, not bolding.** Departure ships a single 400 weight, so
+  "bold" can't thicken it; legibility came from full `--ink` + a 12px size lift
+  (up from the 10px `.micro`). This pre-empts the macOS→Linux thin-font gap the
+  shared rules warn about — and is the theme where it mattered most: on SKETCH
+  `--font-num` resolves to thin Cutive Mono, which the pass-15 log flags as
+  diluting below AA at 10–12px. Verified sampled + green: 0 failures across all
+  seven themes at the 4.5 gate, and 0 at a +0.9 CI-safety strict margin on the
+  two thinnest themes (sketch, fluffy).
+
+### /about contact block (spec item 4)
+
+- **A new panel 06 in the horizontal section rhythm** ("06 · contact · reach the
+  maintainers"), after colophon. Plain `beat@` set in the about page's **grotesk**
+  headline voice (not the pixel face) — /about copy is uniformly grotesk, so the
+  address matches the page rather than the footer's machine-address treatment.
+  One line notes mail is forwarded via Cloudflare Email Routing and is therefore
+  not end-to-end encrypted.
+
+### Constraints + QA
+
+- No new dependencies; `metric_meta` and the source registry untouched.
+- `npm run build` clean, `npm run check` 0 errors. audit-meta green (31 routes),
+  audit-csp green (9 routes), audit-contrast **0 failures across all seven
+  themes** (+ 0 at the +0.9 CI-safety margin on the thin themes). security.txt
+  verified serving `text/plain` with a build-time `Expires`.
+- Committed and pushed per item.

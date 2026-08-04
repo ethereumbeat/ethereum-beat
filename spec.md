@@ -1011,3 +1011,46 @@ the channel identity.
    Both themes, 5 viewports (numeral + two-line block stack gracefully on
    mobile, no bad wraps, CR digraph and other labels unaffected), contrast
    + meta audits green, DECISIONS.md lists every converted location.
+
+## 24. Pass 16 — project contact surfaces
+
+Add the project's public contact + security-reporting surfaces. Mail is live via
+Cloudflare Email Routing on ethereumbeat.org: one routing rule (beat@) plus
+subaddressing enabled. (Numbering: this is Pass 16 — Pass 15, "personality",
+was executed and recorded in DECISIONS §24 without its own SPEC section — and it
+takes the next SPEC section number, 24.)
+
+ADDRESSES — a deliberate single-mailbox split; do NOT normalise to one address:
+- SECURITY.md + security.txt use  beat+security@ethereumbeat.org
+- footer + /about use plain        beat@ethereumbeat.org
+No other address exists. hello@, security@, contact@, and any address on
+ethereumbeat.com all bounce — never reference them.
+
+1. SECURITY.md (repo root). Scope: this site and its collector, not the Ethereum
+   protocol. Report to beat+security@ethereumbeat.org; 72h acknowledgement
+   target; no bounty. Explicitly out of scope: findings in the upstream data
+   sources (growthepie, ethernodes, beaconcha.in, PublicNode, Blobscan,
+   DefiLlama) — those go upstream. Note the site handles no user accounts, no
+   PII, and no per-node coordinates.
+
+2. RFC 9116 security.txt at /.well-known/security.txt, Content-Type text/plain.
+   Fields: Contact (beat+security@ethereumbeat.org), Expires, Preferred-Languages,
+   Canonical, Policy (SECURITY.md blob URL on GitHub). Expires must be a real
+   ISO-8601 timestamp under one year out — generated at build time from the build
+   date + 350 days, never hardcoded. Verify the emitted route is exactly
+   /.well-known/security.txt.
+
+3. Footer: a contact line next to the existing source-registry attribution.
+   Lowercase grotesk label, the pixel display face (Departure) for the address,
+   a 1px rule above matching the existing footer divider treatment. No mailto
+   icon, no button — a plain underlined link.
+
+4. /about: a short CONTACT block in the existing section rhythm — plain beat@,
+   plus one line noting mail is forwarded via Cloudflare Email Routing and is
+   therefore not end-to-end encrypted.
+
+Constraints: no new dependencies; do not touch metric_meta or the source
+registry. Run audit-contrast, audit-meta and audit-csp locally before pushing —
+the small footer text is the first thing to fail contrast on Linux Chromium; fix
+by bolding or lifting size, never by loosening the threshold. Clean build. Commit
+and push per completed item. Log decisions in DECISIONS.md.
