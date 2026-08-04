@@ -105,6 +105,28 @@ function SourceCredit({ snapshot, collapsed = false }: { snapshot: Snapshot | nu
   );
 }
 
+/**
+ * Contact surface (spec §24 / pass 16): a plain underlined mailto sitting next
+ * to the source-registry credit. Label in lowercase grotesk, address in the
+ * pixel display face (Departure) per the brief. Departure ships a single weight,
+ * so legibility comes from a size lift + full ink (not bolding) — the footer
+ * micro text is exactly what dilutes first on Linux Chromium.
+ */
+function ContactCredit() {
+  return (
+    <span className="pointer-events-auto inline-flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="micro font-grotesk lowercase font-bold text-[color:var(--ink)]">contact</span>
+      <a
+        href="mailto:beat@ethereumbeat.org"
+        className="text-[12px] leading-none text-[color:var(--ink)] hover:text-[color:var(--accent)]"
+        style={{ fontFamily: 'var(--font-num)' }}
+      >
+        beat@ethereumbeat.org
+      </a>
+    </span>
+  );
+}
+
 export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) {
   const refs = useRef<Record<string, HTMLSpanElement | null>>({});
   const [rpcDead, setRpcDead] = useState(false);
@@ -292,6 +314,7 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
           <span className="2xl:hidden">
             <SourceCredit snapshot={snapshot} collapsed />
           </span>
+          <ContactCredit />
         </div>
         <div className="hairline-t lg:hidden">
           <div
@@ -305,6 +328,7 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
             <Item label="STAKED" id="staked-m" width={16} refs={refs} onOpen={setOpenId} />
             <Item label="TVS" id="tvs-m" width={7} refs={refs} onOpen={setOpenId} />
             <SourceCredit snapshot={snapshot} collapsed />
+            <ContactCredit />
           </div>
         </div>
       </div>
