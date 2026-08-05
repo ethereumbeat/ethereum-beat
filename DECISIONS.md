@@ -1,5 +1,7 @@
 # DECISIONS
 
+> **Numbering:** section numbers (`## N.`) are file-local; the **Pass** number in each heading is the cross-file key that aligns SPEC and DECISIONS. Do not renumber existing sections.
+
 Running log of choices made where the spec left options open, plus anything
 punted and why. Newest entries at the bottom of each section.
 

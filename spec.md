@@ -1,5 +1,7 @@
 # ETHEREUM BEAT — one-shot build spec for Claude Code
 
+> **Numbering:** section numbers (`## N.`) are file-local; the **Pass** number in each heading is the cross-file key that aligns SPEC and DECISIONS. Do not renumber existing sections.
+
 Build a complete, deployable website called **Ethereum Beat** (working domain: `ethereumbeat.xyz`, configurable). It tracks the pulse of Ethereum: a centre ETH glyph beats like a heart, and each beat surfaces one KPI. Simple, beautiful, non-financial in tone, aligned with the Ethereum Foundation's framing of the protocol (CROPS properties and sovereignty measurements) rather than price and speculation.
 
 Build the whole thing in one shot. Do not ask questions. Where a decision is ambiguous, pick the option that is simpler, cheaper, and closer to this spec. Verify every external endpoint with `curl` before wiring it in; if an endpoint is dead or has changed shape, degrade gracefully (see Resilience rules) and note it in the README.
