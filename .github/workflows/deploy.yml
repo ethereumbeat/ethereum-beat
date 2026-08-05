@@ -121,4 +121,42 @@ jobs:
             echo "::error::/api/snapshot did not return valid JSON"
             exit 1
           fi
+
+          # ── RFC 9116 security.txt: 200, text/plain, a Contact: line pointing
+          #    at the live beat+security@ subaddress (guards a future edit from
+          #    reintroducing a bouncing address), and a non-stale Expires ──────
+          sec_url="$base/.well-known/security.txt"
+          scode=""
+          for i in $(seq 1 10); do
+            scode="$(curl -s -D /tmp/sec.hdr -o /tmp/sec.txt -w '%{http_code}' "$sec_url")"
+            [ "$scode" = "200" ] && break
+            sleep 3
+          done
+          [ "$scode" = "200" ] && echo "ok   $sec_url -> 200" \
+            || { echo "::error::$sec_url returned $scode, expected 200"; exit 1; }
+          if grep -iq '^content-type:[[:space:]]*text/plain' /tmp/sec.hdr; then
+            echo "ok   security.txt content-type is text/plain"
+          else
+            echo "::error::security.txt content-type is not text/plain"
+            grep -i '^content-type:' /tmp/sec.hdr || true
+            exit 1
+          fi
+          grep -q '^Contact:' /tmp/sec.txt && echo "ok   security.txt has a Contact: line" \
+            || { echo "::error::security.txt is missing a Contact: line"; exit 1; }
+          if grep '^Contact:' /tmp/sec.txt | grep -qF 'beat+security@ethereumbeat.org'; then
+            echo "ok   security.txt Contact is beat+security@ethereumbeat.org"
+          else
+            echo "::error::security.txt Contact is not beat+security@ethereumbeat.org (a bouncing address may have crept in)"
+            exit 1
+          fi
+          expires="$(grep -i '^Expires:' /tmp/sec.txt | head -1 | sed 's/^[Ee]xpires:[[:space:]]*//' | tr -d '\r')"
+          exp_s="$(date -d "$expires" +%s 2>/dev/null)" \
+            || { echo "::error::security.txt Expires '$expires' is not a parseable date"; exit 1; }
+          if [ "$exp_s" -gt "$(date -d '+30 days' +%s)" ]; then
+            echo "ok   security.txt Expires ($expires) is more than 30 days out"
+          else
+            echo "::error::security.txt Expires ($expires) is not more than 30 days in the future"
+            exit 1
+          fi
+
           echo "all smoke tests passed"
