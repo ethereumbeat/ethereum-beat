@@ -1620,6 +1620,15 @@ the next SPEC section number, 24, and the next DECISIONS section number, 25).
   sitemap, so audit-meta (sitemap-driven) and audit-csp (HTML-route list) don't
   touch it; the Worker only stamps CSP/headers on `text/html`, so it passes
   through untouched.
+- **Repo URL unified to the real remote (item 2).** security.txt's `Policy` and
+  the /about `SOURCE → GITHUB` link previously disagreed — Policy already named
+  `github.com/ethereumbeat/ethereum-beat` while /about (and both collector
+  user-agents) still carried the stale `nloureiro/…` owner. All five repo URLs
+  in the tree (Policy, /about link, README clone, `worker/sources/types.ts` +
+  `src/pages/api/layers.ts` user-agents) now point at
+  `github.com/ethereumbeat/ethereum-beat`. package.json has no `repository`
+  field, so nothing there to reconcile (left as-is; not a `nloureiro`
+  occurrence).
 
 ### Footer contact line (spec item 3)
 

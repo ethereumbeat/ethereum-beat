@@ -18,7 +18,7 @@ export async function fetchJson<T>(url: string, init?: RequestInit, timeoutMs = 
     headers: {
       accept: 'application/json',
       // some APIs (growthepie among them) 403 requests with no user agent
-      'user-agent': 'ethereum-beat/0.1 (+https://github.com/nloureiro/ethereum-beat)',
+      'user-agent': 'ethereum-beat/0.1 (+https://github.com/ethereumbeat/ethereum-beat)',
       ...(init?.headers ?? {}),
     },
   });
