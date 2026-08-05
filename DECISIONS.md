@@ -699,7 +699,7 @@ uptime framed as mission not property (pass 13c) — no five-property or
 - **`.github/`**: `ISSUE_TEMPLATE/bug_report.md` (route/theme/viewport/reduced-
   motion fields), `ISSUE_TEMPLATE/metric_request.md` (CROPS category picker +
   source/licence), `ISSUE_TEMPLATE/config.yml` (blank issues off; security →
-  `mailto:security@ethereumbeat.org` per SECURITY.md, not a public issue),
+  the private reporting address in SECURITY.md, not a public issue),
   `pull_request_template.md` (checklist mirrors the CONTRIBUTING quality
   gates: build, both audits, both themes, reduced motion, type rule),
   `profile/avatar.svg` (for later org use).
@@ -1584,13 +1584,13 @@ the next SPEC section number, 24, and the next DECISIONS section number, 25).
   dedicated security `Contact` — while still landing in the one mailbox. General
   / human contact (footer + /about) publishes the plain `beat@`, because a
   subaddress reads as odd for "just say hello". Same inbox, two front doors.
-- **Every other address bounces and is swept out.** `hello@`, `contact@`,
-  `security@` (plain), and anything on `ethereumbeat.com` do not route. The
-  pre-existing `SECURITY.md` and `.github/ISSUE_TEMPLATE/config.yml` both pointed
-  at the bouncing `security@ethereumbeat.org`; both moved to `beat+security@`. A
-  repo-wide grep for the bouncing forms is clean in shipping surfaces (the one
-  remaining `security@` hit is a historical DECISIONS log line recording the
-  prior config state — left intact rather than falsifying the changelog).
+- **Every other address bounces and is swept out.** Any other local-part, and
+  any non-onboarded zone, do not route. The pre-existing `SECURITY.md` and
+  `.github/ISSUE_TEMPLATE/config.yml` both pointed at a bouncing plain-security
+  address; both moved to `beat+security@`. Pass 16 item 0 then swept the whole
+  repo — the CODE_OF_CONDUCT enforcement address and every doc mention of a
+  bouncing local-part were removed, so the only addresses surviving anywhere are
+  `beat@ethereumbeat.org` and `beat+security@ethereumbeat.org`.
 
 ### security.txt — endpoint over static file (a flagged deviation)
 

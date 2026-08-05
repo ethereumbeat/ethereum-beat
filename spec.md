@@ -1023,8 +1023,8 @@ takes the next SPEC section number, 24.)
 ADDRESSES — a deliberate single-mailbox split; do NOT normalise to one address:
 - SECURITY.md + security.txt use  beat+security@ethereumbeat.org
 - footer + /about use plain        beat@ethereumbeat.org
-No other address exists. hello@, security@, contact@, and any address on
-ethereumbeat.com all bounce — never reference them.
+No other address exists or routes. Never publish or reference any other
+local-part, or any address on a zone that is not onboarded — they bounce.
 
 1. SECURITY.md (repo root). Scope: this site and its collector, not the Ethereum
    protocol. Report to beat+security@ethereumbeat.org; 72h acknowledgement
