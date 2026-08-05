@@ -1599,18 +1599,23 @@ the next SPEC section number, 24, and the next DECISIONS section number, 25).
   `public/.well-known/probe.txt` to `dist/.well-known/probe.txt`, served as
   `text/plain`. So the static-file branch was genuinely available.
 - **Chose the Astro endpoint (`src/pages/.well-known/security.txt.ts`) anyway**,
-  because the brief also hard-requires `Expires` to be *generated at build time
-  and never hardcoded* — which a raw static asset cannot do without an added
-  prebuild generator writing a git-ignored artifact into a source dir. The
-  endpoint meets every constraint in one committed, reviewable file: exact route
-  `/.well-known/security.txt` (verified it compiles + serves), `text/plain`,
-  build-time `Expires` = build date + 350 days from `__BUILD_TIME__` (a
-  `new Date().toISOString()` injected via a Vite `define` in astro.config, so a
-  redeploy always refreshes it well under RFC 9116's one-year ceiling), and a
-  canonical-host-aware `Canonical` via `siteOrigin(env)`. `Policy` points at the
-  SECURITY.md blob on the real remote (`github.com/ethereumbeat/ethereum-beat`;
-  the stale `nloureiro/…` link on /about is a separate pre-existing issue, left
-  out of scope). Verified: `Expires: 2027-07-20…` on a 2026-08-04 build.
+  because the static asset cannot carry a non-hardcoded, self-refreshing
+  `Expires` without an added prebuild generator writing a git-ignored artifact
+  into a source dir. The endpoint meets every constraint in one committed,
+  reviewable file: exact route `/.well-known/security.txt` (verified it
+  compiles + serves), `text/plain`, and a canonical-host-aware `Canonical` via
+  `siteOrigin(env)`.
+- **`Expires` is computed per request (`Date.now()` + 350 days), not at build
+  time.** The first cut of this endpoint baked `Expires` from a `__BUILD_TIME__`
+  Vite `define` at build — but that lets the file *silently expire* if the
+  project sits un-deployed for a year (the stamp is frozen at the last build).
+  Request-time computation makes staleness impossible: every response emits
+  now + 350 days, always well under RFC 9116's one-year ceiling, with no deploy
+  cadence dependency. The endpoint stays SSR (`prerender = false`) so `Date.now()`
+  runs per request; `Cache-Control: public, max-age=86400` caps reuse of any one
+  computed value at a day (Expires drifts by at most 24h, still ~349 days out).
+  The `__BUILD_TIME__` define was removed from astro.config. A `deploy.yml` smoke
+  test (item 3) now asserts the served `Expires` parses >30 days out.
 - **No audit/gate impact.** security.txt is `text/plain` and absent from the
   sitemap, so audit-meta (sitemap-driven) and audit-csp (HTML-route list) don't
   touch it; the Worker only stamps CSP/headers on `text/html`, so it passes
