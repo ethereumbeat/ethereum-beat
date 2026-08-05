@@ -118,7 +118,7 @@ function ContactCredit() {
       <span className="micro font-grotesk lowercase font-bold text-[color:var(--ink)]">contact</span>
       <a
         href="mailto:beat@ethereumbeat.org"
-        className="text-[12px] leading-none text-[color:var(--ink)] hover:text-[color:var(--accent)]"
+        className="text-[22px] leading-none text-[color:var(--ink)] hover:text-[color:var(--accent)]"
         style={{ fontFamily: 'var(--font-num)' }}
       >
         beat@ethereumbeat.org

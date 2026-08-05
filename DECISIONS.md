@@ -1644,14 +1644,21 @@ the next SPEC section number, 24, and the next DECISIONS section number, 25).
   are labels, not "data") — the brief explicitly asked for Departure on the
   address. Plain underlined `mailto:` (no icon, no button): default link styling
   is underlined, so simply omitting `!no-underline` gives it.
-- **Contrast: size lift, not bolding.** Departure ships a single 400 weight, so
-  "bold" can't thicken it; legibility came from full `--ink` + a 12px size lift
-  (up from the 10px `.micro`). This pre-empts the macOS→Linux thin-font gap the
-  shared rules warn about — and is the theme where it mattered most: on SKETCH
-  `--font-num` resolves to thin Cutive Mono, which the pass-15 log flags as
-  diluting below AA at 10–12px. Verified sampled + green: 0 failures across all
-  seven themes at the 4.5 gate, and 0 at a +0.9 CI-safety strict margin on the
-  two thinnest themes (sketch, fluffy).
+- **Contrast: size lift, not bolding — snapped to the pixel grid.** Departure
+  ships a single 400 weight, so "bold" can't thicken it; legibility comes from
+  full `--ink` + a size lift. The lift is **22px**, an integer multiple of
+  Departure Mono's **11px design size**, so the font's pixel grid maps 1:1 to
+  device pixels. (Departure is 550 UPM on a 50-unit pixel grid → 11 device-pixels
+  per em; confirmed by extracting the woff2 — GCD of all 50,940 outline
+  coordinates is exactly 50, and ascent/descent/cap/x-height are all multiples of
+  50.) The first cut was 12px, which is not a multiple of 11 and rendered
+  off-grid; it was raised to the next multiple, 22px (= 2 × 11). Larger, on-grid
+  text only helps contrast: 0 failures across all seven themes at the 4.5 gate
+  (the 12px version was already 0 at a +0.9 CI-safety margin). The threshold was
+  never lowered. SKETCH is still the tell — there `--font-num` is thin Cutive
+  Mono (pass-15 flags it diluting below AA at 10–12px) — and 22px clears it
+  comfortably. The taller footer keeps the home strict no-scroll 100dvh grid
+  (verified document vScroll/hScroll = 0 at 1280×700, 1536×960, 390×844).
 
 ### /about contact block (spec item 4)
 
