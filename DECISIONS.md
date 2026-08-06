@@ -1646,21 +1646,37 @@ the next SPEC section number, 24, and the next DECISIONS section number, 25).
   are labels, not "data") — the brief explicitly asked for Departure on the
   address. Plain underlined `mailto:` (no icon, no button): default link styling
   is underlined, so simply omitting `!no-underline` gives it.
-- **Contrast: size lift, not bolding — snapped to the pixel grid.** Departure
-  ships a single 400 weight, so "bold" can't thicken it; legibility comes from
-  full `--ink` + a size lift. The lift is **22px**, an integer multiple of
-  Departure Mono's **11px design size**, so the font's pixel grid maps 1:1 to
-  device pixels. (Departure is 550 UPM on a 50-unit pixel grid → 11 device-pixels
-  per em; confirmed by extracting the woff2 — GCD of all 50,940 outline
-  coordinates is exactly 50, and ascent/descent/cap/x-height are all multiples of
-  50.) The first cut was 12px, which is not a multiple of 11 and rendered
-  off-grid; it was raised to the next multiple, 22px (= 2 × 11). Larger, on-grid
-  text only helps contrast: 0 failures across all seven themes at the 4.5 gate
-  (the 12px version was already 0 at a +0.9 CI-safety margin). The threshold was
-  never lowered. SKETCH is still the tell — there `--font-num` is thin Cutive
-  Mono (pass-15 flags it diluting below AA at 10–12px) — and 22px clears it
-  comfortably. The taller footer keeps the home strict no-scroll 100dvh grid
-  (verified document vScroll/hScroll = 0 at 1280×700, 1536×960, 390×844).
+- **Departure Mono design size = 11px** (550 UPM on a 50-unit pixel grid → 11
+  device-pixels per em; confirmed by extracting the woff2 — GCD of all 50,940
+  outline coordinates is exactly 50, and ascent/descent/cap/x-height are all
+  multiples of 50). The address renders pixel-crisp at integer multiples of 11px.
+- **Size ended at 11px inline, after 22px broke the layout (a PR-review saga).**
+  Item 4 asked to raise the off-grid 12px to the next multiple, 22px (2×11). 22px
+  passed the *contrast* audit locally but **overflowed the `justify-center`
+  footer telemetry row** — already over-full (the expanded source list alone is
+  ~700px) — pushing the leftmost STAKED ticker off-screen at every desktop width.
+  CI's Linux Chromium then sampled the clipped STAKED sliver in SWISS as grey 170
+  → 2.32:1 → **verify failed**. Local macOS sampled the same sliver darker and
+  passed; the lesson (relearned) is that the macOS audit misses CI-Linux edges —
+  the `--strict` proxy, and *reading its report*, catch them. Even the original
+  12px contact overflowed (~174px); the row could not hold the contact inline at
+  any size alongside the full telemetry set.
+- **Fix: keep the contact inline, drop lower-priority items, 11px with a SKETCH
+  font fallback.** BURNED and HASH (no other desktop home) and the expanded
+  source list were dropped from the desktop footer row; the source credit stays
+  collapsed (`DATA · N OPEN SOURCES`) and the row gap tightened `gap-8 → gap-4`.
+  Measured fit: zero overflow/clip across all seven themes at 1280/1440/1536/1920
+  (worst-theme spare ~40px). Size is **11px** — an exact 1× multiple of the 11px
+  design size, so still pixel-crisp; it does not "raise" above 12px, an accepted
+  trade to keep one inline footer row (22px would need its own row; the
+  maintainer chose inline). At 11px the address sampled 5.16 in SKETCH — above
+  the 4.5 gate but under the project's +0.9 CI-safety bar (5.4), because SKETCH's
+  `--font-num` is thin Cutive Mono. So in SKETCH only, the address
+  (`.contact-addr`) falls back to legible Martian (`--font-mono`), the same
+  convention SKETCH uses for all small text (pass-15). Re-audited: 0 failures
+  across all seven themes at the 4.5 gate, and the address clears +0.9 in SKETCH
+  (0 rows). Threshold never lowered. Dropped from desktop: BURNED, HASH, and the
+  expanded source list (accepted telemetry trade-off for a single inline row).
 
 ### /about contact block (spec item 4)
 
