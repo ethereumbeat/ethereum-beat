@@ -1464,3 +1464,50 @@ red on near-black). Seven-theme contact sheet regenerated
 
 QA: audit-contrast 0 failures (7 themes incl. `/pulse`), audit-meta 31 routes,
 audit-csp intact, `npm run check` clean.
+
+## Collector alerting + staleness signal (2026-08-06)
+
+Finishes the daily cron collector: one failure digest per run, a `collector_runs`
+audit trail, and an `is_stale` signal on `/api/snapshot` — without breaking
+free-tier forks.
+
+- **`send_email` is injected only into the maintainer's deploy config, never the
+  committed `wrangler.toml`.** A `[[send_email]]` binding with a
+  `destination_address` is **validated at deploy time** against the account's
+  verified Email Routing destinations — so committing it would break every fork's
+  `wrangler deploy` (they don't own that address). Instead `deploy.yml` appends
+  the `[[send_email]]` block (destination from `secrets.ALERT_EMAIL_TO`, default
+  `beat@ethereumbeat.org`) to the throwaway `wrangler.ci.toml`. Forks deploy with
+  no binding → `env.SEND_EMAIL` is `undefined` → the alert logs-and-skips, never
+  throws. Verified before writing any dependent code: replaying the ci.toml
+  generation locally yields a valid TOML `[[send_email]]` block. The tracked
+  `wrangler.toml` stays on its placeholders and the "unmodified" guard still holds.
+- **One digest per run, not one per source; de-duped 24h in D1.** The collector
+  already accumulates a per-source ok/fail report; on any failure it sends a
+  single digest listing every failed source, guarded by a
+  `SELECT COUNT(*) … WHERE alerted = 1 AND finished_at > datetime('now','-24 hours')`
+  check against `collector_runs`. The de-dupe query fails *safe* (on a DB error it
+  returns "already alerted" → suppress, rather than risk a loop of alerts). Both
+  `maybeAlert` and `recordRun` are best-effort and never throw, so a failing alert
+  or a logging failure can never break the day's data collection.
+- **`collector_runs` is the staleness source, not `snapshot.generated_at`.**
+  `/api/snapshot` self-heals by rebuilding from D1 when KV is missing, which bumps
+  `generated_at` to "now" even when no fresh collection happened — so
+  `generated_at` is a *build* time, not a *freshness* time. `is_stale` is computed
+  from the latest `collector_runs.finished_at` (threshold >26h, one hour past the
+  daily cron), falling back to `generated_at` only before the first collector run
+  (fresh deploy) or if the table isn't migrated yet. The route adds `finished_at`
+  + `is_stale` to the JSON; it stays edge-cached 1h, so `is_stale` has ~1h
+  granularity on a 26h threshold — fine. Verified all four states end-to-end
+  (fresh/no-runs → false, recent run → false, 40h-old run → true) plus the
+  de-dupe (≤24h → suppress, >24h → send).
+- **Client `STALE` badge is full `--ink`, not accent.** A small red-dot + `STALE`
+  label in the corner readout shows only when `is_stale`. The label is `--ink`
+  (always AA in every theme) with the red-dot carrying the alert colour, rather
+  than red text that dilutes at micro size — so even in its worst case (visible)
+  it passes the pixel gate. Under the CI seed there are no `collector_runs` and a
+  fresh snapshot, so `is_stale` is false and the badge is hidden; it was audited
+  green with `is_stale` forced true so the badge is actually sampled.
+- Migration `db/migrations/005_collector_runs.sql` for existing DBs; `schema.sql`
+  gains the table for fresh installs/CI. No new dependencies; the MIME digest is
+  hand-built (no `mimetext`), sent via the runtime `cloudflare:email` module.

@@ -263,6 +263,17 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
         <Item label="SLOT" id="slot-c" width={8} refs={refs} onOpen={setOpenId} accent />
         {!rpcDead && <Item label="BLK" id="block-c" width={9} refs={refs} onOpen={setOpenId} />}
         <span className="micro font-bold">{reducedMotion ? 'MOTION OFF' : `${BPM} BPM`}</span>
+        {/* staleness: the daily snapshot hasn't refreshed in >26h (is_stale from
+            /api/snapshot). Red alert dot + label, the site's existing alert voice. */}
+        {snapshot?.is_stale && (
+          <span
+            className="micro inline-flex items-center gap-1.5 font-bold text-[color:var(--ink)]"
+            title="Live data is current; the daily snapshot has not refreshed in over 26 hours"
+          >
+            <span className="red-dot" />
+            STALE
+          </span>
+        )}
       </div>
 
       {/* tier-3 strip sits just above the command bar */}
