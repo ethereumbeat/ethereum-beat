@@ -46,6 +46,7 @@ const CONNECT_MUST_INCLUDE = [
   'https://ethereum-beacon-api.publicnode.com',
   'wss://ethereum-rpc.publicnode.com',
   'wss://eth.drpc.org',
+  'https://cloudflareinsights.com', // Cloudflare Web Analytics beacon endpoint
 ];
 
 const failures = [];

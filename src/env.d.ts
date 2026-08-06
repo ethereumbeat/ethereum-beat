@@ -18,6 +18,8 @@ interface Env {
   SEND_EMAIL?: { send(message: import('cloudflare:email').EmailMessage): Promise<void> };
   ALERT_EMAIL_TO?: string;
   ALERT_EMAIL_FROM?: string;
+  // Cloudflare Web Analytics beacon token. Unset → no beacon rendered.
+  CF_BEACON_TOKEN?: string;
 }
 
 // The Workers runtime provides this built-in module; declared so the collector's

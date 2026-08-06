@@ -34,6 +34,12 @@ const ogAlt = channel
   : `${SITE_NAME} share card: ${description}`;
 
 const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
+
+// Cloudflare Web Analytics: cookieless, no consent banner (P — privacy). The
+// beacon <script> is nonced by the Worker's HTMLRewriter, so it's trusted under
+// the nonce + strict-dynamic CSP without loosening script-src. Env-gated: no
+// CF_BEACON_TOKEN → no beacon (fork-safe, no broken analytics).
+const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
 ---
 
 <html lang="en">
@@ -75,6 +81,15 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="alternate" type="application/rss+xml" title="Ethereum Beat" href={`${origin}/feed.xml`} />
+    {
+      beaconToken && (
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: beaconToken, spa: true })}
+        />
+      )
+    }
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fbfbf9" />
     <ClientRouter fallback="animate" />

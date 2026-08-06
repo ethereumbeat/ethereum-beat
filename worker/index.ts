@@ -34,6 +34,11 @@ const CONNECT_SRC = [
   'https://ethereum-beacon-api.publicnode.com', // finality + glyph head block
   'wss://ethereum-rpc.publicnode.com', // FLOW mempool stream (src/lib/mempool.ts)
   'wss://eth.drpc.org',
+  // Cloudflare Web Analytics: the beacon SCRIPT is authorised by its nonce
+  // (strict-dynamic), not by host. These hosts cover the beacon's own data POST
+  // (cloudflareinsights.com) — the analytics endpoint, not a script allowlist.
+  'https://cloudflareinsights.com',
+  'https://static.cloudflareinsights.com',
 ];
 
 function cspFor(nonce: string): string {

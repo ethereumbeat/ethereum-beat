@@ -1511,3 +1511,56 @@ free-tier forks.
 - Migration `db/migrations/005_collector_runs.sql` for existing DBs; `schema.sql`
   gains the table for fresh installs/CI. No new dependencies; the MIME digest is
   hand-built (no `mimetext`), sent via the runtime `cloudflare:email` module.
+
+## SEO / AEO / LLM discoverability — gaps only (2026-08-06)
+
+Most of the SEO surface already shipped in passes 11–13c (per-route meta, OG,
+Twitter, canonical, sitemap, robots, llms.txt/llms-full.txt, WebSite +
+SoftwareApplication site-wide JSON-LD, per-metric Dataset JSON-LD, dynamic source
+attribution). This pass adds only the genuine gaps, without touching the design.
+
+- **Home page now server-renders the core facts (item 1 — the one real SSR
+  gap).** The home is a client-hydrated island (`<BeatStage client:load>`), so
+  the initial HTML had the meta but none of the actual values. Verified by
+  curling the raw HTML: channel pages already SSR their metric values and
+  `/about` its methodology; only the home lacked its KPI numbers. Fix:
+  `index.astro` reads the snapshot (KV, self-healing from D1) and renders a
+  `.sr-only` summary — an `<h1>`, the featured metrics with formatted values +
+  descriptions, and an "as of" date. This is a genuine accessible text
+  alternative to the visual dial (screen readers) that doubles as the crawlable
+  surface for search / answer engines / LLMs — the same data shown visually, as
+  text, so it is not cloaking. `BeatStage` is untouched (zero hydration risk).
+  It is `--ink` on paper, so it passes the pixel gate even where sampled.
+- **`/methodology` — plain-language Q&A + FAQPage JSON-LD (item 5).** A new SSR
+  page whose visible Q&A and `schema.org/FAQPage` structured data are built from
+  one array (they can't drift). Questions use the phrasings answer engines pull
+  ("what is Ethereum network health", "how many Ethereum nodes are there",
+  finality, blobs, methodology/attribution), all non-financial. Kept **out** of
+  `ROUTES` (so it stays out of the arcade nav / OG-card registry) but added to
+  `sitemap.xml` via a small `EXTRA_PAGES` list, so it's crawlable and audited.
+  `Layout`'s non-channel fallback gives it a valid OG (`/og/beat.png`) with no
+  new image. Title uppercased to `— METHODOLOGY ·` to satisfy the audit-meta
+  channel-title pattern. audit-meta: 32 routes green.
+- **Cloudflare Web Analytics — cookieless, CSP via nonce not loosening (item
+  7).** The beacon `<script>` is added in `Layout`, gated on a `CF_BEACON_TOKEN`
+  env var (unset → no beacon, fork-safe and no consent banner needed for P —
+  privacy). It's authorised by the per-request nonce the Worker's HTMLRewriter
+  already stamps on every `<script>`, so **script-src is not loosened** — no host
+  allowlist, no `unsafe-inline`. The one necessary CSP change is `connect-src`
+  gaining `cloudflareinsights.com` (+ `static.`) for the beacon's own data POST —
+  the analytics endpoint, not a script allowlist; `audit-csp`'s
+  `CONNECT_MUST_INCLUDE` was updated to match. Verified the beacon renders with a
+  nonce and audit-csp stays green (80 `<script>` tags, all nonced).
+- **Attribution (item 8) — already complete by construction.** The footer's
+  source credit is built dynamically from `creditSources` (metric_meta sources
+  that hold data + the live-layer endpoints), and `/about` credits the same live
+  sources in both its panel and its JSON-LD citations. Feature-flagged-off
+  sources have no displayed data, so there is correctly nothing to attribute for
+  them. No change needed.
+- **security.txt (item 6) is delivered by the pass-16 PR, not re-added here** to
+  avoid a duplicate add/add on merge; it uses the live `beat+security@` (item
+  6's `security@` bounces — see the pass-16 work). This branch introduces no
+  bouncing address.
+- **QA:** `npm run build` clean, `npm run check` 0 errors, audit-meta 32 routes,
+  audit-csp green (beacon nonced), audit-contrast 0/7 themes (home SSR summary
+  sampled, passes). No design language changed; no new dependencies.

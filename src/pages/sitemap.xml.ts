@@ -22,8 +22,13 @@ export const GET: APIRoute = (ctx) =>
       ).all<{ metric_key: string }>()
     ).results;
 
+    // content pages that aren't channels in ROUTES (so they stay out of the
+    // arcade nav) but are still crawlable / AEO surfaces
+    const EXTRA_PAGES = ['/methodology'];
+
     const urls = [
       ...ROUTES.map((r) => `${origin}${r.path}`),
+      ...EXTRA_PAGES.map((p) => `${origin}${p}`),
       ...metrics.map((m) => `${origin}/pulse/${m.metric_key}`),
     ];
     const xml = [

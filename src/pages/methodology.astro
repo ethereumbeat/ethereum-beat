@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteOrigin } from '../lib/site';
+
+export const prerender = false;
+
+const origin = siteOrigin(Astro.locals?.runtime?.env);
+const title = 'Ethereum Beat — METHODOLOGY · how the numbers are measured';
+const description =
+  'How Ethereum Beat measures network health: what each metric means, where the data comes from, and how it is collected. Protocol health and usage only — no prices, no market data.';
+
+// One source of truth: the visible Q&A and the FAQPage JSON-LD are built from
+// the same array, so answer engines and readers always see the same text.
+// Plain-language, non-financial framing — the phrasings people actually ask.
+const faqs: { q: string; a: string }[] = [
+  {
+    q: 'What is Ethereum network health?',
+    a: 'Ethereum network health is a set of non-financial measures of how well the protocol is doing its job: whether the chain is producing and finalising blocks, how decentralised the nodes and validators are, how much it is used, and how much value it secures. Ethereum Beat surfaces one such measure per 12-second slot — no prices, no market talk.',
+  },
+  {
+    q: 'How many Ethereum nodes are there, and where are they?',
+    a: 'Ethereum runs on thousands of independently operated execution and consensus nodes spread across many countries. The Nodes channel shows the live count and the country distribution on a dot-matrix world map, plus client-diversity bars — geographic and client spread is what makes the network hard to censor or switch off.',
+  },
+  {
+    q: 'Is Ethereum decentralised?',
+    a: 'Decentralisation is measured, not assumed. Ethereum Beat tracks it directly: the number of independent nodes and the countries they run in, the diversity of consensus and execution clients (no single client should dominate), and the number of active validators securing the chain. Those figures are on the Nodes channel and in the individual metric pages.',
+  },
+  {
+    q: 'What is Ethereum’s uptime?',
+    a: 'The Ethereum mainnet has produced blocks continuously since genesis on 30 July 2015 — 100% uptime with no chain halts. Ethereum Beat counts the days of continuous uptime live from the genesis timestamp.',
+  },
+  {
+    q: 'How fast does Ethereum finalise transactions?',
+    a: 'Ethereum finalises in epochs of 32 twelve-second slots. A block is justified after one epoch and finalised after two, so finality trails the head of the chain by roughly 12.8 minutes under normal conditions. The Finality channel shows the current epoch filling slot by slot and the finalised checkpoint trailing behind the head.',
+  },
+  {
+    q: 'What are blobs on Ethereum?',
+    a: 'Blobs are the data-availability mechanism (EIP-4844) that lets Ethereum layer-2 rollups post their data cheaply to layer 1. Each block carries a number of blobs against a protocol target. The Blobs channel shows blob cells filling live per block, the blob base fee, and the daily blob count.',
+  },
+  {
+    q: 'Where does Ethereum Beat get its data, and how is it collected?',
+    a: 'Live per-slot values (block height, base fee, gas, blobs) come from public Ethereum RPC and Beacon endpoints, polled client-side once per slot. Daily series (activity, staking, value secured, blobs, node geography) come from open sources — growthepie (CC BY 4.0), the standard Beacon API, ultrasound.money, DefiLlama, ethernodes and public RPCs — collected once a day by a Cloudflare Worker cron and stored in a small database. Every source is credited on the About page and in the footer, and the full time series is available from the open /api/snapshot and /api/metric endpoints.',
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  name: 'Ethereum Beat methodology',
+  url: `${origin}/methodology`,
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<Layout title={title} description={description} jsonLd={[faqJsonLd]}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">M</div>
+
+  <main class="channel-body mx-auto max-w-2xl overflow-y-auto px-6 py-12" aria-label="Methodology">
+    <p class="micro mb-2 flex items-center gap-2">
+      <span class="red-dot"></span>
+      <span>METHODOLOGY // HOW THE NUMBERS ARE MEASURED</span>
+    </p>
+    <h1 class="mb-8 font-grotesk text-3xl font-extrabold leading-tight text-[color:var(--ink)] sm:text-4xl">
+      How Ethereum Beat<br />measures network health
+    </h1>
+
+    <dl class="flex flex-col gap-8">
+      {
+        faqs.map((f) => (
+          <div class="hairline-t pt-6">
+            <dt class="mb-2 font-grotesk text-lg font-bold text-[color:var(--ink)]">{f.q}</dt>
+            <dd class="mono-label leading-relaxed text-[color:var(--ink-soft)]">{f.a}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <p class="micro mt-10 text-[color:var(--ink-faint)]">
+      Non-financial by design: no prices, no market cap, no trading. See{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/about#sources">the About page</a> for every
+      data source and licence, or the open{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/api/snapshot">/api/snapshot</a> endpoint.
+    </p>
+  </main>
+</Layout>
