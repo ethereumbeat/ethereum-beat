@@ -105,6 +105,27 @@ function SourceCredit({ snapshot, collapsed = false }: { snapshot: Snapshot | nu
   );
 }
 
+/**
+ * Contact surface (spec §24 / pass 16): a plain underlined mailto sitting next
+ * to the source-registry credit. Label in lowercase grotesk, address in the
+ * pixel display face (Departure) per the brief. Departure ships a single weight,
+ * so legibility comes from a size lift + full ink (not bolding) — the footer
+ * micro text is exactly what dilutes first on Linux Chromium.
+ */
+function ContactCredit() {
+  return (
+    <span className="pointer-events-auto inline-flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="micro font-grotesk lowercase font-bold text-[color:var(--ink)]">contact</span>
+      <a
+        href="mailto:beat@ethereumbeat.org"
+        className="contact-addr text-[11px] leading-none text-[color:var(--ink)] hover:text-[color:var(--accent)]"
+      >
+        beat@ethereumbeat.org
+      </a>
+    </span>
+  );
+}
+
 export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) {
   const refs = useRef<Record<string, HTMLSpanElement | null>>({});
   const [rpcDead, setRpcDead] = useState(false);
@@ -278,20 +299,18 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
 
       {/* tier-3 strip sits just above the command bar */}
       <div className="fixed inset-x-0 z-20" style={{ bottom: 'calc(34px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="hairline-t hidden items-center justify-center gap-8 bg-[color:var(--paper)] px-6 py-2 lg:flex">
+        {/* Contact lives inline in this row (pass 16). The row is width-tight,
+            and the contact plus the full telemetry set overflowed a centred
+            `justify-center` strip, clipping the leftmost ticker off-screen at
+            every desktop width. To keep the contact inline without clipping,
+            the lower-priority live tickers (BURNED, HASH) and the expanded
+            source list are dropped here; the source credit stays in its
+            collapsed `DATA · N OPEN SOURCES` form. (BURNED/HASH have no other
+            desktop home; accepted trade-off to keep a single footer row.) */}
+        <div className="hairline-t hidden items-center justify-center gap-4 bg-[color:var(--paper)] px-6 py-2 lg:flex">
           {tier3}
-          {!rpcDead && <Item label="BURNED" id="burned" width={10} refs={refs} onOpen={setOpenId} />}
-          {!rpcDead && (
-            <span className="hidden xl:inline-flex">
-              <Item label="HASH" id="hash" width={13} refs={refs} onOpen={setOpenId} />
-            </span>
-          )}
-          <span className="hidden 2xl:inline">
-            <SourceCredit snapshot={snapshot} />
-          </span>
-          <span className="2xl:hidden">
-            <SourceCredit snapshot={snapshot} collapsed />
-          </span>
+          <SourceCredit snapshot={snapshot} collapsed />
+          <ContactCredit />
         </div>
         <div className="hairline-t lg:hidden">
           <div
@@ -305,6 +324,7 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
             <Item label="STAKED" id="staked-m" width={16} refs={refs} onOpen={setOpenId} />
             <Item label="TVS" id="tvs-m" width={7} refs={refs} onOpen={setOpenId} />
             <SourceCredit snapshot={snapshot} collapsed />
+            <ContactCredit />
           </div>
         </div>
       </div>

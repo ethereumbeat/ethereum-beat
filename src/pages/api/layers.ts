@@ -24,7 +24,7 @@ interface GtpRow {
 
 export const GET: APIRoute = (ctx) =>
   edgeCached(ctx, async () => {
-    const ua = { 'user-agent': 'ethereum-beat/0.1 (+https://github.com/nloureiro/ethereum-beat)' };
+    const ua = { 'user-agent': 'ethereum-beat/0.1 (+https://github.com/ethereumbeat/ethereum-beat)' };
     const [fundamentals, master] = await Promise.all([
       fetch('https://api.growthepie.com/v1/fundamentals.json', { headers: ua }).then(
         (r) => r.json() as Promise<GtpRow[]>,

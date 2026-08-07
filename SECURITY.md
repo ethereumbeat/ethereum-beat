@@ -1,13 +1,35 @@
 # Security Policy
 
+## Scope
+
+This policy covers **the Ethereum Beat website (ethereumbeat.org) and its data
+collector** — the Astro/Cloudflare Worker, the API routes, the daily collector,
+and the build/deploy pipeline in this repository.
+
+It does **not** cover the Ethereum protocol itself, nor the third-party data
+sources the site displays. Findings in an upstream source — **growthepie,
+ethernodes, beaconcha.in, PublicNode, Blobscan, DefiLlama** — belong to that
+source; please report them upstream, not here. Any future onchain components
+will ship with their own audited disclosure policy.
+
+Ethereum Beat is a read-only public instrument: it has **no user accounts, no
+personal data (PII), and no per-node coordinates** (node geography is
+country-level aggregate only). The most relevant classes of issue are therefore:
+
+- exposure of any secret, key, or credential in the codebase, build, or deployment
+- data-integrity problems (a source parser that could be manipulated into displaying false network data)
+- cross-site scripting or injection via any rendered field
+- issues in the public API (`/api/*`) such as cache poisoning or resource exhaustion
+- supply-chain concerns in dependencies
+
 ## Reporting a vulnerability
 
 Please do **not** open a public issue for security problems.
 
-Report vulnerabilities privately via either:
+Report privately via either:
 
 - **GitHub Security Advisories** — the "Report a vulnerability" button under this repository's **Security** tab (preferred), or
-- **Email** — **security@ethereumbeat.org**
+- **Email** — **beat+security@ethereumbeat.org**
 
 Please include, as far as you can:
 
@@ -20,19 +42,7 @@ Please include, as far as you can:
 
 - We aim to acknowledge a report within **72 hours**.
 - We will keep you updated as we investigate and work on a fix.
-- Once resolved, we are happy to credit you in the advisory unless you prefer to remain anonymous.
-
-## Scope
-
-Ethereum Beat is a read-only public instrument. It holds no user accounts, no user funds, and no private user data. The most relevant classes of issue are therefore:
-
-- exposure of any secret, key, or credential in the codebase, build, or deployment
-- data-integrity problems (a source parser that could be manipulated into displaying false network data)
-- cross-site scripting or injection via any rendered field
-- issues in the public API (`/api/*`) such as cache poisoning or resource exhaustion
-- supply-chain concerns in dependencies
-
-Out of scope: the third-party data sources themselves (report those to the source), and any future onchain components, which will carry their own audited disclosure policy when they ship.
+- There is **no bug bounty** — this is unpaid ecosystem work. Once resolved, we are happy to credit you in the advisory unless you prefer to remain anonymous.
 
 ## Secrets
 

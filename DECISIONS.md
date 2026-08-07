@@ -1,5 +1,7 @@
 # DECISIONS
 
+> **Numbering:** section numbers (`## N.`) are file-local; the **Pass** number in each heading is the cross-file key that aligns SPEC and DECISIONS. Do not renumber existing sections.
+
 Running log of choices made where the spec left options open, plus anything
 punted and why. Newest entries at the bottom of each section.
 
@@ -699,7 +701,7 @@ uptime framed as mission not property (pass 13c) — no five-property or
 - **`.github/`**: `ISSUE_TEMPLATE/bug_report.md` (route/theme/viewport/reduced-
   motion fields), `ISSUE_TEMPLATE/metric_request.md` (CROPS category picker +
   source/licence), `ISSUE_TEMPLATE/config.yml` (blank issues off; security →
-  `mailto:security@ethereumbeat.org` per SECURITY.md, not a public issue),
+  the private reporting address in SECURITY.md, not a public issue),
   `pull_request_template.md` (checklist mirrors the CONTRIBUTING quality
   gates: build, both audits, both themes, reduced motion, type rule),
   `profile/avatar.svg` (for later org use).
@@ -1564,3 +1566,132 @@ attribution). This pass adds only the genuine gaps, without touching the design.
 - **QA:** `npm run build` clean, `npm run check` 0 errors, audit-meta 32 routes,
   audit-csp green (beacon nonced), audit-contrast 0/7 themes (home SSR summary
   sampled, passes). No design language changed; no new dependencies.
+
+## 25. Pass 16 — project contact surfaces (2026-08-04)
+
+Added the project's public contact + security-reporting surfaces. Spec §24 (this
+is Pass 16 — "personality" was Pass 15, DECISIONS §24; the numbered pass takes
+the next SPEC section number, 24, and the next DECISIONS section number, 25).
+
+### Single-mailbox contact scheme (why two published addresses)
+
+- **One real mailbox, one Cloudflare Email Routing rule.** Mail is live on
+  ethereumbeat.org with a single routing rule for `beat@` plus subaddressing
+  enabled, so **`beat+security@ethereumbeat.org` is a subaddress of the same
+  box** — no second mailbox, no second rule to maintain.
+- **The two published addresses differ on purpose; they are NOT normalised to
+  one.** Security reporting (SECURITY.md + security.txt) publishes the
+  `beat+security@` subaddress so security mail is self-labelling and
+  filterable/routable on its own — and it matches the RFC 9116 convention of a
+  dedicated security `Contact` — while still landing in the one mailbox. General
+  / human contact (footer + /about) publishes the plain `beat@`, because a
+  subaddress reads as odd for "just say hello". Same inbox, two front doors.
+- **Every other address bounces and is swept out.** Any other local-part, and
+  any non-onboarded zone, do not route. The pre-existing `SECURITY.md` and
+  `.github/ISSUE_TEMPLATE/config.yml` both pointed at a bouncing plain-security
+  address; both moved to `beat+security@`. Pass 16 item 0 then swept the whole
+  repo — the CODE_OF_CONDUCT enforcement address and every doc mention of a
+  bouncing local-part were removed, so the only addresses surviving anywhere are
+  `beat@ethereumbeat.org` and `beat+security@ethereumbeat.org`.
+
+### security.txt — endpoint over static file (a flagged deviation)
+
+- **The spec preferred `public/.well-known/security.txt` if publicDir copies
+  dot-directories; it does** — verified empirically with a probe: a build copied
+  `public/.well-known/probe.txt` to `dist/.well-known/probe.txt`, served as
+  `text/plain`. So the static-file branch was genuinely available.
+- **Chose the Astro endpoint (`src/pages/.well-known/security.txt.ts`) anyway**,
+  because the static asset cannot carry a non-hardcoded, self-refreshing
+  `Expires` without an added prebuild generator writing a git-ignored artifact
+  into a source dir. The endpoint meets every constraint in one committed,
+  reviewable file: exact route `/.well-known/security.txt` (verified it
+  compiles + serves), `text/plain`, and a canonical-host-aware `Canonical` via
+  `siteOrigin(env)`.
+- **`Expires` is computed per request (`Date.now()` + 350 days), not at build
+  time.** The first cut of this endpoint baked `Expires` from a `__BUILD_TIME__`
+  Vite `define` at build — but that lets the file *silently expire* if the
+  project sits un-deployed for a year (the stamp is frozen at the last build).
+  Request-time computation makes staleness impossible: every response emits
+  now + 350 days, always well under RFC 9116's one-year ceiling, with no deploy
+  cadence dependency. The endpoint stays SSR (`prerender = false`) so `Date.now()`
+  runs per request; `Cache-Control: public, max-age=86400` caps reuse of any one
+  computed value at a day (Expires drifts by at most 24h, still ~349 days out).
+  The `__BUILD_TIME__` define was removed from astro.config. A `deploy.yml` smoke
+  test (item 3) now asserts the served `Expires` parses >30 days out.
+- **No audit/gate impact.** security.txt is `text/plain` and absent from the
+  sitemap, so audit-meta (sitemap-driven) and audit-csp (HTML-route list) don't
+  touch it; the Worker only stamps CSP/headers on `text/html`, so it passes
+  through untouched.
+- **Repo URL unified to the real remote (item 2).** security.txt's `Policy` and
+  the /about `SOURCE → GITHUB` link previously disagreed — Policy already named
+  `github.com/ethereumbeat/ethereum-beat` while /about (and both collector
+  user-agents) still carried the stale `nloureiro/…` owner. All five repo URLs
+  in the tree (Policy, /about link, README clone, `worker/sources/types.ts` +
+  `src/pages/api/layers.ts` user-agents) now point at
+  `github.com/ethereumbeat/ethereum-beat`. package.json has no `repository`
+  field, so nothing there to reconcile (left as-is; not a `nloureiro`
+  occurrence).
+
+### Footer contact line (spec item 3)
+
+- **Inline next to the source-registry credit, not a new row.** A `ContactCredit`
+  sits beside `SourceCredit` in the `LiveTickers` bottom strip (desktop + mobile
+  variants); the strip's existing `hairline-t` **is** the "1px rule above matching
+  the existing footer divider". Kept it in-row (no extra sub-row) so the strict
+  home `100dvh` no-scroll lock is undisturbed. It rides `MarginFrame`, so it
+  renders on every channel, not just BEAT.
+- **Label grotesk lowercase, address in the pixel display voice** (`var(--font-num)`
+  — Departure in the default themes, each theme's display face otherwise). This
+  is a deliberate task-directed exception to the standing type rule (addresses
+  are labels, not "data") — the brief explicitly asked for Departure on the
+  address. Plain underlined `mailto:` (no icon, no button): default link styling
+  is underlined, so simply omitting `!no-underline` gives it.
+- **Departure Mono design size = 11px** (550 UPM on a 50-unit pixel grid → 11
+  device-pixels per em; confirmed by extracting the woff2 — GCD of all 50,940
+  outline coordinates is exactly 50, and ascent/descent/cap/x-height are all
+  multiples of 50). The address renders pixel-crisp at integer multiples of 11px.
+- **Size ended at 11px inline, after 22px broke the layout (a PR-review saga).**
+  Item 4 asked to raise the off-grid 12px to the next multiple, 22px (2×11). 22px
+  passed the *contrast* audit locally but **overflowed the `justify-center`
+  footer telemetry row** — already over-full (the expanded source list alone is
+  ~700px) — pushing the leftmost STAKED ticker off-screen at every desktop width.
+  CI's Linux Chromium then sampled the clipped STAKED sliver in SWISS as grey 170
+  → 2.32:1 → **verify failed**. Local macOS sampled the same sliver darker and
+  passed; the lesson (relearned) is that the macOS audit misses CI-Linux edges —
+  the `--strict` proxy, and *reading its report*, catch them. Even the original
+  12px contact overflowed (~174px); the row could not hold the contact inline at
+  any size alongside the full telemetry set.
+- **Fix: keep the contact inline, drop lower-priority items, 11px with a SKETCH
+  font fallback.** BURNED and HASH (no other desktop home) and the expanded
+  source list were dropped from the desktop footer row; the source credit stays
+  collapsed (`DATA · N OPEN SOURCES`) and the row gap tightened `gap-8 → gap-4`.
+  Measured fit: zero overflow/clip across all seven themes at 1280/1440/1536/1920
+  (worst-theme spare ~40px). Size is **11px** — an exact 1× multiple of the 11px
+  design size, so still pixel-crisp; it does not "raise" above 12px, an accepted
+  trade to keep one inline footer row (22px would need its own row; the
+  maintainer chose inline). At 11px the address sampled 5.16 in SKETCH — above
+  the 4.5 gate but under the project's +0.9 CI-safety bar (5.4), because SKETCH's
+  `--font-num` is thin Cutive Mono. So in SKETCH only, the address
+  (`.contact-addr`) falls back to legible Martian (`--font-mono`), the same
+  convention SKETCH uses for all small text (pass-15). Re-audited: 0 failures
+  across all seven themes at the 4.5 gate, and the address clears +0.9 in SKETCH
+  (0 rows). Threshold never lowered. Dropped from desktop: BURNED, HASH, and the
+  expanded source list (accepted telemetry trade-off for a single inline row).
+
+### /about contact block (spec item 4)
+
+- **A new panel 06 in the horizontal section rhythm** ("06 · contact · reach the
+  maintainers"), after colophon. Plain `beat@` set in the about page's **grotesk**
+  headline voice (not the pixel face) — /about copy is uniformly grotesk, so the
+  address matches the page rather than the footer's machine-address treatment.
+  One line notes mail is forwarded via Cloudflare Email Routing and is therefore
+  not end-to-end encrypted.
+
+### Constraints + QA
+
+- No new dependencies; `metric_meta` and the source registry untouched.
+- `npm run build` clean, `npm run check` 0 errors. audit-meta green (31 routes),
+  audit-csp green (9 routes), audit-contrast **0 failures across all seven
+  themes** (+ 0 at the +0.9 CI-safety margin on the thin themes). security.txt
+  verified serving `text/plain` with a build-time `Expires`.
+- Committed and pushed per item.

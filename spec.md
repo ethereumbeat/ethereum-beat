@@ -1,5 +1,7 @@
 # ETHEREUM BEAT — one-shot build spec for Claude Code
 
+> **Numbering:** section numbers (`## N.`) are file-local; the **Pass** number in each heading is the cross-file key that aligns SPEC and DECISIONS. Do not renumber existing sections.
+
 Build a complete, deployable website called **Ethereum Beat** (working domain: `ethereumbeat.xyz`, configurable). It tracks the pulse of Ethereum: a centre ETH glyph beats like a heart, and each beat surfaces one KPI. Simple, beautiful, non-financial in tone, aligned with the Ethereum Foundation's framing of the protocol (CROPS properties and sovereignty measurements) rather than price and speculation.
 
 Build the whole thing in one shot. Do not ask questions. Where a decision is ambiguous, pick the option that is simpler, cheaper, and closer to this spec. Verify every external endpoint with `curl` before wiring it in; if an endpoint is dead or has changed shape, degrade gracefully (see Resilience rules) and note it in the README.
@@ -1011,3 +1013,46 @@ the channel identity.
    Both themes, 5 viewports (numeral + two-line block stack gracefully on
    mobile, no bad wraps, CR digraph and other labels unaffected), contrast
    + meta audits green, DECISIONS.md lists every converted location.
+
+## 24. Pass 16 — project contact surfaces
+
+Add the project's public contact + security-reporting surfaces. Mail is live via
+Cloudflare Email Routing on ethereumbeat.org: one routing rule (beat@) plus
+subaddressing enabled. (Numbering: this is Pass 16 — Pass 15, "personality",
+was executed and recorded in DECISIONS §24 without its own SPEC section — and it
+takes the next SPEC section number, 24.)
+
+ADDRESSES — a deliberate single-mailbox split; do NOT normalise to one address:
+- SECURITY.md + security.txt use  beat+security@ethereumbeat.org
+- footer + /about use plain        beat@ethereumbeat.org
+No other address exists or routes. Never publish or reference any other
+local-part, or any address on a zone that is not onboarded — they bounce.
+
+1. SECURITY.md (repo root). Scope: this site and its collector, not the Ethereum
+   protocol. Report to beat+security@ethereumbeat.org; 72h acknowledgement
+   target; no bounty. Explicitly out of scope: findings in the upstream data
+   sources (growthepie, ethernodes, beaconcha.in, PublicNode, Blobscan,
+   DefiLlama) — those go upstream. Note the site handles no user accounts, no
+   PII, and no per-node coordinates.
+
+2. RFC 9116 security.txt at /.well-known/security.txt, Content-Type text/plain.
+   Fields: Contact (beat+security@ethereumbeat.org), Expires, Preferred-Languages,
+   Canonical, Policy (SECURITY.md blob URL on GitHub). Expires must be a real
+   ISO-8601 timestamp under one year out — generated at build time from the build
+   date + 350 days, never hardcoded. Verify the emitted route is exactly
+   /.well-known/security.txt.
+
+3. Footer: a contact line next to the existing source-registry attribution.
+   Lowercase grotesk label, the pixel display face (Departure) for the address,
+   a 1px rule above matching the existing footer divider treatment. No mailto
+   icon, no button — a plain underlined link.
+
+4. /about: a short CONTACT block in the existing section rhythm — plain beat@,
+   plus one line noting mail is forwarded via Cloudflare Email Routing and is
+   therefore not end-to-end encrypted.
+
+Constraints: no new dependencies; do not touch metric_meta or the source
+registry. Run audit-contrast, audit-meta and audit-csp locally before pushing —
+the small footer text is the first thing to fail contrast on Linux Chromium; fix
+by bolding or lifting size, never by loosening the threshold. Clean build. Commit
+and push per completed item. Log decisions in DECISIONS.md.
