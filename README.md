@@ -140,6 +140,22 @@ The site runs fully keyless. Optional keys unlock extra metrics:
 Production: `wrangler secret put BEACONCHAIN_API_KEY`.
 Local: copy `.dev.vars.example` to `.dev.vars` (gitignored) and fill it in.
 
+### Daily broadcast (optional)
+
+The daily cron also publishes a non-financial digest of the day's vitals. Each
+channel is independent and skips cleanly when its key is unset:
+
+| Secret | Enables |
+|---|---|
+| `NOSTR_NSEC` | Nostr — a signed kind-1 note (nsec or hex). `NOSTR_RELAYS` overrides the relay set |
+| `FARCASTER_FID` + `FARCASTER_SIGNER` | Farcaster — a cast via the direct hub path. `FARCASTER_HUB` sets a write-capable hub |
+
+There is no X API (no free tier as of Feb 2026): the post is written to
+`/broadcast/x-draft.json` for manual posting. In production these secrets are
+GitHub secrets, injected into `wrangler.ci.toml` at deploy time (never the
+committed config) — see `.github/workflows/deploy.yml`. Run `npm run
+test:broadcast` to check the signing and digest logic offline.
+
 ## Adding a metric
 
 1. **Metadata**: add a row in `db/meta.sql` (label, category, unit, one-line

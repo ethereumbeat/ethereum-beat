@@ -7,6 +7,7 @@
 // @ts-ignore — built by `astro build`, no type declarations
 import astro from '../dist/_worker.js/index.js';
 import { runCollector } from './collector.ts';
+import { runBroadcast } from './broadcast/index.ts';
 
 /**
  * Script CSP: a per-request nonce + 'strict-dynamic'.
@@ -96,6 +97,13 @@ export default {
     return type.includes('text/html') ? secureHtml(res) : res;
   },
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
-    ctx.waitUntil(runCollector(env));
+    // collect first, then broadcast off the fresh snapshot. Both are
+    // best-effort; the broadcast never blocks or fails the collector.
+    ctx.waitUntil(
+      runCollector(env)
+        .catch((err) => console.error('collector failed', err))
+        .then(() => runBroadcast(env))
+        .catch((err) => console.error('broadcast failed', err)),
+    );
   },
 } satisfies ExportedHandler<Env>;

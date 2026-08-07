@@ -7,3 +7,18 @@ BEACONCHAIN_API_KEY=
 # Reserved for optional metrics; currently unused
 DUNE_API_KEY=
 ETHERSCAN_API_KEY=
+
+# ── Daily broadcast (worker/broadcast). All optional: an absent key skips that
+#    channel, never throws. In production these are GitHub secrets injected into
+#    wrangler.ci.toml at deploy time (see .github/workflows/deploy.yml).
+# Nostr secret key — nsec1… or 64-char hex. Absent → Nostr skipped.
+NOSTR_NSEC=
+# Optional relay override (comma-separated wss://). Empty → a small free default set.
+NOSTR_RELAYS=
+# Farcaster account fid (numeric) + Ed25519 signer private key (hex). Both
+# required for Farcaster; absent → Farcaster skipped.
+FARCASTER_FID=
+FARCASTER_SIGNER=
+# Optional hub base URL for submitMessage. Empty → a public write hub default.
+# Must be a hub that accepts writes (many public hubs are read-only).
+FARCASTER_HUB=

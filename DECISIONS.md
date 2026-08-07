@@ -1739,3 +1739,62 @@ vitals into READMEs/sites — backlinks + spread, on-brand.
   audit-contrast 0/7 themes (badge routes aren't sampled surfaces; existing
   routes unchanged). No new runtime dependencies; the font subset was generated
   once with fonttools and committed as base64.
+
+## Broadcast — daily digest to Nostr + Farcaster, X draft (2026-08-07)
+
+The daily cron now publishes a non-financial protocol-health digest after the
+collector. Same fork-safe discipline as `send_email`: an absent key skips that
+channel and logs; nothing here can throw and break the collector (the scheduled
+handler chains `runCollector … .then(runBroadcast)` with a catch on each).
+
+- **Two new deps: `@noble/curves` + `@noble/hashes` (MIT, audited, zero
+  transitive deps beyond each other).** The task forbids paid *services*, not
+  libraries — and the signing genuinely can't be hand-rolled: Workers WebCrypto
+  has no secp256k1 (Nostr needs BIP-340 Schnorr) and no Blake3 (Farcaster's
+  message hash). These are the reference implementations used across Ethereum
+  tooling. bech32 (nsec decode) *is* hand-rolled (`worker/broadcast/bech32.ts`,
+  ~40 lines) to avoid a third dep; it validates the checksum (caught a
+  transcription typo in the test vector during development). Verified both libs
+  bundle and run in the workerd runtime, not just Node.
+- **Secrets go into `[vars]`, not `wrangler secret put`.** The task says "add
+  all new secrets to wrangler.ci.toml generation and VERIFY they survive it," so
+  they're injected under the existing `[vars]` table (TOML forbids a second
+  `[vars]`, so the set keys are inserted under the header via awk). This mirrors
+  the D1/KV id injection: values live only in the throwaway, gitignored
+  `wrangler.ci.toml`, never the public config. deploy.yml verifies each *set*
+  secret survived by grepping the key name only (never the value → nothing
+  secret in the run log). Trade-off: a `[vars]` value is visible in the
+  maintainer's own Cloudflare dashboard/deploy output; acceptable for a private
+  throwaway config, and it's what "survives ci.toml generation" is verifiable
+  against. Forks set nothing → identical config → channels skip.
+- **Farcaster via the DIRECT HUB path, no paid API.** Build the CastAdd
+  protobuf by hand (`protobuf.ts`, just varint + length-delimited), Blake3-hash
+  it, Ed25519-sign the hash, POST the bytes to `${FARCASTER_HUB}/v1/submitMessage`.
+  Preferred over Neynar/Warpcast hosted APIs (paid). `FARCASTER_HUB` is
+  configurable and defaults to a public write hub; **many public hubs are
+  read-only**, so the maintainer must point it at one that accepts writes (their
+  own or a free write-enabled hub) — noted in `.dev.vars.example` and the
+  farcaster.ts header. If only a paid API were available it would be skipped,
+  per the brief.
+- **X: no API.** No free X tier as of Feb 2026, so nothing calls X. The cron
+  writes the post text + OG link to KV, served at `/broadcast/x-draft.json`
+  (self-heals from the snapshot like `/api/snapshot`) for manual posting. A TODO
+  in `worker/broadcast/index.ts` marks where a `publishX()` slots in if the
+  maintainer opts into paid pay-per-use.
+- **Non-financial digest.** Vitals are chosen from a priority list that excludes
+  every usd metric (tvs, stables_supply, rwa_value); the signature line is
+  "protocol health, not price." Body budgeted to ≤280 chars (X) / ≤320 bytes
+  (Farcaster); the URL rides as an embed on Farcaster and in the text elsewhere.
+- **Once-per-UTC-day guard.** A `broadcast:last-date` KV marker stops an
+  accidental second cron/`__scheduled` run from double-posting; it's only set
+  once a channel actually had keys, so a keyless fork never latches. The X draft
+  is idempotent and refreshed every run regardless.
+- **Not in the sitemap.** `/broadcast/x-draft.json` is a machine endpoint like
+  `/api/*` — excluded from sitemap/OG/llms, so the meta audit doesn't touch it.
+- **Verified.** `scripts/test-broadcast.ts` (npm run test:broadcast): bech32
+  against the NIP-19 vector, Nostr event id + Schnorr verify, Farcaster protobuf
+  round-trip + Ed25519/Blake3 verify, digest non-financial + within budget.
+  End-to-end: keyless cron writes the draft and skips both socials; with keys +
+  dead endpoints, both sign in workerd and fail publish gracefully. Build +
+  check clean; meta/csp/contrast audits green; deploy secret injection simulated
+  and dry-run-validated.
