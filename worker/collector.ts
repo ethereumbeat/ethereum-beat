@@ -6,6 +6,7 @@ import { defillama } from './sources/defillama.ts';
 import { beaconchain } from './sources/beaconchain.ts';
 import { uptime } from './sources/uptime.ts';
 import { buildSnapshot, SNAPSHOT_KEY } from './snapshot.ts';
+import { maybeAlert, recordRun } from './alert.ts';
 
 const SOURCES: Source[] = [growthepie, beacon, ultrasound, defillama, beaconchain, uptime];
 
@@ -26,6 +27,7 @@ export async function upsertRows(db: D1Database, rows: Row[]): Promise<void> {
 }
 
 export async function runCollector(env: Env): Promise<CollectReport> {
+  const startedAt = new Date().toISOString();
   const report: CollectReport = { ok: [], failed: [], rows: 0 };
   const cutoff = new Date(Date.now() - COLLECT_WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10);
 
@@ -43,6 +45,12 @@ export async function runCollector(env: Env): Promise<CollectReport> {
 
   const snapshot = await buildSnapshot(env.DB);
   await env.SNAP.put(SNAPSHOT_KEY, JSON.stringify(snapshot));
+  const finishedAt = new Date().toISOString();
   console.log('collector run', JSON.stringify(report));
+
+  // one digest alert per failing run (de-duped 24h in D1), then the run record.
+  // both are best-effort and never throw, so alerting can't break collection.
+  const alerted = await maybeAlert(env, report, finishedAt);
+  await recordRun(env, report, startedAt, finishedAt, alerted);
   return report;
 }

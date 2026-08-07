@@ -23,6 +23,10 @@ export interface SnapshotMetric {
 export interface Snapshot {
   generated_at: string;
   metrics: SnapshotMetric[];
+  /** ISO time of the last successful collector run (added by /api/snapshot) */
+  finished_at?: string | null;
+  /** true when the last collection is older than the staleness threshold (26h) */
+  is_stale?: boolean;
 }
 
 // pass 13c: CROPS is four properties — CR · O · P · S. Heartbeat frames the

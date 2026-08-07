@@ -38,11 +38,34 @@ jobs:
         env:
           CF_D1_DATABASE_ID: ${{ secrets.CF_D1_DATABASE_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          # Verified Email Routing destination for collector failure alerts.
+          # Optional: unset → defaults to beat@ethereumbeat.org.
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
         run: |
           set -euo pipefail
           sed -e "s|REPLACE_WITH_YOUR_D1_DATABASE_ID|${CF_D1_DATABASE_ID}|" \
               -e "s|REPLACE_WITH_YOUR_KV_NAMESPACE_ID|${CF_KV_NAMESPACE_ID}|" \
               wrangler.toml > wrangler.ci.toml
+
+          # ── Email Routing send_email binding: injected ONLY here, never in the
+          #    committed public wrangler.toml. Forks therefore deploy without it
+          #    (env.SEND_EMAIL undefined → the collector logs + skips the alert,
+          #    never throws), and no fork's deploy fails Cloudflare's
+          #    destination_address verification for an address they don't own.
+          #    destination_address restricts sends to the maintainer's inbox. ──
+          alert_to="${ALERT_EMAIL_TO:-beat@ethereumbeat.org}"
+          cat >> wrangler.ci.toml <<EOF
+
+          [[send_email]]
+          name = "SEND_EMAIL"
+          destination_address = "${alert_to}"
+          EOF
+          # constraint check: send_email must actually be present in the deploy config
+          if ! grep -q 'name = "SEND_EMAIL"' wrangler.ci.toml; then
+            echo "::error::send_email binding missing from generated deploy config"
+            exit 1
+          fi
+          echo "send_email binding injected into wrangler.ci.toml (destination: ${alert_to})"
 
           # constraint check: the tracked file must NOT have been mutated
           if ! git diff --quiet -- wrangler.toml; then
