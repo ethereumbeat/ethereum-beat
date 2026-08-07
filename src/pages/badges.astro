@@ -1,0 +1,101 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteOrigin } from '../lib/site';
+import { BADGES } from '../lib/badge';
+
+export const prerender = false;
+
+const origin = siteOrigin(Astro.locals?.runtime?.env);
+const title = 'Ethereum Beat — BADGES · live vitals for your README';
+const description =
+  'Embeddable SVG badges with live Ethereum vitals — nodes, gas throughput, sync participation, finality and more. Drop one into a README or site; it links back to ethereumbeat.org. Values from the cached daily snapshot; non-financial.';
+
+const slugs = Object.keys(BADGES);
+const snippet = (slug: string, label: string) => {
+  const img = `${origin}/badge/${slug}.svg`;
+  const alt = `${label} — Ethereum Beat`;
+  return {
+    img,
+    md: `[![${alt}](${img})](${origin})`,
+    html: `<a href="${origin}"><img src="${img}" alt="${alt}" height="20"></a>`,
+  };
+};
+---
+
+<Layout title={title} description={description}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">B</div>
+
+  <main class="channel-body mx-auto max-w-3xl overflow-y-auto px-6 py-12" aria-label="Embeddable badges">
+    <p class="micro mb-2 flex items-center gap-2">
+      <span class="red-dot"></span>
+      <span>BADGES // LIVE VITALS FOR YOUR README</span>
+    </p>
+    <h1 class="mb-4 font-grotesk text-3xl font-extrabold leading-tight text-[color:var(--ink)] sm:text-4xl">
+      Embed a live<br />Ethereum vital
+    </h1>
+    <p class="mono-label mb-10 max-w-xl leading-relaxed text-[color:var(--ink-soft)]">
+      Shields-style SVG badges, updated from the cached daily snapshot (never a live query per view). Drop one
+      into a README or webpage — each links back here. Protocol health only, no prices.
+    </p>
+
+    <div class="flex flex-col gap-10">
+      {
+        slugs.map((slug) => {
+          const label = BADGES[slug].label;
+          const s = snippet(slug, label);
+          return (
+            <section class="hairline-t pt-6">
+              <div class="mb-4 flex items-center gap-4">
+                <img src={`/badge/${slug}.svg`} alt={`${label} badge preview`} height="20" />
+                <code class="micro text-[color:var(--ink-faint)]">/badge/{slug}.svg</code>
+              </div>
+              <div class="flex flex-col gap-3">
+                <div>
+                  <p class="micro mb-1 text-[color:var(--ink-faint)]">MARKDOWN</p>
+                  <div class="flex items-start gap-2">
+                    <code class="grow overflow-x-auto whitespace-pre rounded-sm border border-[color:var(--hairline)] bg-[color:var(--paper-raise)] px-3 py-2 text-[11px] text-[color:var(--ink)]">{s.md}</code>
+                    <button type="button" class="cmd-chip shrink-0" data-copy={s.md} aria-label={`Copy markdown for ${label}`}><span>COPY</span></button>
+                  </div>
+                </div>
+                <div>
+                  <p class="micro mb-1 text-[color:var(--ink-faint)]">HTML</p>
+                  <div class="flex items-start gap-2">
+                    <code class="grow overflow-x-auto whitespace-pre rounded-sm border border-[color:var(--hairline)] bg-[color:var(--paper-raise)] px-3 py-2 text-[11px] text-[color:var(--ink)]">{s.html}</code>
+                    <button type="button" class="cmd-chip shrink-0" data-copy={s.html} aria-label={`Copy HTML for ${label}`}><span>COPY</span></button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        })
+      }
+    </div>
+
+    <p class="micro mt-12 text-[color:var(--ink-faint)]">
+      Badges link back to <a class="hover:font-bold text-[color:var(--ink)]" href="/">ethereumbeat.org</a>. Data from open sources, credited on{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/about#sources">the About page</a> — see also the{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/methodology">methodology</a> and the open{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/api/snapshot">/api/snapshot</a> endpoint. Non-financial: no prices, no market data.
+    </p>
+  </main>
+
+  <script>
+    // copy-to-clipboard for the snippet buttons; the Worker nonces this script.
+    document.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest('[data-copy]') as HTMLElement | null;
+      if (!btn) return;
+      const text = btn.dataset.copy ?? '';
+      try {
+        await navigator.clipboard.writeText(text);
+        const span = btn.querySelector('span');
+        if (span) {
+          const prev = span.textContent;
+          span.textContent = 'COPIED';
+          setTimeout(() => (span.textContent = prev), 1200);
+        }
+      } catch {
+        /* clipboard blocked — the code is selectable as a fallback */
+      }
+    });
+  </script>
+</Layout>

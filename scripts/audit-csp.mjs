@@ -28,6 +28,7 @@ const ROUTES = [
   '/finality',
   '/layers',
   '/about',
+  '/badges', // has its own inline copy-to-clipboard script — must stay nonced
   '/pulse/txcount_combined',
   '/pulse/txcount', // 404 page — still HTML, still under the CSP
 ];
