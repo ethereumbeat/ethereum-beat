@@ -57,7 +57,15 @@ const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={ogAlt} />
-    {jsonLdBlocks.map((block) => <script type="application/ld+json" set:html={JSON.stringify(block)} />)}
+    {
+      jsonLdBlocks.map((block) => (
+        <script
+          type="application/ld+json"
+          id={(block as { '@type'?: string })['@type'] === 'Dataset' ? 'pulse-dataset' : undefined}
+          set:html={JSON.stringify(block)}
+        />
+      ))
+    }
     <link rel="preload" href="/fonts/departure-mono.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
