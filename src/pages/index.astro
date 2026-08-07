@@ -2,12 +2,58 @@
 import Layout from '../layouts/Layout.astro';
 import BeatStage from '../components/BeatStage';
 import { routeMeta } from '../lib/site';
+import { CATEGORY_LABELS } from '../lib/metrics';
+import { kpiValue } from '../lib/format';
+import { buildSnapshot, SNAPSHOT_KEY, type Snapshot } from '../../worker/snapshot.ts';
 
 export const prerender = false;
 const rm = routeMeta('/');
+
+// SSR the snapshot so the core network-health facts render server-side: the
+// home island is client-hydrated, so without this the initial HTML has the meta
+// but none of the actual values. This block is a genuine accessible text
+// alternative to the visual dial (screen readers) AND the crawlable surface for
+// search / answer engines / LLMs — the same data shown visually, as text.
+const { DB, SNAP } = Astro.locals.runtime.env;
+let snapshot: Snapshot | null = null;
+try {
+  const raw = await SNAP.get(SNAPSHOT_KEY);
+  snapshot = raw ? (JSON.parse(raw) as Snapshot) : await buildSnapshot(DB);
+} catch {
+  snapshot = null;
+}
+const featured = (snapshot?.metrics ?? [])
+  .filter((m) => m.featured)
+  .sort((a, b) => a.sort - b.sort);
+const asOf = snapshot?.generated_at?.slice(0, 10) ?? null;
 ---
 
 <Layout title={rm.title} description={rm.description}>
   <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">1</div>
+
+  {/* Server-rendered accessible summary of the live instrument: the core facts
+      in the initial HTML for screen readers and for search / answer engines. */}
+  <section class="sr-only" aria-label="Ethereum network health summary">
+    <h1>Ethereum network health — the live pulse of Ethereum</h1>
+    <p>{rm.description}</p>
+    {
+      featured.length > 0 && (
+        <ul>
+          {featured.map((m) => {
+            const v = kpiValue(m.latest.value, m.unit);
+            return (
+              <li>
+                <strong>{m.label}</strong>: {v.value}
+                {v.suffix ? ` ${v.suffix}` : ''} — {m.description}{' '}
+                <span>({CATEGORY_LABELS[m.category] ?? m.category})</span>
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+    {asOf && <p>Latest values as of {asOf}. Protocol health only — no prices, no market data.</p>}
+  </section>
+
   <BeatStage client:load />
 </Layout>
