@@ -172,6 +172,34 @@ const aboutJsonLd = {
         Mail is forwarded via Cloudflare Email Routing, so it is not end-to-end encrypted.
       </p>
     </section>
+
+    <!-- 7 CONTRIBUTE -->
+    <section id="contribute" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
+      <SectionHeader index="07" title="contribute" subtitle="it’s built to be forked" accent />
+      <h2 class="max-w-3xl font-grotesk font-extrabold leading-tight" style="font-size: clamp(1.6rem, 4vw, 3.4rem)">
+        HELP IT<br />KEEP BEATING
+      </h2>
+      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
+        Adding a metric is one data module and one row of metadata. Bugs, ideas
+        and new CROPS vitals are all welcome — no financial framing, keyless sources.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="https://github.com/ethereumbeat/ethereum-beat/issues/new?template=metric_request.md" class="cmd-chip !no-underline"><span>PROPOSE A METRIC</span></a>
+        <a href="https://github.com/ethereumbeat/ethereum-beat/issues/new/choose" class="cmd-chip !no-underline"><span>OPEN AN ISSUE</span></a>
+        <a href="https://github.com/ethereumbeat/ethereum-beat/discussions" class="cmd-chip !no-underline"><span>DISCUSS ON GITHUB</span></a>
+      </div>
+      <ExplainChip
+        client:load
+        title="How to contribute"
+        text={[
+          'Propose a metric via the guided issue template — it walks through the metric_meta workflow: a row of metadata, a source module with a try/catched fetchDaily(), and a seed. Every number must demonstrate one of the four CROPS properties, with no price or market framing.',
+          'Prefer to just report something? Open an issue for a bug or a feature, or start a thread in Discussions if you want to think out loud first. CONTRIBUTING.md and the roadmap in the repo cover the quality gates and what’s next.',
+        ]}
+      />
+      <p class="micro text-[color:var(--ink-faint)]">
+        <a href="/support" class="!no-underline hover:font-bold text-[color:var(--ink-soft)]">OR HELP KEEP IT RUNNING → /SUPPORT</a>
+      </p>
+    </section>
   </main>
 
   <script>

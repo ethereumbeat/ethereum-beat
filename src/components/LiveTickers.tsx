@@ -76,13 +76,37 @@ function Item({
  * Dynamic source credit: built from metric_meta's source registry plus the
  * live-layer endpoints, so new sources appear without hand-editing.
  */
-function SourceCredit({ snapshot, collapsed = false }: { snapshot: Snapshot | null; collapsed?: boolean }) {
+// `contribute` appends a CONTRIBUTE → /about link. It's opt-in per call site
+// because the fixed desktop strip below 2xl is width-critical: adding to it
+// pushes STAKED into an overlap at 1440 (a contrast regression the gate
+// catches). Only the roomy 2xl full form and the horizontally-scrolling
+// mobile strip take it.
+function SourceCredit({
+  snapshot,
+  collapsed = false,
+  contribute = false,
+}: {
+  snapshot: Snapshot | null;
+  collapsed?: boolean;
+  contribute?: boolean;
+}) {
   const sources = creditSources(snapshot);
+  const contributeLink = contribute && (
+    <>
+      {' · '}
+      <a href="/about#contribute" className="!no-underline hover:font-bold text-[color:var(--ink)]">
+        CONTRIBUTE
+      </a>
+    </>
+  );
   if (collapsed)
     return (
-      <a href="/about#sources" className="micro pointer-events-auto whitespace-nowrap !no-underline text-[color:var(--ink-faint)] hover:font-bold text-[color:var(--ink)]">
-        DATA · {sources.length} OPEN SOURCES
-      </a>
+      <span className="micro pointer-events-auto whitespace-nowrap text-[color:var(--ink-faint)]">
+        <a href="/about#sources" className="!no-underline hover:font-bold text-[color:var(--ink)]">
+          DATA · {sources.length} OPEN SOURCES
+        </a>
+        {contributeLink}
+      </span>
     );
   return (
     <span className="micro pointer-events-auto whitespace-nowrap text-[color:var(--ink-faint)]">
@@ -101,6 +125,7 @@ function SourceCredit({ snapshot, collapsed = false }: { snapshot: Snapshot | nu
       <a href="/about#sources" className="!no-underline hover:font-bold text-[color:var(--ink)]">
         OPEN ENDPOINTS
       </a>
+      {contributeLink}
     </span>
   );
 }
@@ -309,6 +334,10 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
             desktop home; accepted trade-off to keep a single footer row.) */}
         <div className="hairline-t hidden items-center justify-center gap-4 bg-[color:var(--paper)] px-6 py-2 lg:flex">
           {tier3}
+          {/* merge: pass-16's width-tight single row stays as-is on desktop
+              (adding #23's CONTRIBUTE here clips STAKED/CONTACT off a centred
+              row at 1024px). The CONTRIBUTE affordance rides the scrolling
+              mobile strip below + the /about contribute panel instead. */}
           <SourceCredit snapshot={snapshot} collapsed />
           <ContactCredit />
         </div>
@@ -323,7 +352,7 @@ export default function LiveTickers({ engine, snapshot, reducedMotion }: Props) 
             <Item label="UTC" id="utc-m" width={8} refs={refs} onOpen={setOpenId} />
             <Item label="STAKED" id="staked-m" width={16} refs={refs} onOpen={setOpenId} />
             <Item label="TVS" id="tvs-m" width={7} refs={refs} onOpen={setOpenId} />
-            <SourceCredit snapshot={snapshot} collapsed />
+            <SourceCredit snapshot={snapshot} collapsed contribute />
             <ContactCredit />
           </div>
         </div>

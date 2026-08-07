@@ -1,0 +1,17 @@
+# Code owners — auto-requested for review on matching paths.
+# https://docs.github.com/articles/about-code-owners
+#
+# Default: everything is owned by the maintainer until more owners join.
+# Adding yourself here (open a PR) is how you volunteer to own an area.
+
+*                           @nloureiro
+
+# Contracts that are easy to break without noticing — flagged for extra care.
+/worker/                    @nloureiro
+/worker/sources/            @nloureiro
+/db/                        @nloureiro
+/scripts/audit-contrast.mjs @nloureiro
+/scripts/audit-meta.mjs     @nloureiro
+/scripts/audit-csp.mjs      @nloureiro
+/SPEC.md                    @nloureiro
+/DECISIONS.md               @nloureiro

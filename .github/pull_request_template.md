@@ -15,6 +15,7 @@ Closes #
 - [ ] `npm run build` is clean
 - [ ] `node scripts/audit-contrast.mjs` green (WCAG contrast, all routes / themes / viewports)
 - [ ] `node scripts/audit-meta.mjs` green (per-route title / description / canonical / OG / JSON-LD)
+- [ ] `node scripts/audit-csp.mjs` green (every route's CSP allows exactly what it uses, nothing more)
 - [ ] Works in **both** themes (INK and BONE)
 - [ ] Respects `prefers-reduced-motion` (no essential info behind animation)
 - [ ] Works at mobile **and** desktop viewports
