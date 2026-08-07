@@ -55,6 +55,7 @@ export function buildLlmsText(origin: string, rows: MetaRow[], full: boolean): s
     `- \`GET ${origin}/api/snapshot\` — the full daily snapshot: every stored metric with latest value, 30-point sparkline and d/w/m/q/y deltas. Shape: \`{ generated_at, metrics: [{ metric_key, label, category, unit, description, source_name, source_url, featured, agg_mode, latest: { date, value }, spark: number[], deltas: { d, w, m, q, y } }] }\`.`,
     `- \`GET ${origin}/api/metric/{key}?range=d|w|m|q|y\` — one metric's series and metadata. Shape: \`{ meta, range, points: [{ date, value }] }\`. Ranges: d = last 30 days, w = 26 weeks, m = 24 months, q = 12 quarters, y = full history by year.`,
     `- \`GET ${origin}/api/layers\` — the per-chain activity board behind the LAYERS channel.`,
+    `- \`GET ${origin}/api/roadmap\` — the ROADMAP channel: upcoming Ethereum network upgrades in plain language, each with target window (dates slip — see \`date_locked\`), included/candidate EIPs and the CROPS properties advanced. Non-financial; machine fields from Forkcast, summaries editorial.`,
     `- \`GET ${origin}/api.json\` — a machine-readable manifest of these endpoints (params, shapes, cache, licence), generated from the metric registry.`,
     '',
     'All responses set `access-control-allow-origin: *`.',

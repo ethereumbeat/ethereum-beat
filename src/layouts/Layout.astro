@@ -150,7 +150,7 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
           <tbody>
             {
               [
-                ['1…6', 'channels: beat · nodes · blobs · flow · finality · layers'],
+                ['1…7', 'channels: beat · nodes · blobs · flow · finality · layers · roadmap'],
                 ['A', 'channel: about'],
                 ['← →', 'previous / next metric (beat · detail)'],
                 ['ENTER', 'open metric detail (beat)'],
@@ -178,12 +178,13 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
       import { navigate } from 'astro:transitions/client';
 
       // ── persistent controller: runs once, survives every channel switch ──
-      const CHANNELS = { 1: '/', 2: '/nodes', 3: '/blobs', 4: '/flow', 5: '/finality', 6: '/layers', a: '/about' };
+      const CHANNELS = { 1: '/', 2: '/nodes', 3: '/blobs', 4: '/flow', 5: '/finality', 6: '/layers', 7: '/roadmap', a: '/about' };
       const CHANNEL_NAMES: Record<string, string> = {
         '/': 'CH 01 — BEAT', '/nodes': 'CH 02 — NODES', '/blobs': 'CH 03 — BLOBS',
-        '/flow': 'CH 04 — FLOW', '/finality': 'CH 05 — FINALITY', '/layers': 'CH 06 — LAYERS', '/about': 'CH A — ABOUT',
+        '/flow': 'CH 04 — FLOW', '/finality': 'CH 05 — FINALITY', '/layers': 'CH 06 — LAYERS',
+        '/roadmap': 'CH 07 — ROADMAP', '/about': 'CH A — ABOUT',
       };
-      const CYCLE = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers'];
+      const CYCLE = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/roadmap'];
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       const here = (href: string) => (href === '/' ? location.pathname === '/' : location.pathname.startsWith(href));

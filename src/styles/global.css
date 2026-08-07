@@ -1687,3 +1687,215 @@ html[data-dock='left'] .channel-dock {
   border: 1px solid var(--hairline);
   border-radius: 2px;
 }
+
+/* ── ROADMAP channel (CH 07): forward-looking observatory timeline ──────────
+   1px rail, Departure Mono for EIP/year tokens, lowercase grotesk for human
+   summaries, red accent, procedural scan motion. Contrast rule holds: all
+   text is full --ink or --ink-soft; colour lives on non-text markers. */
+.roadmap-timeline {
+  --rail: 4rem;
+  position: relative;
+  margin: 0;
+  padding: 0.25rem 0 0;
+  list-style: none;
+}
+/* the continuous rail */
+.roadmap-timeline::before {
+  content: '';
+  position: absolute;
+  left: var(--rail);
+  top: 0.6rem;
+  bottom: 1.5rem;
+  width: 1px;
+  background: var(--hairline);
+}
+.roadmap-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: calc(var(--rail) - 1rem) 1fr;
+  column-gap: 2rem;
+  padding-bottom: 2.25rem;
+}
+.roadmap-node:last-child { padding-bottom: 0.5rem; }
+
+/* rail marker: hollow ring by default, filled + green when live */
+.roadmap-marker {
+  position: absolute;
+  left: var(--rail);
+  top: 0.55rem;
+  width: 11px;
+  height: 11px;
+  transform: translateX(-50%);
+  border: 1.5px solid var(--line-data);
+  border-radius: 50%;
+  background: var(--paper);
+}
+.roadmap-node[data-status='live'] .roadmap-marker {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+.roadmap-node[data-status='planning'] .roadmap-marker,
+.roadmap-node[data-status='research'] .roadmap-marker {
+  border-style: dashed;
+}
+
+/* left column: pixel year + status */
+.roadmap-when {
+  text-align: right;
+  padding-top: 0.1rem;
+  line-height: 1.1;
+}
+.roadmap-year {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.6rem;   /* large enough that the pixel core reaches full ink */
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.roadmap-status { display: block; margin-top: 0.25rem; }
+
+/* card */
+.roadmap-card { min-width: 0; padding-top: 0.05rem; }
+.roadmap-name {
+  font-family: var(--font-grotesk);
+  font-weight: 800;
+  font-size: clamp(1.25rem, 3.2vw, 1.9rem);
+  line-height: 1.05;
+  color: var(--ink);
+}
+.roadmap-nolock {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+  font-weight: 650;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.05rem 0.35rem;
+  white-space: nowrap;
+}
+.roadmap-target { margin-top: 0.4rem; }
+.roadmap-summary {
+  margin-top: 0.5rem;
+  max-width: 46rem;
+  font-family: var(--font-grotesk);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* CROPS strip: all four letters, advanced ones inked, rest ghosted */
+.roadmap-crops { display: flex; gap: 0.4rem; margin-top: 0.7rem; }
+/* Distinguish advanced vs not by FILL, not by text colour: both states keep
+   full-ink (or inverted paper-on-ink) text so the pixel-truth contrast rule
+   holds at 10px. Filled = this property is advanced; outline = it is not. */
+.roadmap-crop {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: 0.06em;
+  font-weight: 650;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  background: transparent;
+}
+.roadmap-crop--on {
+  color: var(--paper);          /* inverted chip: advanced pops, still ~19:1 */
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* EIP tokens: Departure Mono decoration + grotesk meaning beside it */
+.roadmap-eips { list-style: none; margin: 0.9rem 0 0; padding: 0; display: grid; gap: 0.7rem; }
+.roadmap-eip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 0.8rem;
+  row-gap: 0.15rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--hairline-faint);
+}
+.eip-token {
+  font-family: var(--font-display);
+  font-size: 1.05rem;   /* pixel token, sized so ink cores are solid */
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line-data);
+}
+.eip-token:hover { color: var(--accent); border-color: var(--accent); }
+.roadmap-eip-title {
+  font-family: var(--font-grotesk);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--ink);
+}
+.roadmap-eip-sum {
+  grid-column: 2;
+  font-family: var(--font-grotesk);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.roadmap-eip-crops {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: 0.1em;
+  font-weight: 650;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.roadmap-signif {
+  margin-top: 0.8rem;
+  max-width: 46rem;
+  font-family: var(--font-grotesk);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  border-left: 2px solid var(--accent);
+  padding-left: 0.8rem;
+}
+.roadmap-foot { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 0.8rem; }
+.roadmap-link { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-data); }
+.roadmap-link:hover { color: var(--accent); border-color: var(--accent); }
+.roadmap-caption { margin-top: 1.5rem; padding-left: var(--rail); color: var(--ink); }
+
+/* procedural motion: a scan pip drifts down the rail; the live marker breathes.
+   never fully still — but gated off under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .roadmap-timeline::after {
+    content: '';
+    position: absolute;
+    left: var(--rail);
+    top: 0;
+    width: 3px;
+    height: 60px;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+    opacity: 0.55;
+    animation: roadmap-scan 7s linear infinite;
+    pointer-events: none;
+  }
+  .roadmap-node[data-status='live'] .roadmap-marker {
+    animation: roadmap-live 2.4s var(--ease-settle) infinite;
+  }
+}
+@keyframes roadmap-scan {
+  0% { top: -60px; opacity: 0; }
+  8% { opacity: 0.55; }
+  92% { opacity: 0.55; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes roadmap-live {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
+  50% { box-shadow: 0 0 0 5px transparent; }
+}
+
+@media (max-width: 640px) {
+  .roadmap-timeline { --rail: 3rem; }
+  .roadmap-year { font-size: 1.3rem; }
+  .roadmap-eip { grid-template-columns: 1fr; }
+  .roadmap-eip-sum, .roadmap-eip-crops { grid-column: 1; }
+}

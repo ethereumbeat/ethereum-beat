@@ -1798,3 +1798,63 @@ handler chains `runCollector … .then(runBroadcast)` with a catch on each).
   dead endpoints, both sign in workerd and fail publish gracefully. Build +
   check clean; meta/csp/contrast audits green; deploy secret injection simulated
   and dry-run-validated.
+
+## Roadmap channel — CH 07 (2026-08-07)
+
+A seventh channel that turns Ethereum's upgrade roadmap into plain-language
+"what's coming", non-financially framed. New feature, independent PR.
+
+- **Data source wired: Forkcast `src/data/upgrades.ts` (raw GitHub).** I checked
+  github.com/ethereum/forkcast first, as asked. Its `public/llms.txt` states the
+  page bodies (`/eips`, `/calls`, timelines) are client-rendered React and
+  explicitly points machine consumers at the raw source data + `/eips/{n}.md`.
+  There is no upgrades JSON endpoint (only ancillary devnet/calls JSON), so the
+  canonical machine source IS the repo file `src/data/upgrades.ts` — the same
+  curated object forkcast.org renders. It confirmed all three seed forks
+  (Fusaka Live Dec 3 2025 / PeerDAS; Glamsterdam Upcoming "2026" / EIP-7773
+  meta; Hegotá Planning "2027" / EIP-8081 meta, "FOCIL SFI'd"). Fallbacks
+  (ethereum/EIPs Meta EIPs, EF blog) are noted but not needed. Forkcast/EF and
+  strawmap.org (EF Architecture team's long-range L1 roadmap) are added to
+  `src/lib/sources.ts` as `ROADMAP_SOURCES` — kept OUT of the metric credit
+  line (they are editorial, not live metric endpoints) and surfaced on /roadmap
+  and /about.
+- **New tables, metric_meta untouched.** `roadmap_upgrades` + `roadmap_eips`
+  (db/schema.sql for fresh installs; db/migrations/006_roadmap.sql for the
+  manual remote apply; db/roadmap.sql for the seed). The roadmap is editorial
+  forward-looking text, not a numeric series, so it gets its own tables and its
+  own KV key (`roadmap:latest`) and endpoint (`/api/roadmap`) — mirroring the
+  metric snapshot pattern, not overloading it.
+- **⚠ Manual remote-D1 migration.** The deploy pipeline never runs migrations,
+  so the schema change ships as a hand-run step (documented in the migration
+  header and the README). **No KV bust needed** — /roadmap and /api/roadmap
+  rebuild `roadmap:latest` from D1 on a missing key (self-heal, like
+  /api/snapshot); bust only to force an immediate refresh.
+- **Refresh contract: machine fields only, dates slip.** The daily cron
+  (`worker/roadmap.ts` refreshRoadmap) fetches Forkcast, parses machine fields
+  with a tolerant per-block extractor (format drift → fewer fields, never a
+  throw), and updates only status/target/meta-link. The ONLY status change is
+  flipping a known upgrade to `live` when Forkcast marks it Live with a real,
+  parseable date — because dates slip, nothing else is auto-locked, and
+  `date_locked=1` is set only then. Editorial columns (summary, significance,
+  CROPS) are never touched; new upstream forks are logged, never auto-inserted,
+  so no un-vetted upstream blurb can render. Verified end-to-end against the live
+  Forkcast source: `{fetched:true, wentLive:[], metaUpdated:[glamsterdam,hegota]}`
+  with all seed summaries intact afterward.
+- **Non-financial editorial.** Summaries + CROPS tags are hand-authored: PeerDAS
+  → node sustainability/decentralisation (CR·O); ePBS → fewer trusted relays
+  (CR·S); BALs → cheaper verification / statelessness (O·S); FOCIL → inclusion
+  lists make censorship resistance a protocol guarantee (CR). No price, market or
+  "catalyst" framing — that is the value-add over every upstream source.
+- **SSR, not an island.** Unlike the live channels, the roadmap is rendered
+  server-side so the "what's coming" text is in the initial HTML (AEO/SEO — the
+  project's SEO pass cares about this) and carries `ItemList` JSON-LD. Procedural
+  motion is pure CSS (a scan pip down the rail + a live-marker breathe), gated by
+  `prefers-reduced-motion`, so the contrast auditor (which freezes animation)
+  is unaffected and the CSP needs no new host.
+- **Contrast fixed by fill, not threshold.** The only new-page contrast miss was
+  the non-advanced CROPS letters, drawn in `--ink-ghost` (a decorative-only
+  token, ~2:1). Fixed by distinguishing advanced vs not by FILL — advanced =
+  inverted paper-on-ink chip (~19:1), non-advanced = full-ink outline — so every
+  letter passes even under `--strict 0.5`, and "filled = advances" reads
+  clearly. The Departure Mono EIP/year tokens are sized (1.05rem / 1.6rem) to
+  clear the pixel-core dilution. /roadmap: 0 failures at CI margin and strict.
