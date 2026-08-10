@@ -20,6 +20,19 @@ interface Env {
   ALERT_EMAIL_FROM?: string;
   // Cloudflare Web Analytics beacon token. Unset → no beacon rendered.
   CF_BEACON_TOKEN?: string;
+  // ── daily broadcast (worker/broadcast). All optional: an absent key skips
+  //    that channel, never throws (same discipline as send_email). Injected
+  //    into wrangler.ci.toml at deploy time, never the committed config. ──
+  /** Nostr secret key (nsec1… or 64-hex). Absent → Nostr skipped. */
+  NOSTR_NSEC?: string;
+  /** comma-separated relay set; defaults to a small free set if unset */
+  NOSTR_RELAYS?: string;
+  /** Farcaster account fid (numeric). Absent → Farcaster skipped. */
+  FARCASTER_FID?: string;
+  /** Farcaster Ed25519 signer private key (hex). Absent → Farcaster skipped. */
+  FARCASTER_SIGNER?: string;
+  /** hub base URL for submitMessage; defaults to a public write hub if unset */
+  FARCASTER_HUB?: string;
 }
 
 // The Workers runtime provides this built-in module; declared so the collector's

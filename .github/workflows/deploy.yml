@@ -41,6 +41,15 @@ jobs:
           # Verified Email Routing destination for collector failure alerts.
           # Optional: unset → defaults to beat@ethereumbeat.org.
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          # ── daily broadcast (worker/broadcast). All optional: an unset secret
+          #    is simply not injected → env.<VAR> undefined → that channel skips,
+          #    never throws (same discipline as send_email). Same as the ids,
+          #    these live ONLY in the throwaway ci.toml, never the public config. ──
+          NOSTR_NSEC: ${{ secrets.NOSTR_NSEC }}
+          NOSTR_RELAYS: ${{ secrets.NOSTR_RELAYS }}
+          FARCASTER_FID: ${{ secrets.FARCASTER_FID }}
+          FARCASTER_SIGNER: ${{ secrets.FARCASTER_SIGNER }}
+          FARCASTER_HUB: ${{ secrets.FARCASTER_HUB }}
         run: |
           set -euo pipefail
           sed -e "s|REPLACE_WITH_YOUR_D1_DATABASE_ID|${CF_D1_DATABASE_ID}|" \
@@ -66,6 +75,35 @@ jobs:
             exit 1
           fi
           echo "send_email binding injected into wrangler.ci.toml (destination: ${alert_to})"
+
+          # ── broadcast secrets → [vars]. TOML forbids a second [vars] table, so
+          #    the set ones are inserted UNDER the existing [vars] header. Only
+          #    non-empty secrets are written, so forks with none deploy a config
+          #    identical to before. Values are TOML basic strings (nsec base32,
+          #    fid digits, signer hex, relay/hub URLs — no quotes/backslashes). ──
+          broadcast_vars() {
+            [ -n "${NOSTR_NSEC:-}" ]       && printf 'NOSTR_NSEC = "%s"\n' "$NOSTR_NSEC"
+            [ -n "${NOSTR_RELAYS:-}" ]     && printf 'NOSTR_RELAYS = "%s"\n' "$NOSTR_RELAYS"
+            [ -n "${FARCASTER_FID:-}" ]    && printf 'FARCASTER_FID = "%s"\n' "$FARCASTER_FID"
+            [ -n "${FARCASTER_SIGNER:-}" ] && printf 'FARCASTER_SIGNER = "%s"\n' "$FARCASTER_SIGNER"
+            [ -n "${FARCASTER_HUB:-}" ]    && printf 'FARCASTER_HUB = "%s"\n' "$FARCASTER_HUB"
+            true
+          }
+          broadcast_vars > /tmp/broadcast-vars.txt
+          awk 'BEGIN{f="/tmp/broadcast-vars.txt"} {print} /^\[vars\]$/{while((getline l<f)>0)print l; close(f)}' \
+              wrangler.ci.toml > wrangler.ci.toml.tmp && mv wrangler.ci.toml.tmp wrangler.ci.toml
+          rm -f /tmp/broadcast-vars.txt
+
+          # verify each SET broadcast secret survived generation (key name only,
+          # never the value, so nothing secret lands in the run log)
+          for v in NOSTR_NSEC NOSTR_RELAYS FARCASTER_FID FARCASTER_SIGNER FARCASTER_HUB; do
+            eval "val=\${$v:-}"
+            if [ -n "$val" ] && ! grep -q "^$v = " wrangler.ci.toml; then
+              echo "::error::$v was set but did not survive into wrangler.ci.toml"
+              exit 1
+            fi
+            [ -n "$val" ] && echo "broadcast var $v injected into wrangler.ci.toml"
+          done
 
           # constraint check: the tracked file must NOT have been mutated
           if ! git diff --quiet -- wrangler.toml; then

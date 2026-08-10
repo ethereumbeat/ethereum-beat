@@ -1056,3 +1056,43 @@ registry. Run audit-contrast, audit-meta and audit-csp locally before pushing �
 the small footer text is the first thing to fail contrast on Linux Chromium; fix
 by bolding or lifting size, never by loosening the threshold. Clean build. Commit
 and push per completed item. Log decisions in DECISIONS.md.
+
+## 25. Broadcast — daily digest to Nostr, Farcaster + X draft
+
+From the daily cron (after the collector), publish a compact, non-financial
+protocol-health digest. Everything degrades like `send_email`: an absent key
+skips that channel, never throws.
+
+1. DIGEST (the shared body). Built from the same snapshot the site renders,
+   in the project voice ("a heartbeat, not a ticker"). Vitals only — no price,
+   market-cap or trading framing (the three usd metrics are excluded). One body
+   string, ≤280 chars for X and ≤320 bytes for Farcaster; the URL and the
+   relevant `/og/*.png` travel alongside (embed/attachment where supported,
+   appended to the text where not). Always links to ethereumbeat.org.
+
+2. NOSTR. Sign a kind-1 event with `NOSTR_NSEC` (BIP-340 Schnorr over
+   secp256k1; nsec or hex accepted) and publish to a small, configurable relay
+   set (`NOSTR_RELAYS`, comma-separated; a free default set otherwise) over the
+   Worker's outbound WebSocket. No third-party paid service. Absent nsec → skip.
+
+3. FARCASTER. Publish a cast via the account's signer using the DIRECT HUB
+   path: a CastAdd protobuf, Blake3-hashed, Ed25519-signed with
+   `FARCASTER_SIGNER` for `FARCASTER_FID`, POSTed to a hub's
+   `/v1/submitMessage` (`FARCASTER_HUB`, configurable). No paid API. Absent
+   secrets → skip.
+
+4. X. No X API (no free tier as of Feb 2026): write the generated post text
+   (and OG image link) to `/broadcast/x-draft.json` for manual posting, with a
+   clear TODO to add a `publishX()` if the maintainer later opts into paid
+   pay-per-use. The endpoint self-heals from the snapshot like /api/snapshot.
+
+5. SECRETS. All new secrets are optional and injected only into the throwaway
+   `wrangler.ci.toml` at deploy time (never the committed public config), under
+   the existing `[vars]` table; deploy.yml verifies each set secret survives
+   generation. Forks with no secrets deploy an unchanged config and simply skip
+   the social channels.
+
+6. GUARD. A once-per-UTC-day KV marker prevents a double run posting twice; the
+   X draft is idempotent and always refreshed. Crypto verified against the
+   NIP-19 vector + Schnorr/Ed25519/Blake3 round-trips (scripts/test-broadcast.ts)
+   and exercised in the workerd runtime before wiring.

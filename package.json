@@ -9,11 +9,14 @@
     "preview": "wrangler dev",
     "deploy": "astro build && wrangler deploy",
     "seed": "node --experimental-strip-types scripts/seed.ts",
-    "check": "astro check"
+    "check": "astro check",
+    "test:broadcast": "node --experimental-strip-types scripts/test-broadcast.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.5.0",
     "@astrojs/react": "^4.2.0",
+    "@noble/curves": "^2.3.0",
+    "@noble/hashes": "^2.3.0",
     "astro": "^5.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
