@@ -7,7 +7,10 @@
 <p align="center">
   <a href="LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-black" /></a>
   <a href="https://ethereumbeat.org"><img alt="Live at ethereumbeat.org" src="https://img.shields.io/badge/live-ethereumbeat.org-c90500" /></a>
+  <a href="https://github.com/ethereumbeat/ethereum-beat/discussions"><img alt="GitHub Discussions" src="https://img.shields.io/badge/discuss-github-black" /></a>
 </p>
+
+<p align="center"><strong>Watch Ethereum's protocol health beat like a heart — one vital per 12-second slot, no prices, no market talk.</strong></p>
 
 The pulse of Ethereum. A centre glyph beats in time with real 12-second slots;
 each beat surfaces one measure of protocol health, grouped by the four **CROPS**
@@ -16,8 +19,37 @@ properties from the [EF mandate](https://ethereum.org/foundation/mandate/) —
 **S**ecurity. Uptime is not a CROPS property; it is the mission CROPS protects,
 shown as the heartbeat. No prices, no candles, no market talk.
 
+<p align="center">
+  <a href="https://ethereumbeat.org"><img src="./public/screenshots/desktop.png" alt="Ethereum Beat — the beating dial with live margin tickers" width="720" /></a>
+</p>
+
 Built with Astro + one React island on Cloudflare Workers (D1 + KV + one daily
 cron), free tier throughout. Charts and the world map are hand-rolled SVG.
+
+## Deploy your own fork
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ethereumbeat/ethereum-beat)
+
+The button forks the repo and wires up a Worker; it runs fully on Cloudflare's
+free tier. You still create your own D1 + KV bindings and seed the data once —
+the two-minute [Setup](#setup) below walks through it.
+
+### 60-second quickstart
+
+```sh
+git clone https://github.com/ethereumbeat/ethereum-beat && cd ethereum-beat
+npm install
+npm run dev        # http://localhost:8788
+```
+
+The live clock, block feed and mempool tiers work immediately — no account, no
+keys. To fill in the daily metrics (staking, value secured, node geography, …),
+run `npm run seed` once. Full deploy (bindings + remote seed) is in
+[Setup](#setup).
+
+Want to help instead of host? See **[Contributing](CONTRIBUTING.md)**, open an
+issue, or start a thread in
+**[Discussions](https://github.com/ethereumbeat/ethereum-beat/discussions)**.
 
 ## How it works
 
@@ -131,6 +163,23 @@ Open CORS, edge-cached one hour:
   for every metric with data.
 - `GET /api/metric/[key]?range=d|w|m|q|y` — aggregated series plus metadata.
 
+## Live badges
+
+Embed a live vital in your own README or site. Each badge is a self-contained
+SVG served from the cached snapshot (never a live query), links back here, and
+renders standalone in an `<img>`:
+
+[![nodes](https://ethereumbeat.org/badge/nodes.svg)](https://ethereumbeat.org/badges)
+[![participation](https://ethereumbeat.org/badge/participation.svg)](https://ethereumbeat.org/badges)
+[![finality](https://ethereumbeat.org/badge/finality.svg)](https://ethereumbeat.org/badges)
+
+```markdown
+[![Ethereum nodes](https://ethereumbeat.org/badge/nodes.svg)](https://ethereumbeat.org)
+```
+
+Browse all of them, with copy-paste snippets, at
+**[ethereumbeat.org/badges](https://ethereumbeat.org/badges)**.
+
 ## Data
 
 Displayed data comes from third-party sources under their own terms:
@@ -151,8 +200,12 @@ Endpoint verification notes and every degradation decision live in
 ## Community
 
 - **[Contributing](CONTRIBUTING.md)** — how to add a metric, the quality gates, the type rule.
+- **[Discussions](https://github.com/ethereumbeat/ethereum-beat/discussions)** — questions, ideas, and "should we track X?" before opening an issue.
+- **[Propose a metric](https://github.com/ethereumbeat/ethereum-beat/issues/new?template=metric_request.md)** — the guided template walks you through the `metric_meta` workflow.
+- **[Roadmap](ROADMAP.md)** — what's shipped and what's next (P0–P3).
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** — the standard we hold each other to.
 - **[Security policy](SECURITY.md)** — report vulnerabilities privately, never in a public issue.
+- **[Support](https://ethereumbeat.org/support)** — keep it running (open source, free tier, no ads).
 
 ## Trademark note
 

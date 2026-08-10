@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions & ideas (Discussions)
+    url: https://github.com/ethereumbeat/ethereum-beat/discussions
+    about: Ask a question, share an idea, or float "should we track X?" here before opening an issue.
   - name: Security vulnerability (private)
     url: mailto:beat+security@ethereumbeat.org
     about: Do NOT open a public issue for security problems. Report privately by email or via the repo's Security tab — see SECURITY.md.
