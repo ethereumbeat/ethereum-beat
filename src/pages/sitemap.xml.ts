@@ -23,8 +23,9 @@ export const GET: APIRoute = (ctx) =>
     ).results;
 
     // content pages that aren't channels in ROUTES (so they stay out of the
-    // arcade nav) but are still crawlable / AEO surfaces
-    const EXTRA_PAGES = ['/methodology'];
+    // arcade nav) but are still crawlable / AEO surfaces. The /badge/*.svg
+    // images are not listed.
+    const EXTRA_PAGES = ['/methodology', '/badges'];
 
     const urls = [
       ...ROUTES.map((r) => `${origin}${r.path}`),

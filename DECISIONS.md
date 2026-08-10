@@ -1695,3 +1695,47 @@ the next SPEC section number, 24, and the next DECISIONS section number, 25).
   themes** (+ 0 at the +0.9 CI-safety margin on the thin themes). security.txt
   verified serving `text/plain` with a build-time `Expires`.
 - Committed and pushed per item.
+
+## Embeddable SVG badges (2026-08-07)
+
+Shields-style badges (`/badge/<slug>.svg`) so others can drop live Ethereum
+vitals into READMEs/sites — backlinks + spread, on-brand.
+
+- **Cached snapshot only — never the live RPC layer.** The badge endpoint reads
+  the KV snapshot (self-healing from D1, both cache-tier reads, never a per-slot
+  RPC call), so a badge request is cheap and can't hammer the RPCs. `badgeMetric`
+  treats a snapshot whose `generated_at` is older than 48h (two missed daily
+  crons) as stale → the badge renders a graceful `—`, as it also does for an
+  absent metric or a KV/D1 read failure. Verified: fresh → value, a 6-day-old
+  snapshot → `—`.
+- **Self-contained SVG that renders in an `<img>`.** `<img>`-embedded SVG can't
+  use the page's fonts and blocks external URLs, so Departure Mono is **subset**
+  to printable ASCII (fonttools, ~2KB woff2) and inlined as a data-URI
+  `@font-face` (`src/lib/badge-font.ts`; the monospace advance ratio 0.6364 gives
+  exact auto-width). The beating glyph is a red octahedron with a CSS
+  `@keyframes` pulse (CSS animation runs in `<img>` SVG; SMIL would too) gated by
+  `@media (prefers-reduced-motion: reduce)`. Colours are fixed monochrome
+  (paper/ink/one red) — not theme tokens, which aren't available to an isolated
+  SVG — so it reads on any README background. Fixed 20px height, auto width,
+  ~3.9KB per badge (font + markup). `Content-Type: image/svg+xml`,
+  `Cache-Control: public, max-age=300, s-maxage=3600` (well under the daily
+  refresh; the SVG is an image so the Worker's HTML-only CSP/nonce pass leaves it
+  untouched, and its `<style>`/animation survive).
+- **Gas is throughput, not price — the one honest mapping.** The requested slugs
+  map to cached snapshot metrics: `nodes`→node_countries, `participation`→
+  participation_rate, `finality`→finality_ok (last finalised epoch), plus
+  gallery extras (staked/uptime/tvs). The live L1 base fee (gwei) is a per-block
+  RPC value the no-RPC constraint forbids, so `/badge/gas.svg` shows the cached
+  **gas throughput** (`throughput`, Mgas/s) and is labelled `GAS/S` to say so
+  plainly rather than imply a price.
+- **`/badges` gallery** shows each badge with copy-paste Markdown + HTML snippets
+  (each wrapping the badge in a link back to ethereumbeat.org — the backlink) and
+  the attribution/sources/methodology/API pointers. A small nonced inline
+  copy-to-clipboard script (added to `audit-csp`'s route list so it stays
+  nonced). The page is in `sitemap.xml` (via `EXTRA_PAGES`) but the `/badge/*.svg`
+  images are not.
+- **QA:** `npm run build` clean, `npm run check` 0 errors, audit-meta 32 routes
+  (incl. `/badges`), audit-csp green (10 routes, `/badges` covered),
+  audit-contrast 0/7 themes (badge routes aren't sampled surfaces; existing
+  routes unchanged). No new runtime dependencies; the font subset was generated
+  once with fonttools and committed as base64.
