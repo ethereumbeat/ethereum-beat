@@ -21,6 +21,19 @@ try {
 }
 const upgrades = snap?.upgrades ?? [];
 
+// Meta description is DERIVED from the live roadmap data, never a hardcoded fork
+// list — so <meta description>, og: and twitter: can never name a different set
+// of forks than the panels actually show (that drift is what this fixes). Falls
+// back to the route's static (fork-agnostic) copy only when the data is empty.
+const forkNames = upgrades.map((u) => u.name);
+const forkList =
+  forkNames.length > 1
+    ? `${forkNames.slice(0, -1).join(', ')} and ${forkNames[forkNames.length - 1]}`
+    : forkNames[0] ?? '';
+const metaDescription = forkNames.length
+  ? `Ethereum's protocol roadmap in plain language — ${forkList} — what each changes for censorship resistance, decentralisation, node sustainability and privacy. EIP numbers as decoration, no price or market framing.`
+  : rm.description;
+
 const origin = siteOrigin(Astro.locals.runtime.env);
 const jsonLd = [
   {
@@ -65,7 +78,7 @@ const sourceLabel = (u: (typeof upgrades)[number]) => (u.source_name ?? 'source'
 const pad2 = (n: number) => String(n).padStart(2, '0');
 ---
 
-<Layout title={rm.title} description={rm.description} jsonLd={jsonLd}>
+<Layout title={rm.title} description={metaDescription} jsonLd={jsonLd}>
   <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">7</div>
   <div class="channel-dock" aria-hidden="true">
     <SectionHeader index="07" title="roadmap" subtitle="what's coming" size="sm" />

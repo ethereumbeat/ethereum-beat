@@ -131,6 +131,25 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy -c wrangler.ci.toml
 
+      # ── bust the ROADMAP KV snapshot so SSR rebuilds from D1 immediately ──
+      #    Without this, a D1 reseed stays invisible in server HTML until the
+      #    daily cron rewrites roadmap:latest (up to 24h of stale panels/meta).
+      #    Scope: the roadmap snapshot ONLY — metric_meta / metric KV are never
+      #    touched here. The page self-heals from D1 on a miss; the cron then
+      #    repopulates the snapshot on its normal cadence.
+      - name: Bust roadmap KV snapshot
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # wrangler.ci.toml (generated above, gitignored) carries the real SNAP
+          # namespace id; --remote targets production KV.
+          if npx wrangler kv key delete roadmap:latest --binding SNAP --remote -c wrangler.ci.toml; then
+            echo "busted roadmap:latest (roadmap snapshot only)"
+          else
+            echo "::warning::roadmap:latest KV bust did not succeed — SSR will refresh on the next cron"
+          fi
+
       # ── post-deploy smoke test: fail the run if production is wrong ─────
       - name: Smoke test production
         run: |
@@ -157,6 +176,32 @@ jobs:
             echo "ok   /api/snapshot is valid JSON"
           else
             echo "::error::/api/snapshot did not return valid JSON"
+            exit 1
+          fi
+
+          # ── /roadmap: server HTML must carry the CURRENT panels (not a stale
+          #    snapshot) and a data-derived meta description (not a fixed fork
+          #    list). Both guard the KV-bust + derived-meta fix from regressing. ──
+          rm_html=""
+          for i in $(seq 1 10); do
+            rm_html="$(curl -s "$base/roadmap")"
+            printf '%s' "$rm_html" | grep -q 'data-rm-track' && break
+            sleep 3
+          done
+          rm_forks="$(printf '%s' "$rm_html" | grep -o 'data-idx="[0-9]"' | sort -u | wc -l | tr -d ' ')"
+          if [ "${rm_forks:-0}" -ge 4 ]; then
+            echo "ok   /roadmap SSR has $rm_forks panels (current snapshot)"
+          else
+            echo "::error::/roadmap SSR shows only ${rm_forks:-0} panels — stale KV snapshot?"
+            exit 1
+          fi
+          rm_desc="$(printf '%s' "$rm_html" | grep -o '<meta name="description" content="[^"]*"' | head -1)"
+          # names present in the live data but absent from the old hardcoded string
+          # → their presence proves the description is data-derived, not the literal.
+          if printf '%s' "$rm_desc" | grep -qE 'Pectra|Verge'; then
+            echo "ok   /roadmap meta description is data-derived"
+          else
+            echo "::error::/roadmap meta description not data-derived (got: $rm_desc)"
             exit 1
           fi
 
