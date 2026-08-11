@@ -43,7 +43,7 @@ export function buildLlmsText(origin: string, rows: MetaRow[], full: boolean): s
     '',
     '## Properties (CROPS)',
     '',
-    "Metrics are grouped by the four indivisible CROPS properties from the Ethereum Foundation mandate (section III):",
+    'Metrics are grouped by the four indivisible CROPS protocol properties:',
     '- CR — Censorship resistance: no actor can selectively exclude a valid transaction or break functionality.',
     '- O — Open source and free: no privileged code or hidden specs; public, auditable, free to run and fork.',
     '- P — Privacy: user data is not exposed beyond necessity or against a person’s interests.',

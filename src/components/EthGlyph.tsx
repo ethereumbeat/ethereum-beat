@@ -11,7 +11,7 @@ import * as blockfeed from '../lib/blockfeed';
  * - GAS ARC: bottom-left segment whose length is the last block's gas use
  * - FINAL notch: finality trails the head by 2 epochs — two full turns of
  *   this dial — marked on the inner track at the equivalent angle
- * The generic octahedron glyph (not the EF lockup) sits inside, its two
+ * The generic octahedron glyph (not an official lockup) sits inside, its two
  * halves pulsing 60ms apart.
  */
 

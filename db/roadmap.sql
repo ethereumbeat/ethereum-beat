@@ -17,21 +17,21 @@ VALUES
    'Data-availability sampling lets the network carry far more rollup data without asking each node to store all of it. Verifying the chain stays within reach of ordinary hardware, keeping it in many independent hands rather than a handful of large operators.',
    'CR,O',
    'https://eips.ethereum.org/EIPS/eip-7607',
-   'Forkcast / Ethereum Foundation', 'https://forkcast.org/upgrade/fusaka', NULL),
+   'Forkcast', 'https://forkcast.org/upgrade/fusaka', NULL),
 
   ('glamsterdam', 'Glamsterdam', 'Gloas + Amsterdam', 'devnet', 20, 'H2 2026 target · no date locked', 0, NULL,
    'In development and running on devnets, aiming for the second half of 2026 — no mainnet date is locked. Headlined by enshrined proposer-builder separation (ePBS) and block-level access lists.',
    'ePBS builds the proposer/builder split into the protocol, so validators no longer depend on trusted relays to receive blocks — shrinking a central point that could be pressured to exclude transactions. Block-level access lists declare upfront which state a block touches, making blocks easier to verify and cheaper to execute in parallel.',
    'CR,S,O',
    'https://ethereum-magicians.org/t/eip-7773-glamsterdam-network-upgrade-meta-thread/21195',
-   'Forkcast / Ethereum Foundation', 'https://forkcast.org/upgrade/glamsterdam', NULL),
+   'Forkcast', 'https://forkcast.org/upgrade/glamsterdam', NULL),
 
   ('hegota', 'Hegotá', NULL, 'planning', 30, '~2027 · early planning', 0, NULL,
    'Early planning for around 2027. Headliner selection has begun, with FOCIL — fork-choice-enforced inclusion lists — slated to make censorship resistance a protocol guarantee rather than a best effort.',
    'FOCIL lets a committee of validators force valid transactions to be included, so no single block builder can quietly leave a transaction out. It turns censorship resistance from something the network hopes for into something the protocol enforces.',
    'CR',
    'https://ethereum-magicians.org/t/eip-8081-hegota-network-upgrade-meta-thread/26876',
-   'Forkcast / Ethereum Foundation', 'https://forkcast.org/upgrade/hegota', NULL);
+   'Forkcast', 'https://forkcast.org/upgrade/hegota', NULL);
 
 INSERT OR REPLACE INTO roadmap_eips
   (upgrade_id, eip, title, inclusion, summary, crops, sort)
