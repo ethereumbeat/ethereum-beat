@@ -93,7 +93,10 @@ export const ROUTES: RouteMeta[] = [
     'ROADMAP',
     '07',
     'what is coming to the protocol, upgrade by upgrade',
-    "Ethereum's upgrade roadmap in plain language: what Fusaka, Glamsterdam and Hegotá change for censorship resistance, decentralisation, node sustainability and privacy — EIP numbers as decoration, no price or market framing.",
+    // Fork-agnostic fallback ONLY — the /roadmap page overrides this with a
+    // description derived from the live upgrade data, so it never hardcodes a
+    // fork list that can drift out of sync with the panels.
+    "Ethereum's protocol roadmap in plain language: what each network upgrade — live, in development and on the long-range horizon — changes for censorship resistance, decentralisation, node sustainability and privacy. EIP numbers as decoration, no price or market framing.",
     'roadmap',
   ),
   route(
