@@ -14,7 +14,7 @@
 
 The pulse of Ethereum. A centre glyph beats in time with real 12-second slots;
 each beat surfaces one measure of protocol health, grouped by the four **CROPS**
-properties from the [EF mandate](https://ethereum.org/foundation/mandate/) —
+protocol properties —
 **C**ensorship **R**esistance, **O**pen source and free, **P**rivacy,
 **S**ecurity. Uptime is not a CROPS property; it is the mission CROPS protects,
 shown as the heartbeat. No prices, no candles, no market talk.
@@ -211,9 +211,9 @@ Displayed data comes from third-party sources under their own terms:
   **[PublicNode](https://publicnode.com)**, **[dRPC](https://drpc.org)**,
   **[1RPC](https://1rpc.io)**, **[beaconcha.in](https://beaconcha.in)** — free/public endpoints.
 - **[Natural Earth](https://www.naturalearthdata.com)** — public domain map data.
-- **[Forkcast](https://forkcast.org)** (Ethereum Foundation) — structured upgrade
-  data behind the **ROADMAP** channel, with the [EF roadmap](https://ethereum.org/roadmap)
-  and **[strawmap.org](https://strawmap.org)** for the long-range view.
+- **[Forkcast](https://forkcast.org)** — structured upgrade data behind the
+  **ROADMAP** channel, with **[strawmap.org](https://strawmap.org)** for the
+  long-range view.
 
 Endpoint verification notes and every degradation decision live in
 [DECISIONS.md](DECISIONS.md).
@@ -259,9 +259,7 @@ live (dogfooding the real tokens) at **[ethereumbeat.org/design](https://ethereu
 
 ## Trademark note
 
-The Ethereum glyph and name are used to represent the Ethereum network. This
-project is independent ecosystem work and is not affiliated with or endorsed
-by the Ethereum Foundation.
+The Ethereum glyph and name are used to represent the Ethereum network.
 
 ## Licence
 
