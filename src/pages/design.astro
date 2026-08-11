@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import SectionHeader from '../components/SectionHeader';
 
 export const prerender = false;
 
@@ -106,7 +105,11 @@ const CROPS = [
 
     <!-- CROPS -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="01" title="crops" subtitle="the four properties" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">01</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">crops</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">the four properties</span>
+      </div>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         Every number demonstrates one of Ethereum's four indivisible protocol
         properties — CR · O · P · S. Uptime is not a property; it is the
@@ -124,7 +127,11 @@ const CROPS = [
 
     <!-- COLOUR -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="02" title="colour" subtitle="hard b/w + one red" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">02</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">colour</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">hard b/w + one red</span>
+      </div>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         A screen reads ~95% monochrome. Colour is semantic only: red is
         live / active / alert, green is confirmed, amber is pending. Values shown
@@ -165,7 +172,11 @@ const CROPS = [
 
     <!-- SEVEN THEMES -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="03" title="seven themes" subtitle="same layout, different voice" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">03</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">seven themes</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">same layout, different voice</span>
+      </div>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         Only palette, fonts, textures and micro-motion change across themes — the
         layout and information are identical everywhere. Every theme passes AA;
@@ -191,7 +202,11 @@ const CROPS = [
 
     <!-- TYPOGRAPHY -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="04" title="typography" subtitle="three voices" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">04</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">typography</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">three voices</span>
+      </div>
       <div class="flex flex-col gap-4">
         {faces.map((f) => (
           <div class="hairline-t flex flex-col gap-1 pt-4">
@@ -222,7 +237,11 @@ const CROPS = [
 
     <!-- LINE SYSTEM -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="05" title="the 1px line" subtitle="every rule is one pixel" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">05</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">the 1px line</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">every rule is one pixel</span>
+      </div>
       <div class="flex flex-col gap-4">
         {lines.map((l) => (
           <div class="flex flex-col gap-2">
@@ -239,7 +258,11 @@ const CROPS = [
 
     <!-- SPACING / GRID -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="06" title="spacing & grid" subtitle="fluid gutters, square by default" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">06</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">spacing & grid</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">fluid gutters, square by default</span>
+      </div>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         The page gutter is fluid — <span class="font-mono text-[color:var(--ink)]" style="font-size:0.85rem">--gutter: clamp(0.875rem, 3vw, 2.5rem)</span>.
         Corners are square (<span class="font-mono text-[color:var(--ink)]" style="font-size:0.85rem">--radius: 0</span>) in every theme
@@ -250,7 +273,11 @@ const CROPS = [
 
     <!-- MOTION -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="07" title="motion" subtitle="never fully still" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">07</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">motion</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">never fully still</span>
+      </div>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         Something is always moving: the glyph beats, tickers flicker through
         scrambled hex, procedural scan lines drift. Motion is meaningful, not
@@ -272,7 +299,11 @@ const CROPS = [
 
     <!-- BEATING GLYPH + COMPONENTS -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="08" title="glyph & components" subtitle="the core pieces" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">08</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">glyph & components</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">the core pieces</span>
+      </div>
       <div class="flex items-center gap-5">
         <span class="font-grotesk font-black leading-none text-[color:var(--accent)]" style="font-size:3.5rem" aria-hidden="true">⬡</span>
         <p class="text-[color:var(--ink-soft)]" style="font-size:0.85rem;line-height:1.5;max-width:32rem">
@@ -299,7 +330,11 @@ const CROPS = [
 
     <!-- VOICE -->
     <section class="flex flex-col gap-5">
-      <SectionHeader index="09" title="voice" subtitle="how it reads" accent />
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">09</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">voice</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">how it reads</span>
+      </div>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         Plain, precise, non-financial. British spelling. Data speaks in the pixel
         face; humans speak in lowercase grotesk. Never "number go up" — the

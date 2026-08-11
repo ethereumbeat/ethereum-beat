@@ -259,9 +259,7 @@ live (dogfooding the real tokens) at **[ethereumbeat.org/design](https://ethereu
 
 ## Trademark note
 
-The Ethereum glyph and name are used to represent the Ethereum network. This
-project is independent ecosystem work and is not an official or officially
-endorsed Ethereum project.
+The Ethereum glyph and name are used to represent the Ethereum network.
 
 ## Licence
 

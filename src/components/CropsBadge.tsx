@@ -7,8 +7,7 @@ import SectionHeader from './SectionHeader';
  * two-letter unit (one box, never split). Heartbeat is explicitly NOT a
  * CROPS property, so heartbeat metrics carry no badge.
  * Clicking a badge opens a values modal — which property this number
- * demonstrates and why it matters, in two plain sentences (paraphrased from
- * the Ethereum protocol mandate).
+ * demonstrates and why it matters, in two plain sentences.
  */
 
 export interface CropsInfo {
