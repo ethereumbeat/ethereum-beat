@@ -1,0 +1,314 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SectionHeader from '../components/SectionHeader';
+
+export const prerender = false;
+
+// Unlinked, direct-URL-only design-system reference (referenced solely from the
+// README). NOT in ROUTES / sitemap / llms / nav. Every value below is sourced
+// from src/styles/tokens.css — this page dogfoods the real tokens, and adapts
+// to whichever of the seven themes is active. All text is --ink / --ink-soft so
+// it clears AA in every theme; swatches are textless colour blocks, labelled in
+// --ink beside them.
+
+const title = 'Ethereum Beat — DESIGN · the design system';
+const description =
+  'The Ethereum Beat design system: the black/white + red palette, seven themes, typography, the 1px line system, spacing, motion and components — dogfooding the real tokens.';
+
+// ── Palette (INK, the canonical reference; every theme re-tunes these) ──
+const palette = [
+  { name: 'paper', v: '--paper', hex: '#fbfbf9', note: 'the field' },
+  { name: 'ink', v: '--ink', hex: '#0a0a0a', note: 'primary text · ~20:1 on paper' },
+  { name: 'ink-soft', v: '--ink-soft', hex: '#2f2f2f', note: 'secondary copy · ~11:1' },
+  { name: 'ink-faint', v: '--ink-faint', hex: '#4d4d4d', note: 'softest label · ~7:1' },
+  { name: 'accent', v: '--accent', hex: '#c90500', note: 'the one red · 5.9:1' },
+  { name: 'ok', v: '--ok', hex: '#09702d', note: 'confirmed / healthy' },
+  { name: 'warn', v: '--warn', hex: '#705000', note: 'pending · 7:1' },
+];
+
+// ── AA contrast pairs (documented in tokens.css) ──
+const pairs = [
+  { fg: 'ink', bg: 'paper', ratio: '~20:1', use: 'body copy, numerals' },
+  { fg: 'ink-soft', bg: 'paper', ratio: '~11:1', use: 'secondary text' },
+  { fg: 'ink-faint', bg: 'paper', ratio: '~7:1', use: 'faintest labels (still AA)' },
+  { fg: 'accent', bg: 'paper', ratio: '5.9:1', use: 'the one red signal' },
+  { fg: 'paper', bg: 'accent', ratio: '5.9:1', use: 'text on the command bar' },
+];
+
+// ── The seven themes (paper / ink / accent, from tokens.css) ──
+const themes = [
+  { n: '01', key: 'INK', paper: '#fbfbf9', ink: '#0a0a0a', accent: '#c90500', note: 'default — paper, true near-black, deep red' },
+  { n: '02', key: 'BONE', paper: '#0a0a0a', ink: '#f4f2ec', accent: '#ff4136', note: 'dark — near-black field, bone white' },
+  { n: '03', key: 'SWISS', paper: '#ffffff', ink: '#0a0a0a', accent: '#cc0000', note: 'international style — all grotesk, pixel retired' },
+  { n: '04', key: 'TERMINAL', paper: '#050805', ink: '#5cf088', accent: '#ff5545', note: 'phosphor green, everything mono' },
+  { n: '05', key: 'FLUFFY', paper: '#f7f1ff', ink: '#2a1a3a', accent: '#a8005f', note: 'pastel — rounded, candy magenta (still AA)' },
+  { n: '06', key: 'SKETCH', paper: '#f4f1e8', ink: '#171714', accent: '#972a20', note: 'handwritten — typewriter numerals, red pencil' },
+  { n: '07', key: 'SPLIT-FLAP', paper: '#14140f', ink: '#f4ecd8', accent: '#e85c46', note: 'departure board — condensed, amber lettering' },
+];
+
+// ── Typography: three voices ──
+const faces = [
+  { face: 'Departure Mono', v: '--font-display', role: 'data · numerals · structural indices', voice: 'the pixel voice — reserved for live data' },
+  { face: 'Inter', v: '--font-grotesk', role: 'human labels · section headers', voice: 'the human voice — lowercase grotesk' },
+  { face: 'Martian Mono', v: '--font-mono', role: 'micro labels · tickers · table cells', voice: 'the terminal voice — mono' },
+];
+const scale = [
+  { tok: '--text-micro', px: '10px', use: "printers' marks — full ink, weight 650" },
+  { tok: '--text-tick', px: '11px', use: 'tickers, tick labels' },
+  { tok: '--text-label', px: '11px', use: 'labels, table cells' },
+  { tok: '--text-body', px: '14px', use: 'body copy' },
+  { tok: '--text-kpi-sm', px: 'clamp 24–44px', use: 'small KPI numerals' },
+  { tok: '--text-kpi', px: 'clamp 36–128px', use: 'the big beat numeral' },
+];
+
+// ── The 1px line system ──
+const lines = [
+  { tok: '--hair', val: '1px', use: 'every rule is exactly one pixel' },
+  { tok: '--hairline', val: 'ink @ 0.2', use: 'dividers, section rules' },
+  { tok: '--hairline-faint', val: 'ink @ 0.1', use: 'the faintest separation' },
+  { tok: '--line-data', val: 'ink @ 0.52', use: 'cell borders, gauge tracks (≥3:1)' },
+];
+
+// ── Motion — never fully still ──
+const motion = [
+  { tok: '--beat-lub', val: '1.06', note: 'first pulse (systole) scale' },
+  { tok: '--beat-dub', val: '1.12', note: 'second pulse scale' },
+  { tok: '--dur-swap', val: '420ms', note: 'KPI crossfade' },
+  { tok: '--dur-flick', val: '120ms', note: 'ticker mono flicker' },
+  { tok: '--ease-settle', val: 'cubic-bezier(.2,.9,.25,1)', note: 'the settle curve' },
+];
+
+const CROPS = [
+  ['CR', 'Censorship resistance'],
+  ['O', 'Open source & free'],
+  ['P', 'Privacy'],
+  ['S', 'Security'],
+];
+---
+
+<Layout title={title} description={description}>
+  <main class="mx-auto flex max-w-4xl flex-col gap-16 px-6 py-16 lg:px-8">
+    <!-- BRAND / ETHOS -->
+    <header class="flex flex-col gap-4">
+      <p class="micro flex items-center gap-2 text-[color:var(--ink)]">
+        <span class="red-dot"></span><span>DESIGN SYSTEM // DOGFOODED FROM THE REAL TOKENS</span>
+      </p>
+      <h1 class="font-grotesk font-extrabold leading-none text-[color:var(--ink)]" style="font-size: clamp(2.2rem, 7vw, 5rem)">
+        ETHEREUM BEAT<br />DESIGN
+      </h1>
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        Technical print brutalism: a paper field, ink, one hot accent. The chain
+        beats like a heart and each beat surfaces one measure of protocol health.
+        Non-financial by design — no prices, no market framing. This page is
+        rendered by the same tokens it documents; switch themes with <span class="font-bold text-[color:var(--ink)]">+ / −</span> and everything here re-tunes.
+      </p>
+    </header>
+
+    <!-- CROPS -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="01" title="crops" subtitle="the four properties" accent />
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        Every number demonstrates one of Ethereum's four indivisible properties
+        from the EF mandate — CR · O · P · S. Uptime is not a property; it is the
+        mission the properties protect, shown as the heartbeat.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        {CROPS.map(([letter, name]) => (
+          <div class="brackets brackets-ink flex items-center gap-3 px-4 py-3">
+            <span class="font-grotesk text-xl font-extrabold text-[color:var(--ink)]">{letter}</span>
+            <span class="mono-label text-[color:var(--ink-soft)]">{name}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- COLOUR -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="02" title="colour" subtitle="hard b/w + one red" accent />
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        A screen reads ~95% monochrome. Colour is semantic only: red is
+        live / active / alert, green is confirmed, amber is pending. Values shown
+        for the default INK theme; every theme re-tunes them to clear WCAG AA.
+      </p>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {palette.map((c) => (
+          <div class="flex flex-col gap-1">
+            <span class="block h-14 w-full" style={`background:${c.hex};border:1px solid var(--line-data)`} aria-hidden="true"></span>
+            <span class="micro text-[color:var(--ink)]">{c.name}</span>
+            <span class="font-mono text-[color:var(--ink-soft)]" style="font-size:0.75rem">{c.hex}</span>
+            <span class="text-[color:var(--ink-soft)]" style="font-size:0.75rem;line-height:1.3">{c.note}</span>
+          </div>
+        ))}
+      </div>
+      <div class="hairline-t pt-4">
+        <p class="micro mb-3 text-[color:var(--ink)]">AA CONTRAST PAIRS</p>
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr class="micro text-[color:var(--ink)]">
+              <th class="py-1 pr-4 font-normal">FOREGROUND</th><th class="py-1 pr-4 font-normal">ON</th>
+              <th class="py-1 pr-4 font-normal">RATIO</th><th class="py-1 font-normal">USE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pairs.map((p) => (
+              <tr class="hairline-t">
+                <td class="mono-label py-1.5 pr-4 text-[color:var(--ink)]">{p.fg}</td>
+                <td class="mono-label py-1.5 pr-4 text-[color:var(--ink-soft)]">{p.bg}</td>
+                <td class="py-1.5 pr-4 font-mono text-[color:var(--ink)]" style="font-size:0.8rem">{p.ratio}</td>
+                <td class="py-1.5 text-[color:var(--ink-soft)]" style="font-size:0.8rem">{p.use}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SEVEN THEMES -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="03" title="seven themes" subtitle="same layout, different voice" accent />
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        Only palette, fonts, textures and micro-motion change across themes — the
+        layout and information are identical everywhere. Every theme passes AA;
+        pastel is not an excuse.
+      </p>
+      <div class="flex flex-col gap-3">
+        {themes.map((t) => (
+          <div class="brackets brackets-ink flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3">
+              <span class="font-mono text-[color:var(--ink-soft)]" style="font-size:0.8rem">{t.n}</span>
+              <span class="font-grotesk font-extrabold text-[color:var(--ink)]" style="font-size:1.05rem">{t.key}</span>
+            </div>
+            <div class="flex items-center gap-2" aria-hidden="true">
+              <span class="inline-block h-8 w-12" style={`background:${t.paper};border:1px solid var(--line-data)`} title="paper"></span>
+              <span class="inline-block h-8 w-12" style={`background:${t.ink};border:1px solid var(--line-data)`} title="ink"></span>
+              <span class="inline-block h-8 w-12" style={`background:${t.accent};border:1px solid var(--line-data)`} title="accent"></span>
+            </div>
+            <span class="text-[color:var(--ink-soft)]" style="font-size:0.8rem;max-width:22rem">{t.note}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="04" title="typography" subtitle="three voices" accent />
+      <div class="flex flex-col gap-4">
+        {faces.map((f) => (
+          <div class="hairline-t flex flex-col gap-1 pt-4">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <span class="text-[color:var(--ink)]" style={`font-family:var(${f.v});font-size:1.5rem`}>{f.face}</span>
+              <span class="font-mono text-[color:var(--ink-soft)]" style="font-size:0.75rem">{f.v}</span>
+            </div>
+            <span class="mono-label text-[color:var(--ink)]">{f.role}</span>
+            <span class="text-[color:var(--ink-soft)]" style="font-size:0.8rem">{f.voice}</span>
+          </div>
+        ))}
+      </div>
+      <div class="hairline-t pt-4">
+        <p class="micro mb-3 text-[color:var(--ink)]">TYPE SCALE</p>
+        <table class="w-full border-collapse text-left">
+          <tbody>
+            {scale.map((s) => (
+              <tr class="hairline-t">
+                <td class="py-1.5 pr-4 font-mono text-[color:var(--ink)]" style="font-size:0.8rem">{s.tok}</td>
+                <td class="py-1.5 pr-4 font-mono text-[color:var(--ink-soft)]" style="font-size:0.8rem">{s.px}</td>
+                <td class="py-1.5 text-[color:var(--ink-soft)]" style="font-size:0.8rem">{s.use}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- LINE SYSTEM -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="05" title="the 1px line" subtitle="every rule is one pixel" accent />
+      <div class="flex flex-col gap-4">
+        {lines.map((l) => (
+          <div class="flex flex-col gap-2">
+            <div class="flex items-baseline justify-between">
+              <span class="mono-label text-[color:var(--ink)]">{l.tok}</span>
+              <span class="font-mono text-[color:var(--ink-soft)]" style="font-size:0.75rem">{l.val}</span>
+            </div>
+            <span class="block w-full" style={`height:1px;background:var(${l.tok})`} aria-hidden="true"></span>
+            <span class="text-[color:var(--ink-soft)]" style="font-size:0.8rem">{l.use}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- SPACING / GRID -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="06" title="spacing & grid" subtitle="fluid gutters, square by default" accent />
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        The page gutter is fluid — <span class="font-mono text-[color:var(--ink)]" style="font-size:0.85rem">--gutter: clamp(0.875rem, 3vw, 2.5rem)</span>.
+        Corners are square (<span class="font-mono text-[color:var(--ink)]" style="font-size:0.85rem">--radius: 0</span>) in every theme
+        except FLUFFY, which rounds to 14px. The dial sizes to the viewport:
+        <span class="font-mono text-[color:var(--ink)]" style="font-size:0.85rem">--disc-size: min(78vmin, 44rem, 100dvh − 13rem)</span>.
+      </p>
+    </section>
+
+    <!-- MOTION -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="07" title="motion" subtitle="never fully still" accent />
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        Something is always moving: the glyph beats, tickers flicker through
+        scrambled hex, procedural scan lines drift. Motion is meaningful, not
+        decorative, and every animation is gated by <span class="font-mono text-[color:var(--ink)]" style="font-size:0.85rem">prefers-reduced-motion</span> —
+        no essential information ever lives only in movement.
+      </p>
+      <table class="w-full border-collapse text-left">
+        <tbody>
+          {motion.map((m) => (
+            <tr class="hairline-t">
+              <td class="py-1.5 pr-4 font-mono text-[color:var(--ink)]" style="font-size:0.8rem">{m.tok}</td>
+              <td class="py-1.5 pr-4 font-mono text-[color:var(--ink-soft)]" style="font-size:0.8rem">{m.val}</td>
+              <td class="py-1.5 text-[color:var(--ink-soft)]" style="font-size:0.8rem">{m.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- BEATING GLYPH + COMPONENTS -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="08" title="glyph & components" subtitle="the core pieces" accent />
+      <div class="flex items-center gap-5">
+        <span class="font-grotesk font-black leading-none text-[color:var(--accent)]" style="font-size:3.5rem" aria-hidden="true">⬡</span>
+        <p class="text-[color:var(--ink-soft)]" style="font-size:0.85rem;line-height:1.5;max-width:32rem">
+          The centre glyph does a lub-dub on every 12-second slot — 65 bpm, the
+          strong systole landing exactly on the slot boundary, computed from the
+          Beacon genesis timestamp. Nothing is simulated.
+        </p>
+      </div>
+      <ul class="flex flex-col gap-3">
+        <li class="hairline-t pt-3">
+          <span class="micro text-[color:var(--ink)]">CHANNELS</span>
+          <p class="text-[color:var(--ink-soft)]" style="font-size:0.85rem;line-height:1.5">Seven full-screen channels (beat · nodes · blobs · flow · finality · layers · roadmap), each a giant watermark numeral + a docked section header, switched by number keys or the command bar.</p>
+        </li>
+        <li class="hairline-t pt-3">
+          <span class="micro text-[color:var(--ink)]">TICKERS</span>
+          <p class="text-[color:var(--ink-soft)]" style="font-size:0.85rem;line-height:1.5">Fixed-width live readouts in the margins; values change through one frame of scrambled hex, never with layout shift. Pixel face for data, grotesk labels beside them.</p>
+        </li>
+        <li class="hairline-t pt-3">
+          <span class="micro text-[color:var(--ink)]">BADGES</span>
+          <p class="text-[color:var(--ink-soft)]" style="font-size:0.85rem;line-height:1.5">Shields-style embeddable SVG badges served from the cached snapshot — a mono label, a value, and the red accent, self-contained for any README.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- VOICE -->
+    <section class="flex flex-col gap-5">
+      <SectionHeader index="09" title="voice" subtitle="how it reads" accent />
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        Plain, precise, non-financial. British spelling. Data speaks in the pixel
+        face; humans speak in lowercase grotesk. Never "number go up" — the
+        numbers measure whether Ethereum stays open, neutral and hard to stop.
+        No price, no market cap, no trading framing, anywhere.
+      </p>
+      <p class="micro text-[color:var(--ink)]">
+        SOURCED FROM src/styles/tokens.css · SEE DESIGN.md IN THE REPO
+      </p>
+    </section>
+  </main>
+</Layout>
