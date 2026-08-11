@@ -1858,3 +1858,50 @@ A seventh channel that turns Ethereum's upgrade roadmap into plain-language
   letter passes even under `--strict 0.5`, and "filled = advances" reads
   clearly. The Departure Mono EIP/year tokens are sized (1.05rem / 1.6rem) to
   clear the pixel-core dilution. /roadmap: 0 failures at CI margin and strict.
+
+## Declutter — GitHub-first + design system (2026-08-11)
+
+Trim to a GitHub-first contribution story; ship an unlinked design system. No
+metric_meta changes, so no migration/KV step. (SPEC §27.)
+
+- **Donations dropped → GitHub-only contributions.** /support previously offered
+  GitHub Sponsors, an ENS name and an ETH/EVM address. All removed: the project
+  is free and open source with nothing to buy, so "support" now means
+  contribution — /support is one line + a link to the repo. README's Support line
+  and the /about contribute panel point at GitHub, not a wallet. Rationale: a
+  non-financial instrument asking for crypto donations is off-message, and a
+  placeholder `0x000…` address is a footgun.
+- **General contact surface removed; security contact retained.** The public
+  beat@ethereumbeat.org mailto is gone from every user-facing page — the footer
+  CONTACT entry (and its `ContactCredit` component + `.contact-addr` CSS) and the
+  /about CONTACT panel. This reverses the footer/about parts of pass 16 (spec
+  §24) while KEEPING its security half: SECURITY.md and /.well-known/security.txt
+  still route to beat+security@ethereumbeat.org (a spec requirement, RFC 9116).
+  A general inbox invites low-value mail; GitHub issues/discussions are the
+  contribution channel, and security has its own private path. The email-routing
+  disclaimer sentence went with the general mailbox. Footer re-checked at
+  1024/1280 after removal — no clip; the desktop row is now just the source
+  credit, the mobile strip still scrolls cleanly.
+- **Tech stack removed from the site, kept in the README.** Astro / Cloudflare /
+  Workers / D1 / KV / Wrangler no longer appear in product UI (about colophon,
+  methodology answer) — replaced with functional wording ("updated once a day",
+  "runs entirely on a free tier"). The stack stays in the README, where it helps
+  contributors. Code comments that mention D1/KV are not user-facing and were
+  left alone.
+- **/design shipped unlinked — and NOT in `site.ts` ROUTES.** The brief said "add
+  /design to the site ROUTES array," but `site.ts` ROUTES drives the sitemap,
+  llms.txt AND nav — and the brief also requires /design to be absent from
+  sitemap/llms and all in-UI navigation. Those are mutually exclusive. Resolved
+  by making /design a standalone page (like /support): it is added ONLY to the
+  audit ROUTES arrays (audit-contrast + audit-csp) so it is contrast/CSP-gated
+  across all 7 themes, but stays out of ROUTES/sitemap/llms/nav. Reachable by
+  direct URL, referenced solely from the README. audit-meta is sitemap-driven, so
+  it does not (and should not) test /design.
+- **/design + DESIGN.md dogfood real tokens.** Both source their values from
+  `src/styles/tokens.css` — no invented values. DESIGN.md follows Google's
+  design.md spec (alpha): INK encoded as the primary frontmatter palette, the
+  other six themes in prose, canonical section order. `npx @google/design.md lint`
+  reports 0 errors (9 orphaned-token warnings — semantic colours not bound to a
+  component, expected); it is a local aid, deliberately NOT added to verify so the
+  merge stays clean. Fluid values (clamp/min) live in prose, not the frontmatter
+  (the linter rejects non-fixed dimensions).

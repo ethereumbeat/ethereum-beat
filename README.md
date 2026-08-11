@@ -248,7 +248,14 @@ No KV bust is required — `/roadmap` and `/api/roadmap` self-heal from D1 when
 - **[Roadmap](ROADMAP.md)** — what's shipped and what's next (P0–P3).
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** — the standard we hold each other to.
 - **[Security policy](SECURITY.md)** — report vulnerabilities privately, never in a public issue.
-- **[Support](https://ethereumbeat.org/support)** — keep it running (open source, free tier, no ads).
+- **[Support](https://ethereumbeat.org/support)** — free and open source; the way to support it is to contribute on GitHub.
+
+## Design system
+
+The visual language — the hard black/white + red-accent palette, the seven themes,
+Departure Mono for data and Inter for human labels, the 1px line system, and the
+"never fully still" motion — is documented in [DESIGN.md](DESIGN.md) and rendered
+live (dogfooding the real tokens) at **[ethereumbeat.org/design](https://ethereumbeat.org/design)**.
 
 ## Trademark note
 

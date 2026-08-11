@@ -29,6 +29,7 @@ const ROUTES = [
   '/layers',
   '/roadmap',
   '/about',
+  '/design', // unlinked design-system page — audited for contrast + CSP, not in sitemap/llms
   '/badges', // has its own inline copy-to-clipboard script — must stay nonced
   '/pulse/txcount_combined',
   '/pulse/txcount', // 404 page — still HTML, still under the CSP

@@ -1139,3 +1139,57 @@ is stripped.
 
 5. SWEEP. The audit sweep covers 7 channels (contrast + CSP route arrays, meta
    presence list). Contrast is fixed by weight/size/fill, never thresholds.
+
+## 27. Declutter — GitHub-first contributions + design system
+
+Trim the project to a GitHub-first contribution story and add a single-page
+design system. Non-financial framing unchanged; nothing here touches
+metric_meta.
+
+A. /support — stripped to one purpose: contributing via GitHub. All donation /
+   wallet / ENS / GitHub Sponsors content removed; a short line + a repo link in
+   the project voice, in the existing page aesthetic.
+
+B. README — the donation-framed Support line now points at GitHub contribution;
+   the email-routing sentence is gone. The tech-stack section STAYS in the README
+   (this is where it belongs). A brief "Design system" line links to the live
+   /design page and DESIGN.md — the ONLY place /design is linked.
+
+C. Site-wide removals (user-facing pages only; code comments untouched):
+   - the verbatim "Mail is forwarded via Cloudflare Email Routing…" sentence;
+   - the footer CONTACT entry (label + beat@ mailto) and its ContactCredit
+     component + .contact-addr CSS. The width-tight desktop footer row must not
+     clip at 1024/1280 after removal (screenshot-checked, as pass 16 did);
+   - the general contact email from every user-facing page (footer + /about
+     CONTACT panel), replaced by the existing GitHub pointers;
+   - tech-stack / infrastructure brand names (Astro, Cloudflare, Workers, D1, KV,
+     Wrangler). Functional wording that does not name the stack stays ("updated
+     daily", "live values every 12s"). SECURITY.md and /.well-known/security.txt
+     are NOT touched — the security contact (beat+security@) is a spec requirement
+     and stays.
+
+D. /design — a comprehensive single-page design-system reference that DOGFOODS
+   the project's own language, sourced from src/styles/tokens.css (no invented
+   values): brand/ethos, CROPS, colour (hex + AA pairs), the seven themes,
+   typography, the 1px line system, spacing/grid, motion ("never fully still"),
+   the beating glyph and core components, and voice. Every piece of text passes
+   the contrast audit across all 7 themes (fixed by weight/size, never
+   thresholds); swatches are textless colour blocks with AA labels. It is added
+   to the audit ROUTES arrays (contrast + CSP) but is UNLINKED — not in the site
+   ROUTES/nav/footer/sitemap/llms; reachable by direct URL only, referenced
+   solely from the README.
+
+E. DESIGN.md — repo root, following Google's design.md spec (alpha): the default
+   INK theme encoded as the primary palette in YAML frontmatter, the other six
+   themes in prose; canonical section order (Overview, Colors, Typography,
+   Layout, Elevation, Shapes, Components, Do's/Don'ts). Content mirrors /design.
+   `npx @google/design.md lint` is a local validation aid, never a verify gate.
+
+F. SEO/AEO — llms.txt confirmed (correct name), still free of contact email and
+   tech-stack; /methodology added to its route list. /design kept out of
+   sitemap.xml and llms.txt. Meta/OG/JSON-LD swept: no dangling contact,
+   tech-stack or donation references (the only JSON-LD Organization is the data
+   source attribution, not a project contact). robots.txt still allows crawlers.
+
+Gates: clean build; audit-contrast green across 7 channels + /design × 7 themes;
+audit-meta + audit-csp green. One PR; squash-merge on green.

@@ -82,7 +82,7 @@ export function buildLlmsText(origin: string, rows: MetaRow[], full: boolean): s
   );
 
   if (!full) {
-    push('## More', '', `- [llms-full.txt](${origin}/llms-full.txt): expanded version with per-metric definitions.`, `- [About](${origin}/about): concept, methodology, sources.`, `- [Sitemap](${origin}/sitemap.xml)`, '');
+    push('## More', '', `- [llms-full.txt](${origin}/llms-full.txt): expanded version with per-metric definitions.`, `- [About](${origin}/about): concept, the CROPS properties, and every data source.`, `- [Methodology](${origin}/methodology): how each number is measured, in plain language.`, `- [Sitemap](${origin}/sitemap.xml)`, '');
     return lines.join('\n');
   }
 
