@@ -39,7 +39,7 @@ const faqs: { q: string; a: string }[] = [
   },
   {
     q: 'Where does Ethereum Beat get its data, and how is it collected?',
-    a: 'Live per-slot values (block height, base fee, gas, blobs) come from public Ethereum RPC and Beacon endpoints, polled client-side once per slot. Daily series (activity, staking, value secured, blobs, node geography) come from open sources — growthepie (CC BY 4.0), the standard Beacon API, ultrasound.money, DefiLlama, ethernodes and public RPCs — collected once a day by a Cloudflare Worker cron and stored in a small database. Every source is credited on the About page and in the footer, and the full time series is available from the open /api/snapshot and /api/metric endpoints.',
+    a: 'Live per-slot values (block height, base fee, gas, blobs) come from public Ethereum RPC and Beacon endpoints, polled client-side once per slot. Daily series (activity, staking, value secured, blobs, node geography) come from open sources — growthepie (CC BY 4.0), the standard Beacon API, ultrasound.money, DefiLlama, ethernodes and public RPCs — collected once a day and stored in a small database. Every source is credited on the About page and in the footer, and the full time series is available from the open /api/snapshot and /api/metric endpoints.',
   },
 ];
 

@@ -133,7 +133,7 @@ const aboutJsonLd = {
         title="Sources & licences"
         text={[
           'growthepie provides activity, fees, blobs and value-secured series under CC BY 4.0, attribution required and given. Finality and participation come from the standard Beacon API; staking from ultrasound.money; real-world assets from DefiLlama; node geography from ethernodes, baked with a visible date stamp.',
-          'Live blocks and the mempool stream ride PublicNode, dRPC and 1RPC. Map geometry is public-domain Natural Earth. The ROADMAP channel reads Forkcast’s structured upgrade data (an Ethereum Foundation project) with the EF roadmap and strawmap.org for the long-range view. A daily collector stores series in D1; if a source breaks, its metric quietly leaves the rotation.',
+          'Live blocks and the mempool stream ride PublicNode, dRPC and 1RPC. Map geometry is public-domain Natural Earth. The ROADMAP channel reads Forkcast’s structured upgrade data (an Ethereum Foundation project) with the EF roadmap and strawmap.org for the long-range view. A daily collector stores the series; if a source breaks, its metric quietly leaves the rotation.',
         ]}
       />
     </section>
@@ -151,31 +151,16 @@ const aboutJsonLd = {
         client:load
         title="Colophon"
         text={[
-          'Built on Astro + Cloudflare Workers, D1 and KV, entirely on free tiers. Typeset in Departure Mono and Martian Mono, both SIL OFL, committed with their licences.',
+          'Built to run entirely on a free tier, updated once a day. Typeset in Departure Mono and Martian Mono, both SIL OFL, committed with their licences.',
           'The Ethereum glyph and name represent the Ethereum network; this is independent ecosystem work, unaffiliated with the Ethereum Foundation. Adding a metric is one data module and one row of metadata — contributions welcome.',
         ]}
       />
       <a href="https://github.com/ethereumbeat/ethereum-beat" class="cmd-chip !no-underline"><span>SOURCE → GITHUB</span></a>
     </section>
 
-    <!-- 6 CONTACT -->
-    <section class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
-      <SectionHeader index="06" title="contact" subtitle="reach the maintainers" accent />
-      <a
-        href="mailto:beat@ethereumbeat.org"
-        class="font-grotesk font-extrabold leading-tight text-[color:var(--ink)]"
-        style="font-size: clamp(1.4rem, 3.5vw, 2.6rem)"
-      >
-        beat@ethereumbeat.org
-      </a>
-      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
-        Mail is forwarded via Cloudflare Email Routing, so it is not end-to-end encrypted.
-      </p>
-    </section>
-
-    <!-- 7 CONTRIBUTE -->
+    <!-- 6 CONTRIBUTE -->
     <section id="contribute" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-6 px-8 text-center">
-      <SectionHeader index="07" title="contribute" subtitle="it’s built to be forked" accent />
+      <SectionHeader index="06" title="contribute" subtitle="it’s built to be forked" accent />
       <h2 class="max-w-3xl font-grotesk font-extrabold leading-tight" style="font-size: clamp(1.6rem, 4vw, 3.4rem)">
         HELP IT<br />KEEP BEATING
       </h2>
@@ -196,9 +181,6 @@ const aboutJsonLd = {
           'Prefer to just report something? Open an issue for a bug or a feature, or start a thread in Discussions if you want to think out loud first. CONTRIBUTING.md and the roadmap in the repo cover the quality gates and what’s next.',
         ]}
       />
-      <p class="micro text-[color:var(--ink-faint)]">
-        <a href="/support" class="!no-underline hover:font-bold text-[color:var(--ink-soft)]">OR HELP KEEP IT RUNNING → /SUPPORT</a>
-      </p>
     </section>
   </main>
 

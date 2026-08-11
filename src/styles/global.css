@@ -494,18 +494,6 @@ a {
   transform: scaleX(1);
 }
 
-/* footer contact address: the pixel display voice (Departure and the per-theme
-   display faces). SKETCH's --font-num is thin Cutive Mono, which dilutes below
-   the CI-safety contrast bar at this small footer size (~5.16:1), so sketch
-   falls back to legible Martian — the same convention sketch uses for all its
-   small text (pass-15). Class, not inline style, so the theme rule can win. */
-.contact-addr {
-  font-family: var(--font-num);
-}
-[data-theme='sketch'] .contact-addr {
-  font-family: var(--font-mono);
-}
-
 /* short viewports: shed the least essential column items */
 @media (max-height: 760px) {
   .tall-only {
