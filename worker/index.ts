@@ -8,6 +8,7 @@
 import astro from '../dist/_worker.js/index.js';
 import { runCollector } from './collector.ts';
 import { runBroadcast } from './broadcast/index.ts';
+import { refreshRoadmap } from './roadmap.ts';
 
 /**
  * Script CSP: a per-request nonce + 'strict-dynamic'.
@@ -97,13 +98,14 @@ export default {
     return type.includes('text/html') ? secureHtml(res) : res;
   },
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
-    // collect first, then broadcast off the fresh snapshot. Both are
-    // best-effort; the broadcast never blocks or fails the collector.
+    // collect first, then broadcast off the fresh snapshot; refresh the roadmap
+    // independently. All best-effort — none blocks or fails another.
     ctx.waitUntil(
       runCollector(env)
         .catch((err) => console.error('collector failed', err))
         .then(() => runBroadcast(env))
         .catch((err) => console.error('broadcast failed', err)),
     );
+    ctx.waitUntil(refreshRoadmap(env).catch((err) => console.error('roadmap refresh failed', err)));
   },
 } satisfies ExportedHandler<Env>;

@@ -18,6 +18,19 @@ export const LIVE_SOURCES: SourceRef[] = [
   { name: 'ETHERNODES', url: 'https://ethernodes.org' },
 ];
 
+/**
+ * ROADMAP channel (CH 07) attributions. These are editorial roadmap sources,
+ * not live metric endpoints, so they stay out of the metric credit line; they
+ * are surfaced on /roadmap and /about. Forkcast's structured upgrade data
+ * (github.com/ethereum/forkcast) is the machine source the daily refresh reads;
+ * the EF roadmap is the human reference; strawmap.org is the long-range view.
+ */
+export const ROADMAP_SOURCES: SourceRef[] = [
+  { name: 'FORKCAST', url: 'https://forkcast.org' },
+  { name: 'ETHEREUM FOUNDATION', url: 'https://ethereum.org/roadmap' },
+  { name: 'STRAWMAP', url: 'https://strawmap.org' },
+];
+
 /** licences of the underlying sources, for Dataset JSON-LD and llms.txt;
  *  sources without a published data licence fall back to their own URL
  *  (data under the source's terms) */

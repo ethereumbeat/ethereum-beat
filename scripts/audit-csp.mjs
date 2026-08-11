@@ -27,6 +27,7 @@ const ROUTES = [
   '/flow',
   '/finality',
   '/layers',
+  '/roadmap',
   '/about',
   '/badges', // has its own inline copy-to-clipboard script — must stay nonced
   '/pulse/txcount_combined',

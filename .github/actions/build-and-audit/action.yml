@@ -39,6 +39,7 @@ runs:
         npx wrangler d1 execute ethereum_beat --local --file db/schema.sql -y
         npx wrangler d1 execute ethereum_beat --local --file db/meta.sql -y
         npx wrangler d1 execute ethereum_beat --local --file db/ci-seed.sql -y
+        npx wrangler d1 execute ethereum_beat --local --file db/roadmap.sql -y
 
     - name: Start preview server
       shell: bash

@@ -89,6 +89,14 @@ export const ROUTES: RouteMeta[] = [
     'layers',
   ),
   route(
+    '/roadmap',
+    'ROADMAP',
+    '07',
+    'what is coming to the protocol, upgrade by upgrade',
+    "Ethereum's upgrade roadmap in plain language: what Fusaka, Glamsterdam and Hegotá change for censorship resistance, decentralisation, node sustainability and privacy — EIP numbers as decoration, no price or market framing.",
+    'roadmap',
+  ),
+  route(
     '/about',
     'ABOUT',
     'A',

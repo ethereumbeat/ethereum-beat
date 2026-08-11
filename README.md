@@ -178,6 +178,8 @@ Open CORS, edge-cached one hour:
 - `GET /api/snapshot` — latest value, 30-point sparkline and d/w/m/q/y deltas
   for every metric with data.
 - `GET /api/metric/[key]?range=d|w|m|q|y` — aggregated series plus metadata.
+- `GET /api/roadmap` — upcoming network upgrades (plain-language, with target
+  windows, EIPs and CROPS tags) behind the ROADMAP channel.
 
 ## Live badges
 
@@ -209,9 +211,34 @@ Displayed data comes from third-party sources under their own terms:
   **[PublicNode](https://publicnode.com)**, **[dRPC](https://drpc.org)**,
   **[1RPC](https://1rpc.io)**, **[beaconcha.in](https://beaconcha.in)** — free/public endpoints.
 - **[Natural Earth](https://www.naturalearthdata.com)** — public domain map data.
+- **[Forkcast](https://forkcast.org)** (Ethereum Foundation) — structured upgrade
+  data behind the **ROADMAP** channel, with the [EF roadmap](https://ethereum.org/roadmap)
+  and **[strawmap.org](https://strawmap.org)** for the long-range view.
 
 Endpoint verification notes and every degradation decision live in
 [DECISIONS.md](DECISIONS.md).
+
+## Roadmap channel (CH 07)
+
+`/roadmap` translates Ethereum's upgrade roadmap into plain-language
+"what's coming", grouped by the CROPS properties each upgrade advances (EIP
+numbers are decorative tokens). It reads its own D1 tables (`roadmap_upgrades`,
+`roadmap_eips` — `metric_meta` is untouched); the daily cron refreshes the
+machine fields (status, target window, meta links) from Forkcast while the
+non-financial summaries and CROPS tags stay hand-authored in `db/roadmap.sql`.
+
+The tables are a **schema change**, so on an existing production database they
+must be applied to remote D1 **by hand** (the deploy pipeline never runs
+migrations):
+
+```sh
+wrangler d1 execute ethereum_beat --remote --file db/migrations/006_roadmap.sql
+wrangler d1 execute ethereum_beat --remote --file db/roadmap.sql
+```
+
+No KV bust is required — `/roadmap` and `/api/roadmap` self-heal from D1 when
+`roadmap:latest` is missing. Bust it only to force an immediate refresh:
+`wrangler kv key delete --binding=SNAP roadmap:latest --remote`.
 
 ## Community
 

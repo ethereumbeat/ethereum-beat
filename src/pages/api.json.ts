@@ -62,6 +62,15 @@ export const GET: APIRoute = (ctx) =>
           description: 'The per-chain activity board behind the LAYERS channel.',
           cacheControl: 'public, s-maxage=3600',
         },
+        {
+          path: '/api/roadmap',
+          method: 'GET',
+          description:
+            "The ROADMAP channel: upcoming Ethereum network upgrades in plain language, each with target window (dates slip — see date_locked), included/candidate EIPs, and the CROPS properties it advances. Non-financial. Machine fields from Forkcast; summaries editorial.",
+          response:
+            '{ generated_at, upgrades: [{ id, name, codename, status, target_label, date_locked, activation_date, summary, significance, crops, meta_eip_url, source_name, source_url, eips: [{ eip, title, inclusion, summary, crops }] }] }',
+          cacheControl: 'public, s-maxage=3600, max-age=300',
+        },
       ],
       metrics,
     };

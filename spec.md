@@ -1096,3 +1096,46 @@ skips that channel, never throws.
    X draft is idempotent and always refreshed. Crypto verified against the
    NIP-19 vector + Schnorr/Ed25519/Blake3 round-trips (scripts/test-broadcast.ts)
    and exercised in the workerd runtime before wiring.
+
+## 26. Roadmap channel (CH 07)
+
+A first-class seventh channel (key `7`: BEAT NODES BLOBS FLOW FINALITY LAYERS
+ROADMAP) that translates Ethereum's upgrade roadmap into human-readable "what's
+coming", with EIP numbers as geeky decoration, in the observatory aesthetic.
+
+NON-FINANCIAL: each upgrade and EIP is framed by its protocol/network-health
+significance (censorship resistance, decentralisation, node sustainability,
+privacy). All price / trading / "catalyst for ETH" framing from upstream sources
+is stripped.
+
+1. DATA SOURCE. Forkcast's structured upgrade data (`ethereum/forkcast`
+   `src/data/upgrades.ts`, fetched from raw GitHub) is the wired machine source —
+   Forkcast's own llms.txt says its page bodies are client-rendered and directs
+   machine consumers to the repo source data. Fallbacks noted: the ethereum/EIPs
+   Meta EIPs and the EF blog. Forkcast/EF (+ strawmap.org for the long-range
+   view) are added to the source registry with attribution.
+
+2. TABLES. New D1 tables `roadmap_upgrades` + `roadmap_eips` (metric_meta is NOT
+   touched). Migration in `db/migrations/006_roadmap.sql`, seed in
+   `db/roadmap.sql`. Both are a schema change and must be applied MANUALLY to
+   remote D1; no KV bust needed (the page + /api/roadmap self-heal from D1).
+
+3. REFRESH. The daily cron refreshes the machine fields (status, target window,
+   meta links) from Forkcast and rebuilds the KV snapshot; best-effort, never
+   throws. The one status change it makes is flipping an upgrade to `live` when
+   Forkcast marks it Live with a real date (dates SLIP — nothing else is
+   auto-locked). Editorial fields (plain-language summaries, CROPS tags) are
+   hand-authored and never overwritten. New upstream forks are logged, never
+   auto-inserted, so no unvetted blurb renders.
+
+4. UI. A forward-looking, server-rendered timeline in the monochrome-observatory
+   language: 1px rail, Departure Mono for EIP/year tokens, lowercase grotesk for
+   human summaries, red accent, a procedural scan pip down the rail (gated by
+   reduced motion — never fully still). "target, not locked" is stated honestly;
+   no fixed mainnet date is asserted. Seed reflects current reality: Fusaka
+   (live, Dec 2025), Glamsterdam (Gloas+Amsterdam, devnet, H2 2026 target, no
+   locked date; ePBS EIP-7732, BALs EIP-7928), Hegotá (~2027; FOCIL EIP-7805 →
+   Censorship Resistance).
+
+5. SWEEP. The audit sweep covers 7 channels (contrast + CSP route arrays, meta
+   presence list). Contrast is fixed by weight/size/fill, never thresholds.

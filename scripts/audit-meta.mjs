@@ -45,8 +45,8 @@ if (sitemap.status !== 200) {
 const routes = [...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)]
   .map((m) => new URL(m[1]).pathname)
   .map((p) => (p === '/' ? '/' : p.replace(/\/$/, '')));
-if (routes.length < 8) fail('/sitemap.xml', `only ${routes.length} URLs`);
-for (const p of ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/about'])
+if (routes.length < 9) fail('/sitemap.xml', `only ${routes.length} URLs`);
+for (const p of ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/roadmap', '/about'])
   if (!routes.includes(p)) fail('/sitemap.xml', `missing ${p}`);
 
 // ── per-route assertions ────────────────────────────────────────────────

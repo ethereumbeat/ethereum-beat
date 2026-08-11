@@ -1,0 +1,142 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SectionHeader from '../components/SectionHeader';
+import { routeMeta, siteOrigin } from '../lib/site';
+import { buildRoadmapSnapshot, ROADMAP_KEY, type RoadmapSnapshot } from '../../worker/roadmap.ts';
+
+export const prerender = false;
+const rm = routeMeta('/roadmap');
+
+// SSR the timeline so the "what's coming" text is in the initial HTML (AEO):
+// read the KV snapshot, self-heal from D1 if missing (like /api/snapshot).
+const { DB, SNAP } = Astro.locals.runtime.env;
+let snap: RoadmapSnapshot | null = null;
+try {
+  const raw = await SNAP.get(ROADMAP_KEY);
+  snap = raw ? (JSON.parse(raw) as RoadmapSnapshot) : await buildRoadmapSnapshot(DB);
+} catch {
+  snap = null;
+}
+const upgrades = snap?.upgrades ?? [];
+
+const origin = siteOrigin(Astro.locals.runtime.env);
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Ethereum protocol roadmap — upcoming network upgrades',
+    url: `${origin}/roadmap`,
+    itemListElement: upgrades.map((u, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: `${u.name}${u.codename ? ` (${u.codename})` : ''}`,
+      description: u.summary,
+    })),
+  },
+];
+
+// CROPS is four properties; show all four, light up the ones an item advances.
+const CROPS = [
+  ['CR', 'censorship resistance'],
+  ['O', 'open source & free'],
+  ['P', 'privacy'],
+  ['S', 'security'],
+] as const;
+const advances = (tags: string | null, letter: string) =>
+  (tags ?? '').split(',').map((t) => t.trim()).includes(letter);
+const yearOf = (u: (typeof upgrades)[number]) =>
+  (u.activation_date ?? u.target_label ?? '').match(/\d{4}/)?.[0] ?? '—';
+const eipUrl = (n: number) => `https://eips.ethereum.org/EIPS/eip-${n}`;
+---
+
+<Layout title={rm.title} description={rm.description} jsonLd={jsonLd}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">7</div>
+  <div class="channel-dock" aria-hidden="true">
+    <SectionHeader index="07" title="roadmap" subtitle="what's coming" size="sm" />
+  </div>
+
+  <main class="mx-auto flex h-dvh max-w-5xl flex-col channel-body px-4 pt-8 lg:px-8">
+    <h1 class="sr-only">Ethereum protocol roadmap — what is coming next</h1>
+    <div class="mb-4 flex items-baseline justify-between gap-4">
+      <p class="mono-label text-[color:var(--ink-soft)]">
+        upcoming network upgrades — protocol health, not price
+      </p>
+      <p class="micro text-[color:var(--ink)]">dates slip · target, not locked</p>
+    </div>
+
+    <div class="roadmap-scroll min-h-0 flex-1 overflow-y-auto pb-10">
+      <ol class="roadmap-timeline" aria-label="Ethereum network upgrades, nearest first">
+        {
+          upgrades.map((u) => (
+            <li class="roadmap-node" data-status={u.status}>
+              <span class="roadmap-marker" aria-hidden="true" />
+
+              <div class="roadmap-when">
+                <span class="roadmap-year">{yearOf(u)}</span>
+                <span class="micro roadmap-status text-[color:var(--ink)]">{u.status}</span>
+              </div>
+
+              <div class="roadmap-card">
+                <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h2 class="roadmap-name">{u.name}</h2>
+                  {u.codename && <span class="micro text-[color:var(--ink)]">{u.codename}</span>}
+                  {!u.date_locked && <span class="roadmap-nolock">target · not locked</span>}
+                </div>
+
+                <p class="micro roadmap-target text-[color:var(--ink)]">{u.target_label}</p>
+                <p class="roadmap-summary">{u.summary}</p>
+
+                <div class="roadmap-crops" aria-label="CROPS properties this upgrade advances">
+                  {CROPS.map(([letter, name]) => (
+                    <span
+                      class:list={['roadmap-crop', { 'roadmap-crop--on': advances(u.crops, letter) }]}
+                      title={name}
+                    >
+                      {letter}
+                    </span>
+                  ))}
+                </div>
+
+                {u.eips.length > 0 && (
+                  <ul class="roadmap-eips">
+                    {u.eips.map((e) => (
+                      <li class="roadmap-eip">
+                        <a class="eip-token" href={eipUrl(e.eip)} target="_blank" rel="noopener">
+                          EIP-{e.eip}
+                        </a>
+                        <span class="roadmap-eip-title">{e.title}</span>
+                        {e.summary && <span class="roadmap-eip-sum">{e.summary}</span>}
+                        <span class="roadmap-eip-crops" aria-hidden="true">
+                          {(e.crops ?? '').split(',').map((c) => c.trim()).filter(Boolean).join(' · ')}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {u.significance && <p class="roadmap-signif">{u.significance}</p>}
+
+                <div class="roadmap-foot">
+                  {u.meta_eip_url && (
+                    <a class="micro roadmap-link" href={u.meta_eip_url} target="_blank" rel="noopener">
+                      meta thread ↗
+                    </a>
+                  )}
+                  {u.source_url && (
+                    <a class="micro roadmap-link" href={u.source_url} target="_blank" rel="noopener">
+                      {u.source_name} ↗
+                    </a>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="micro roadmap-caption text-[color:var(--ink)]">
+        roadmap from forkcast / ef · long-range: strawmap.org · EIP numbers link to eips.ethereum.org
+      </p>
+    </div>
+  </main>
+</Layout>
