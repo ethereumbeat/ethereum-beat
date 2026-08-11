@@ -68,7 +68,9 @@ CREATE TABLE IF NOT EXISTS roadmap_eips (
   eip INTEGER NOT NULL,             -- EIP number (decorative token)
   title TEXT NOT NULL,              -- short human name: PeerDAS, ePBS, FOCIL
   inclusion TEXT NOT NULL,          -- included | scheduled | candidate | proposed | declined
-  summary TEXT,                     -- plain-language what it does (editorial, non-financial)
+  summary TEXT,                     -- one-line what it does (editorial, non-financial)
+  rationale TEXT,                   -- fuller why-it-matters (editorial; migration 007)
+  layer TEXT,                       -- EL | CL | EL+CL (execution / consensus; migration 007)
   crops TEXT,                       -- CR,O,P,S this EIP advances
   sort INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (upgrade_id, eip)

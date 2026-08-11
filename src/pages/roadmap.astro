@@ -7,8 +7,9 @@ import { buildRoadmapSnapshot, ROADMAP_KEY, type RoadmapSnapshot } from '../../w
 export const prerender = false;
 const rm = routeMeta('/roadmap');
 
-// SSR the timeline so the "what's coming" text is in the initial HTML (AEO):
-// read the KV snapshot, self-heal from D1 if missing (like /api/snapshot).
+// SSR every panel — names, statuses, EIP summaries AND rationale are all in the
+// initial HTML (an answer engine reads the whole roadmap); the carousel is
+// progressive enhancement layered on top. Read KV, self-heal from D1.
 const { DB, SNAP } = Astro.locals.runtime.env;
 let snap: RoadmapSnapshot | null = null;
 try {
@@ -35,18 +36,13 @@ const jsonLd = [
   },
 ];
 
-// CROPS is four properties; show all four, light up the ones an item advances.
-const CROPS = [
-  ['CR', 'censorship resistance'],
-  ['O', 'open source & free'],
-  ['P', 'privacy'],
-  ['S', 'security'],
-] as const;
+const CROPS = ['CR', 'O', 'P', 'S'] as const;
 const advances = (tags: string | null, letter: string) =>
   (tags ?? '').split(',').map((t) => t.trim()).includes(letter);
 const yearOf = (u: (typeof upgrades)[number]) =>
   (u.activation_date ?? u.target_label ?? '').match(/\d{4}/)?.[0] ?? '—';
 const eipUrl = (n: number) => `https://eips.ethereum.org/EIPS/eip-${n}`;
+const pad2 = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Layout title={rm.title} description={rm.description} jsonLd={jsonLd}>
@@ -55,77 +51,98 @@ const eipUrl = (n: number) => `https://eips.ethereum.org/EIPS/eip-${n}`;
     <SectionHeader index="07" title="roadmap" subtitle="what's coming" size="sm" />
   </div>
 
-  <main class="mx-auto flex h-dvh max-w-5xl flex-col channel-body px-4 pt-8 lg:px-8">
-    <h1 class="sr-only">Ethereum protocol roadmap — what is coming next</h1>
-    <div class="mb-4 flex items-baseline justify-between gap-4">
-      <p class="mono-label text-[color:var(--ink-soft)]">
-        upcoming network upgrades — protocol health, not price
-      </p>
-      <p class="micro text-[color:var(--ink)]">dates slip · target, not locked</p>
+  <main class="mx-auto flex h-dvh max-w-5xl flex-col channel-body px-4 pt-8 lg:px-8" data-rm-root>
+    <h1 class="sr-only">Ethereum protocol roadmap — upcoming network upgrades</h1>
+
+    <!-- header row -->
+    <div class="mb-3 flex items-baseline justify-between gap-4">
+      <p class="mono-label text-[color:var(--ink-soft)]">upcoming network upgrades — protocol health, not price</p>
+      <p class="micro text-[color:var(--ink)]">◀▶ upgrade · ⏎ detail · dates slip</p>
     </div>
 
-    <div class="roadmap-scroll min-h-0 flex-1 overflow-y-auto pb-10">
-      <ol class="roadmap-timeline" aria-label="Ethereum network upgrades, nearest first">
+    <!-- the timeline axis: live → devnet → planning, the active tick ticking -->
+    <ol class="rm-axis" aria-hidden="true">
+      {
+        upgrades.map((u, i) => (
+          <li class="rm-tick" data-status={u.status} data-tick={i}>
+            <span class="rm-tick-dot" />
+            <span class="rm-tick-label">{u.name}</span>
+          </li>
+        ))
+      }
+      <span class="rm-axis-scan" aria-hidden="true" />
+    </ol>
+
+    <!-- the carousel: one full panel per upgrade -->
+    <div class="rm-viewport min-h-0 flex-1">
+      <ol class="rm-track" data-rm-track style={`--rm-count:${upgrades.length}`}>
         {
-          upgrades.map((u) => (
-            <li class="roadmap-node" data-status={u.status}>
-              <span class="roadmap-marker" aria-hidden="true" />
-
-              <div class="roadmap-when">
-                <span class="roadmap-year">{yearOf(u)}</span>
-                <span class="micro roadmap-status text-[color:var(--ink)]">{u.status}</span>
-              </div>
-
-              <div class="roadmap-card">
-                <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <h2 class="roadmap-name">{u.name}</h2>
-                  {u.codename && <span class="micro text-[color:var(--ink)]">{u.codename}</span>}
-                  {!u.date_locked && <span class="roadmap-nolock">target · not locked</span>}
+          upgrades.map((u, i) => (
+            <li class="rm-panel" data-idx={i} data-status={u.status} aria-label={`${u.name} upgrade`}>
+              <div class="rm-panel-inner">
+                <div class="rm-head">
+                  <span class="rm-year">{yearOf(u)}</span>
+                  <div class="rm-head-main">
+                    <div class="rm-head-line">
+                      <h2 class="rm-name">{u.name}</h2>
+                      <span class="rm-status" data-status={u.status}>
+                        <span class="rm-status-dot" aria-hidden="true" />
+                        {u.status}
+                      </span>
+                      {!u.date_locked && <span class="rm-nolock">target · not locked</span>}
+                    </div>
+                    <p class="rm-sub">
+                      {u.codename && <span class="rm-codename">{u.codename}</span>}
+                      <span class="rm-target">{u.target_label}</span>
+                    </p>
+                  </div>
                 </div>
 
-                <p class="micro roadmap-target text-[color:var(--ink)]">{u.target_label}</p>
-                <p class="roadmap-summary">{u.summary}</p>
+                <p class="rm-summary">{u.summary}</p>
 
-                <div class="roadmap-crops" aria-label="CROPS properties this upgrade advances">
-                  {CROPS.map(([letter, name]) => (
-                    <span
-                      class:list={['roadmap-crop', { 'roadmap-crop--on': advances(u.crops, letter) }]}
-                      title={name}
-                    >
-                      {letter}
-                    </span>
+                <div class="rm-crops" aria-label="CROPS properties this upgrade advances">
+                  {CROPS.map((letter) => (
+                    <span class:list={['rm-crop', { 'rm-crop--on': advances(u.crops, letter) }]}>{letter}</span>
                   ))}
                 </div>
 
                 {u.eips.length > 0 && (
-                  <ul class="roadmap-eips">
+                  <ul class="rm-eips">
                     {u.eips.map((e) => (
-                      <li class="roadmap-eip">
-                        <a class="eip-token" href={eipUrl(e.eip)} target="_blank" rel="noopener">
-                          EIP-{e.eip}
+                      <li class="rm-eip">
+                        <a class="rm-eip-num" href={eipUrl(e.eip)} target="_blank" rel="noopener">
+                          <span class="rm-eip-num-lg">{e.eip}</span>
+                          <span class="rm-eip-num-tag">EIP</span>
                         </a>
-                        <span class="roadmap-eip-title">{e.title}</span>
-                        {e.summary && <span class="roadmap-eip-sum">{e.summary}</span>}
-                        <span class="roadmap-eip-crops" aria-hidden="true">
-                          {(e.crops ?? '').split(',').map((c) => c.trim()).filter(Boolean).join(' · ')}
-                        </span>
+                        <div class="rm-eip-body">
+                          <div class="rm-eip-titlerow">
+                            <span class="rm-eip-title">{e.title}</span>
+                            <span class="rm-eip-meta">
+                              {e.layer && <span class="rm-eip-chip">{e.layer}</span>}
+                              <span class="rm-eip-chip">{e.inclusion}</span>
+                              {(e.crops ?? '')
+                                .split(',')
+                                .map((c) => c.trim())
+                                .filter(Boolean)
+                                .map((c) => <span class="rm-eip-chip rm-eip-chip--crop">{c}</span>)}
+                            </span>
+                          </div>
+                          {e.summary && <p class="rm-eip-sum">{e.summary}</p>}
+                          {e.rationale && <p class="rm-eip-why">{e.rationale}</p>}
+                        </div>
                       </li>
                     ))}
                   </ul>
                 )}
 
-                {u.significance && <p class="roadmap-signif">{u.significance}</p>}
+                {u.significance && <p class="rm-signif">{u.significance}</p>}
 
-                <div class="roadmap-foot">
+                <div class="rm-foot">
                   {u.meta_eip_url && (
-                    <a class="micro roadmap-link" href={u.meta_eip_url} target="_blank" rel="noopener">
-                      meta thread ↗
-                    </a>
+                    <a class="micro rm-link" href={u.meta_eip_url} target="_blank" rel="noopener">meta thread ↗</a>
                   )}
                   {u.source_url && (
-                    <a class="micro roadmap-link" href={u.source_url} target="_blank" rel="noopener">
-                      {u.source_name} ↗
-                    </a>
+                    <a class="micro rm-link" href={u.source_url} target="_blank" rel="noopener">forkcast ↗</a>
                   )}
                 </div>
               </div>
@@ -133,10 +150,80 @@ const eipUrl = (n: number) => `https://eips.ethereum.org/EIPS/eip-${n}`;
           ))
         }
       </ol>
-
-      <p class="micro roadmap-caption text-[color:var(--ink)]">
-        roadmap from forkcast · long-range: strawmap.org · EIP numbers link to eips.ethereum.org
-      </p>
     </div>
+
+    <!-- on-screen controls (mirror the ◀▶ / ⏎ grammar) -->
+    <div class="rm-controls" data-rm-controls>
+      <button type="button" class="rm-btn" data-rm-prev aria-label="Previous upgrade">◀</button>
+      <span class="rm-counter"><span data-rm-counter>{pad2(1)}</span> / {pad2(upgrades.length)}</span>
+      <button type="button" class="rm-btn rm-btn--dive" data-rm-dive aria-label="Toggle EIP detail">⏎ DETAIL</button>
+      <button type="button" class="rm-btn" data-rm-next aria-label="Next upgrade">▶</button>
+    </div>
+
+    <p class="micro rm-caption text-[color:var(--ink)]">
+      roadmap from forkcast · long-range: strawmap.org · EIP numbers link to eips.ethereum.org
+    </p>
   </main>
+
+  <script>
+    // Progressive enhancement: the panels are already in the SSR HTML. This
+    // turns the vertical fallback into a horizontal ◀▶ carousel with ⏎ dive and
+    // swipe, matching the channel grammar. ▲▼ (channel switch) stays with the
+    // Layout handler; we only claim ◀ ▶ ⏎.
+    const initRoadmap = () => {
+      const root = document.querySelector('[data-rm-root]') as HTMLElement | null;
+      const track = document.querySelector('[data-rm-track]') as HTMLElement | null;
+      if (!root || !track || root.dataset.rmBound) return;
+      root.dataset.rmBound = '1';
+      root.dataset.rmOn = '1'; // CSS switches to carousel mode only when enhanced
+
+      const panels = [...track.querySelectorAll('.rm-panel')] as HTMLElement[];
+      const ticks = [...document.querySelectorAll('.rm-tick')] as HTMLElement[];
+      const counter = document.querySelector('[data-rm-counter]');
+      const n = panels.length;
+      let idx = 0;
+
+      const render = () => {
+        track.style.setProperty('--rm-idx', String(idx));
+        panels.forEach((p, i) => p.classList.toggle('rm-panel--active', i === idx));
+        ticks.forEach((t, i) => t.classList.toggle('rm-tick--active', i === idx));
+        if (counter) counter.textContent = String(idx + 1).padStart(2, '0');
+      };
+      const go = (d: number) => {
+        idx = Math.min(n - 1, Math.max(0, idx + d)); // clamp at the ends
+        render();
+      };
+      const toDetail = () => panels[idx]?.classList.toggle('rm-panel--dived');
+
+      // keyboard: ◀ ▶ ⏎ only on /roadmap; leave ▲▼ to the Layout channel switch
+      window.addEventListener('keydown', (e) => {
+        if (!location.pathname.startsWith('/roadmap')) return;
+        const tag = (e.target as HTMLElement | null)?.tagName ?? '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+        else if (e.key === 'Enter') { e.preventDefault(); toDetail(); }
+      });
+
+      // on-screen controls
+      root.querySelector('[data-rm-prev]')?.addEventListener('click', () => go(-1));
+      root.querySelector('[data-rm-next]')?.addEventListener('click', () => go(1));
+      root.querySelector('[data-rm-dive]')?.addEventListener('click', toDetail);
+      ticks.forEach((t, i) => t.addEventListener('click', () => { idx = i; render(); }));
+
+      // swipe (horizontal) — ignore mostly-vertical drags so the panel can scroll
+      let sx = 0, sy = 0, sw = false;
+      const vp = root.querySelector('.rm-viewport') as HTMLElement | null;
+      vp?.addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; sw = true; });
+      window.addEventListener('pointerup', (e) => {
+        if (!sw) return; sw = false;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+      });
+
+      render();
+    };
+    initRoadmap();
+    document.addEventListener('astro:page-load', initRoadmap);
+  </script>
 </Layout>
