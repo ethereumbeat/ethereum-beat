@@ -287,7 +287,9 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
       // left/right only cycle metrics on BEAT — dim them elsewhere
       const syncDpad = () => {
         const pad = document.getElementById('dpad');
-        pad?.classList.toggle('dpad-metric-off', location.pathname !== '/');
+        // ← → are live on BEAT (cycle metrics) and ROADMAP (cycle upgrades)
+        const lr = location.pathname === '/' || location.pathname.startsWith('/roadmap');
+        pad?.classList.toggle('dpad-metric-off', !lr);
       };
       // teach that the keys work: one pulse on load / after every swap
       const pulseDpad = () => {

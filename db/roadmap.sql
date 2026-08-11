@@ -34,19 +34,23 @@ VALUES
    'Forkcast', 'https://forkcast.org/upgrade/hegota', NULL);
 
 INSERT OR REPLACE INTO roadmap_eips
-  (upgrade_id, eip, title, inclusion, summary, crops, sort)
+  (upgrade_id, eip, title, inclusion, summary, rationale, layer, crops, sort)
 VALUES
   ('fusaka', 7594, 'PeerDAS', 'included',
    'Nodes sample small pieces of blob data instead of downloading all of it, keeping node operation affordable as data scales.',
-   'CR,O', 10),
+   'Full nodes today download every blob to check the data is available. PeerDAS lets each node download and verify only a small random sample of the columns, relying on erasure coding and the wider network to guarantee the rest is retrievable. Data-availability cost stops scaling with the number of blobs per node, so blob capacity can rise without pricing ordinary operators out of running a node.',
+   'CL', 'CR,O', 10),
 
   ('glamsterdam', 7732, 'ePBS', 'scheduled',
    'Enshrined proposer-builder separation: the protocol runs the proposer/builder split directly, removing reliance on trusted relays.',
-   'CR,S', 10),
+   'Block building is dominated by a few specialised builders reached through off-protocol relays the proposer must trust. ePBS writes the proposer/builder split into consensus itself: the proposer commits to a builder bid, and the block is revealed and attested in-protocol with no trusted relay. That removes a fragile central piece of the pipeline and a point that could be pressured to exclude transactions.',
+   'CL', 'CR,S', 10),
   ('glamsterdam', 7928, 'Block-level access lists', 'scheduled',
    'Declares which accounts and storage a block touches upfront, enabling parallel execution and cheaper verification.',
-   'O,S', 20),
+   'A block-level access list declares up front every account and storage slot the whole block will touch. Clients can then load that state in parallel and validate transactions concurrently instead of discovering dependencies one at a time. It is a building block for stateless clients and cheaper verification, keeping the cost of checking the chain low as throughput grows.',
+   'EL', 'O,S', 20),
 
   ('hegota', 7805, 'FOCIL', 'scheduled',
    'Fork-choice-enforced inclusion lists let a committee force valid transactions to be included, so builders cannot silently censor.',
-   'CR', 10);
+   'Inclusion lists let a committee of validators name transactions the next block must include if they are valid and there is room, and fork-choice enforcement means a block that ignores the list is rejected by honest validators. Censoring a transaction then costs the block itself, turning censorship resistance into an enforced rule rather than a norm.',
+   'CL', 'CR', 10);

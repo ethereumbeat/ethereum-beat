@@ -15,6 +15,10 @@ export interface RoadmapEip {
   title: string;
   inclusion: string;
   summary: string | null;
+  /** fuller why-it-matters (migration 007) */
+  rationale: string | null;
+  /** EL | CL | EL+CL — execution / consensus layer (migration 007) */
+  layer: string | null;
   crops: string | null;
   sort: number;
 }

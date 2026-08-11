@@ -1676,214 +1676,208 @@ html[data-dock='left'] .channel-dock {
   border-radius: 2px;
 }
 
-/* ── ROADMAP channel (CH 07): forward-looking observatory timeline ──────────
-   1px rail, Departure Mono for EIP/year tokens, lowercase grotesk for human
-   summaries, red accent, procedural scan motion. Contrast rule holds: all
-   text is full --ink or --ink-soft; colour lives on non-text markers. */
-.roadmap-timeline {
-  --rail: 4rem;
+
+/* ── ROADMAP channel (CH 07): horizontal panel carousel ─────────────────────
+   Upgrades are the horizontal axis (◀▶). SSR renders every panel; the inline
+   script adds carousel + ⏎ dive + swipe. 1px lines, pixel face for data tokens
+   (year, EIP numbers), grotesk for human names, red accent, all text AA in the
+   seven themes. Never fully still: a scan pip ticks along the axis. */
+
+/* axis: live → devnet → planning, ticking */
+.rm-axis {
   position: relative;
-  margin: 0;
-  padding: 0.25rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0 0 0.75rem;
+  padding: 0;
   list-style: none;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
 }
-/* the continuous rail */
-.roadmap-timeline::before {
-  content: '';
-  position: absolute;
-  left: var(--rail);
-  top: 0.6rem;
-  bottom: 1.5rem;
-  width: 1px;
-  background: var(--hairline);
+.rm-tick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  border-right: 1px solid var(--hairline-faint);
 }
-.roadmap-node {
-  position: relative;
-  display: grid;
-  grid-template-columns: calc(var(--rail) - 1rem) 1fr;
-  column-gap: 2rem;
-  padding-bottom: 2.25rem;
+.rm-tick:last-of-type { border-right: 0; }
+.rm-tick-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  border: 1.5px solid var(--line-data); background: var(--paper); flex: none;
 }
-.roadmap-node:last-child { padding-bottom: 0.5rem; }
+.rm-tick[data-status='live'] .rm-tick-dot { background: var(--ok); border-color: var(--ok); }
+.rm-tick-label {
+  font-family: var(--font-mono); font-size: var(--text-micro);
+  letter-spacing: 0.06em; text-transform: uppercase; font-weight: 650;
+  color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rm-tick--active .rm-tick-label { color: var(--ink); }
+.rm-tick--active { background: var(--accent-soft); }
+.rm-axis-scan { display: none; }
 
-/* rail marker: hollow ring by default, filled + green when live */
-.roadmap-marker {
-  position: absolute;
-  left: var(--rail);
-  top: 0.55rem;
-  width: 11px;
-  height: 11px;
-  transform: translateX(-50%);
-  border: 1.5px solid var(--line-data);
-  border-radius: 50%;
-  background: var(--paper);
-}
-.roadmap-node[data-status='live'] .roadmap-marker {
-  border-color: var(--ok);
-  background: var(--ok);
-}
-.roadmap-node[data-status='planning'] .roadmap-marker,
-.roadmap-node[data-status='research'] .roadmap-marker {
-  border-style: dashed;
-}
+/* viewport + track. Default (no JS): vertical stack, scrollable — fully
+   readable. Enhanced ([data-rm-on]): a horizontal transform carousel. */
+.rm-viewport { position: relative; overflow-y: auto; }
+.rm-track { display: flex; flex-direction: column; gap: 2rem; margin: 0; padding: 0; list-style: none; }
+.rm-panel { min-width: 0; }
+.rm-panel-inner { padding: 0.25rem 0.25rem 1rem; }
 
-/* left column: pixel year + status */
-.roadmap-when {
-  text-align: right;
-  padding-top: 0.1rem;
-  line-height: 1.1;
+[data-rm-on] .rm-viewport { overflow: hidden; }
+[data-rm-on] .rm-track {
+  flex-direction: row; flex-wrap: nowrap; gap: 0; height: 100%;
+  transform: translateX(calc(var(--rm-idx, 0) * -100%));
 }
-.roadmap-year {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.6rem;   /* large enough that the pixel core reaches full ink */
-  color: var(--ink);
-  letter-spacing: 0.02em;
-}
-.roadmap-status { display: block; margin-top: 0.25rem; }
-
-/* card */
-.roadmap-card { min-width: 0; padding-top: 0.05rem; }
-.roadmap-name {
-  font-family: var(--font-grotesk);
-  font-weight: 800;
-  font-size: clamp(1.25rem, 3.2vw, 1.9rem);
-  line-height: 1.05;
-  color: var(--ink);
-}
-.roadmap-nolock {
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  letter-spacing: var(--tracking-micro);
-  text-transform: uppercase;
-  font-weight: 650;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  padding: 0.05rem 0.35rem;
-  white-space: nowrap;
-}
-.roadmap-target { margin-top: 0.4rem; }
-.roadmap-summary {
-  margin-top: 0.5rem;
-  max-width: 46rem;
-  font-family: var(--font-grotesk);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-
-/* CROPS strip: all four letters, advanced ones inked, rest ghosted */
-.roadmap-crops { display: flex; gap: 0.4rem; margin-top: 0.7rem; }
-/* Distinguish advanced vs not by FILL, not by text colour: both states keep
-   full-ink (or inverted paper-on-ink) text so the pixel-truth contrast rule
-   holds at 10px. Filled = this property is advanced; outline = it is not. */
-.roadmap-crop {
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  letter-spacing: 0.06em;
-  font-weight: 650;
-  padding: 0.1rem 0.35rem;
-  border: 1px solid var(--hairline);
-  color: var(--ink);
-  background: transparent;
-}
-.roadmap-crop--on {
-  color: var(--paper);          /* inverted chip: advanced pops, still ~19:1 */
-  background: var(--ink);
-  border-color: var(--ink);
-}
-
-/* EIP tokens: Departure Mono decoration + grotesk meaning beside it */
-.roadmap-eips { list-style: none; margin: 0.9rem 0 0; padding: 0; display: grid; gap: 0.7rem; }
-.roadmap-eip {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  column-gap: 0.8rem;
-  row-gap: 0.15rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--hairline-faint);
-}
-.eip-token {
-  font-family: var(--font-display);
-  font-size: 1.05rem;   /* pixel token, sized so ink cores are solid */
-  color: var(--ink);
-  text-decoration: none;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--line-data);
-}
-.eip-token:hover { color: var(--accent); border-color: var(--accent); }
-.roadmap-eip-title {
-  font-family: var(--font-grotesk);
-  font-weight: 700;
-  font-size: 0.9375rem;
-  color: var(--ink);
-}
-.roadmap-eip-sum {
-  grid-column: 2;
-  font-family: var(--font-grotesk);
-  font-size: 0.875rem;
-  line-height: 1.45;
-  color: var(--ink-soft);
-}
-.roadmap-eip-crops {
-  grid-column: 2;
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  letter-spacing: 0.1em;
-  font-weight: 650;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.roadmap-signif {
-  margin-top: 0.8rem;
-  max-width: 46rem;
-  font-family: var(--font-grotesk);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--ink-soft);
-  border-left: 2px solid var(--accent);
-  padding-left: 0.8rem;
-}
-.roadmap-foot { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 0.8rem; }
-.roadmap-link { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-data); }
-.roadmap-link:hover { color: var(--accent); border-color: var(--accent); }
-.roadmap-caption { margin-top: 1.5rem; padding-left: var(--rail); color: var(--ink); }
-
-/* procedural motion: a scan pip drifts down the rail; the live marker breathes.
-   never fully still — but gated off under reduced motion. */
+[data-rm-on] .rm-panel { flex: 0 0 100%; height: 100%; visibility: hidden; }
+/* only the active panel is on-screen; the rest are hidden so off-screen text is
+   never read (by a screen reader — or the contrast auditor). SSR keeps every
+   panel's text in the HTML source regardless, so crawlers still see them all. */
+[data-rm-on] .rm-panel--active { visibility: visible; }
+[data-rm-on] .rm-panel-inner { height: 100%; overflow-y: auto; padding-right: 0.75rem; }
 @media (prefers-reduced-motion: no-preference) {
-  .roadmap-timeline::after {
-    content: '';
-    position: absolute;
-    left: var(--rail);
-    top: 0;
-    width: 3px;
-    height: 60px;
-    transform: translateX(-50%);
-    background: linear-gradient(to bottom, transparent, var(--accent), transparent);
-    opacity: 0.55;
-    animation: roadmap-scan 7s linear infinite;
-    pointer-events: none;
-  }
-  .roadmap-node[data-status='live'] .roadmap-marker {
-    animation: roadmap-live 2.4s var(--ease-settle) infinite;
+  /* hold the outgoing panel visible through the slide, then hide */
+  [data-rm-on] .rm-panel { transition: visibility 0s linear 0.5s; }
+  [data-rm-on] .rm-panel--active { transition: visibility 0s; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-rm-on] .rm-track { transition: transform 0.5s var(--ease-settle); }
+}
+
+/* head: big pixel year + big grotesk name + terminal status */
+.rm-head { display: flex; align-items: flex-start; gap: 1rem; }
+.rm-year {
+  font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 2.1rem);
+  line-height: 1; color: var(--ink); flex: none; padding-top: 0.35rem;
+}
+.rm-head-main { min-width: 0; }
+.rm-head-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 0.9rem; }
+.rm-name {
+  font-family: var(--font-grotesk); font-weight: 800; line-height: 0.95;
+  font-size: clamp(2rem, 6vw, 4rem); color: var(--ink); letter-spacing: -0.01em;
+}
+.rm-status {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font-mono); font-size: var(--text-micro);
+  letter-spacing: 0.1em; text-transform: uppercase; font-weight: 650;
+  color: var(--ink); border: 1px solid var(--line-data); padding: 0.15rem 0.4rem;
+}
+.rm-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-data); }
+.rm-status[data-status='live'] .rm-status-dot { background: var(--ok); }
+.rm-status[data-status='devnet'] .rm-status-dot,
+.rm-status[data-status='testnet'] .rm-status-dot { background: var(--warn); }
+.rm-nolock {
+  font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.1em;
+  text-transform: uppercase; font-weight: 650; color: var(--accent);
+  border: 1px solid var(--accent); padding: 0.1rem 0.35rem; white-space: nowrap;
+}
+.rm-sub { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; margin-top: 0.35rem; }
+.rm-codename, .rm-target {
+  font-family: var(--font-mono); font-size: var(--text-tick); letter-spacing: 0.06em;
+  text-transform: uppercase; font-weight: 600; color: var(--ink);
+}
+.rm-codename { color: var(--ink-soft); }
+
+.rm-summary {
+  margin-top: 0.9rem; max-width: 48rem;
+  font-family: var(--font-grotesk); font-size: 0.95rem; line-height: 1.5; color: var(--ink-soft);
+}
+
+/* CROPS strip: filled = advanced, outline = not; all full-ink text */
+.rm-crops { display: flex; gap: 0.4rem; margin-top: 0.85rem; }
+.rm-crop {
+  font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.06em;
+  font-weight: 650; padding: 0.12rem 0.4rem; border: 1px solid var(--hairline);
+  color: var(--ink); background: transparent;
+}
+.rm-crop--on { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+
+/* EIP cards: oversized pixel number token + human detail */
+.rm-eips { list-style: none; margin: 1.1rem 0 0; padding: 0; display: grid; gap: 1rem; }
+.rm-eip {
+  display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start;
+  border-top: 1px solid var(--hairline); padding-top: 0.9rem;
+}
+.rm-eip-num {
+  display: flex; flex-direction: column; align-items: center; text-decoration: none;
+  color: var(--ink); flex: none; line-height: 0.9;
+}
+.rm-eip-num-lg {
+  font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.6rem); color: var(--ink);
+}
+.rm-eip-num-tag {
+  font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.12em;
+  font-weight: 650; color: var(--ink-soft); margin-top: 0.15rem;
+}
+.rm-eip-num:hover .rm-eip-num-lg { color: var(--accent); }
+.rm-eip-body { min-width: 0; }
+.rm-eip-titlerow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.8rem; }
+.rm-eip-title { font-family: var(--font-grotesk); font-weight: 700; font-size: 1rem; color: var(--ink); }
+.rm-eip-meta { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; }
+.rm-eip-chip {
+  font-family: var(--font-mono); font-size: var(--text-micro); letter-spacing: 0.06em;
+  text-transform: uppercase; font-weight: 650; color: var(--ink);
+  border: 1px solid var(--hairline-faint); padding: 0.05rem 0.3rem;
+}
+.rm-eip-chip--crop { border-color: var(--line-data); }
+.rm-eip-sum {
+  margin-top: 0.4rem; font-family: var(--font-grotesk); font-size: 0.875rem;
+  line-height: 1.45; color: var(--ink-soft);
+}
+/* rationale: in the SSR HTML for crawlers, collapsed until ⏎ dive */
+.rm-eip-why {
+  margin-top: 0; max-height: 0; opacity: 0; overflow: hidden;
+  font-family: var(--font-grotesk); font-size: 0.875rem; line-height: 1.5;
+  color: var(--ink-soft); border-left: 2px solid var(--accent); padding-left: 0;
+}
+.rm-panel--dived .rm-eip-why {
+  margin-top: 0.5rem; max-height: 24rem; opacity: 1; padding-left: 0.8rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-eip-why { transition: max-height 0.4s var(--ease-settle), opacity 0.3s, padding 0.3s; }
+}
+
+.rm-signif {
+  margin-top: 1rem; max-width: 48rem; font-family: var(--font-grotesk);
+  font-size: 0.875rem; line-height: 1.5; color: var(--ink-soft);
+  border-left: 2px solid var(--accent); padding-left: 0.8rem;
+}
+.rm-foot { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 1rem; }
+.rm-link { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-data); }
+.rm-link:hover { color: var(--accent); border-color: var(--accent); }
+
+/* controls */
+.rm-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.6rem; }
+.rm-btn {
+  font-family: var(--font-mono); font-size: var(--text-tick); letter-spacing: 0.08em;
+  text-transform: uppercase; font-weight: 650; color: var(--ink);
+  background: transparent; border: 1px solid var(--line-data); padding: 0.3rem 0.7rem; cursor: pointer;
+}
+.rm-btn:hover { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+.rm-btn--dive:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+.rm-counter { font-family: var(--font-display); font-size: 0.95rem; color: var(--ink); }
+.rm-caption { margin-top: 0.6rem; text-align: center; color: var(--ink); }
+
+/* motion: the active axis dot breathes; a scan pip drifts the axis */
+@media (prefers-reduced-motion: no-preference) {
+  .rm-tick--active .rm-tick-dot { animation: rm-pulse 2.2s var(--ease-settle) infinite; }
+  .rm-axis { overflow: hidden; }
+  .rm-axis-scan {
+    display: block; position: absolute; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(var(--accent), transparent);
+    opacity: 0.5; animation: rm-axis-scan 5s linear infinite; pointer-events: none;
   }
 }
-@keyframes roadmap-scan {
-  0% { top: -60px; opacity: 0; }
-  8% { opacity: 0.55; }
-  92% { opacity: 0.55; }
-  100% { top: 100%; opacity: 0; }
-}
-@keyframes roadmap-live {
+@keyframes rm-pulse {
   0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
   50% { box-shadow: 0 0 0 5px transparent; }
 }
+@keyframes rm-axis-scan { from { left: -2px; } to { left: 100%; } }
 
 @media (max-width: 640px) {
-  .roadmap-timeline { --rail: 3rem; }
-  .roadmap-year { font-size: 1.3rem; }
-  .roadmap-eip { grid-template-columns: 1fr; }
-  .roadmap-eip-sum, .roadmap-eip-crops { grid-column: 1; }
+  .rm-head { gap: 0.6rem; }
+  .rm-eip { grid-template-columns: 1fr; gap: 0.4rem; }
+  .rm-tick-label { display: none; }
 }
