@@ -7,9 +7,10 @@ import { buildRoadmapSnapshot, ROADMAP_KEY, type RoadmapSnapshot } from '../../w
 export const prerender = false;
 const rm = routeMeta('/roadmap');
 
-// SSR every panel — names, statuses, EIP summaries AND rationale are all in the
-// initial HTML (an answer engine reads the whole roadmap); the carousel is
-// progressive enhancement layered on top. Read KV, self-heal from D1.
+// SSR every panel — names, statuses, EIP summaries, rationale AND the TL;DR modal
+// content are all in the initial HTML (an answer engine reads the whole roadmap);
+// the carousel, decode animation and modals are progressive enhancement on top.
+// Read KV, self-heal from D1.
 const { DB, SNAP } = Astro.locals.runtime.env;
 let snap: RoadmapSnapshot | null = null;
 try {
@@ -25,7 +26,7 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Ethereum protocol roadmap — upcoming network upgrades',
+    name: 'Ethereum protocol roadmap — network upgrades and long-range research',
     url: `${origin}/roadmap`,
     itemListElement: upgrades.map((u, i) => ({
       '@type': 'ListItem',
@@ -37,11 +38,30 @@ const jsonLd = [
 ];
 
 const CROPS = ['CR', 'O', 'P', 'S'] as const;
-const advances = (tags: string | null, letter: string) =>
-  (tags ?? '').split(',').map((t) => t.trim()).includes(letter);
+const CROPS_LABEL: Record<string, string> = {
+  CR: 'Censorship resistance',
+  O: 'Open & decentralised',
+  P: 'Privacy',
+  S: 'Security',
+};
+const tags = (s: string | null) =>
+  (s ?? '').split(',').map((t) => t.trim()).filter(Boolean);
+const advances = (s: string | null, letter: string) => tags(s).includes(letter);
 const yearOf = (u: (typeof upgrades)[number]) =>
-  (u.activation_date ?? u.target_label ?? '').match(/\d{4}/)?.[0] ?? '—';
+  u.category === 'horizon'
+    ? '∞'
+    : (u.activation_date ?? u.target_label ?? '').match(/\d{4}/)?.[0] ?? '—';
+// status → human chip label
+const STATUS_LABEL: Record<string, string> = {
+  live: 'live',
+  devnet: 'devnet',
+  testnet: 'testnet',
+  scheduled: 'scheduled',
+  planning: 'planning',
+  research: 'research',
+};
 const eipUrl = (n: number) => `https://eips.ethereum.org/EIPS/eip-${n}`;
+const sourceLabel = (u: (typeof upgrades)[number]) => (u.source_name ?? 'source').toLowerCase();
 const pad2 = (n: number) => String(n).padStart(2, '0');
 ---
 
@@ -52,15 +72,15 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
   </div>
 
   <main class="mx-auto flex h-dvh max-w-5xl flex-col channel-body px-4 pt-8 lg:px-8" data-rm-root>
-    <h1 class="sr-only">Ethereum protocol roadmap — upcoming network upgrades</h1>
+    <h1 class="sr-only">Ethereum protocol roadmap — network upgrades and long-range research</h1>
 
     <!-- header row -->
     <div class="mb-3 flex items-baseline justify-between gap-4">
-      <p class="mono-label text-[color:var(--ink-soft)]">upcoming network upgrades — protocol health, not price</p>
-      <p class="micro text-[color:var(--ink)]">◀▶ upgrade · ⏎ detail · dates slip</p>
+      <p class="mono-label text-[color:var(--ink-soft)]">the road ahead — protocol health, not price</p>
+      <p class="micro text-[color:var(--ink)]">◀▶ upgrade · ⏎ detail · + tl;dr · dates slip</p>
     </div>
 
-    <!-- the timeline axis: live → devnet → planning, the active tick ticking -->
+    <!-- the timeline axis: live → devnet → planning → horizon, the active tick ticking -->
     <ol class="rm-axis" aria-hidden="true">
       {
         upgrades.map((u, i) => (
@@ -73,23 +93,33 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
       <span class="rm-axis-scan" aria-hidden="true" />
     </ol>
 
-    <!-- the carousel: one full panel per upgrade -->
+    <!-- the carousel: one full panel per upgrade. dither texture reused from the
+         house degraded-machine treatment. -->
     <div class="rm-viewport min-h-0 flex-1">
+      <div class="dither-field rm-texture" aria-hidden="true"></div>
       <ol class="rm-track" data-rm-track style={`--rm-count:${upgrades.length}`}>
         {
           upgrades.map((u, i) => (
-            <li class="rm-panel" data-idx={i} data-status={u.status} aria-label={`${u.name} upgrade`}>
+            <li
+              class="rm-panel"
+              data-idx={i}
+              data-status={u.status}
+              data-category={u.category ?? 'upgrade'}
+              aria-label={`${u.name}${u.category === 'horizon' ? ' roadmap horizon' : ' upgrade'}`}
+            >
               <div class="rm-panel-inner">
                 <div class="rm-head">
                   <span class="rm-year">{yearOf(u)}</span>
                   <div class="rm-head-main">
                     <div class="rm-head-line">
-                      <h2 class="rm-name">{u.name}</h2>
+                      <h2 class="rm-name" data-decode>{u.name}</h2>
                       <span class="rm-status" data-status={u.status}>
                         <span class="rm-status-dot" aria-hidden="true" />
-                        {u.status}
+                        {STATUS_LABEL[u.status] ?? u.status}
                       </span>
-                      {!u.date_locked && <span class="rm-nolock">target · not locked</span>}
+                      {u.category !== 'horizon' && !u.date_locked && (
+                        <span class="rm-nolock">target · not locked</span>
+                      )}
                     </div>
                     <p class="rm-sub">
                       {u.codename && <span class="rm-codename">{u.codename}</span>}
@@ -98,7 +128,18 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
                   </div>
                 </div>
 
-                <p class="rm-summary">{u.summary}</p>
+                <div class="rm-summary-row">
+                  <p class="rm-summary">{u.summary}</p>
+                  <button
+                    type="button"
+                    class="rm-tldr"
+                    data-tldr-open={u.id}
+                    aria-haspopup="dialog"
+                    aria-label={`TL;DR — full benefits of ${u.name}`}
+                  >
+                    <span aria-hidden="true">+</span> tl;dr
+                  </button>
+                </div>
 
                 <div class="rm-crops" aria-label="CROPS properties this upgrade advances">
                   {CROPS.map((letter) => (
@@ -118,13 +159,12 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
                           <div class="rm-eip-titlerow">
                             <span class="rm-eip-title">{e.title}</span>
                             <span class="rm-eip-meta">
+                              {e.phase && <span class="rm-eip-chip rm-eip-chip--phase">{e.phase}</span>}
                               {e.layer && <span class="rm-eip-chip">{e.layer}</span>}
                               <span class="rm-eip-chip">{e.inclusion}</span>
-                              {(e.crops ?? '')
-                                .split(',')
-                                .map((c) => c.trim())
-                                .filter(Boolean)
-                                .map((c) => <span class="rm-eip-chip rm-eip-chip--crop">{c}</span>)}
+                              {tags(e.crops).map((c) => (
+                                <span class="rm-eip-chip rm-eip-chip--crop">{c}</span>
+                              ))}
                             </span>
                           </div>
                           {e.summary && <p class="rm-eip-sum">{e.summary}</p>}
@@ -142,10 +182,47 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
                     <a class="micro rm-link" href={u.meta_eip_url} target="_blank" rel="noopener">meta thread ↗</a>
                   )}
                   {u.source_url && (
-                    <a class="micro rm-link" href={u.source_url} target="_blank" rel="noopener">forkcast ↗</a>
+                    <a class="micro rm-link" href={u.source_url} target="_blank" rel="noopener">{sourceLabel(u)} ↗</a>
                   )}
                 </div>
               </div>
+
+              {/* TL;DR modal — full benefits, in the SSR DOM (crawlable), hidden until opened */}
+              <dialog class="rm-modal" id={`tldr-${u.id}`} aria-label={`${u.name} — full benefits`}>
+                <div class="rm-modal-inner">
+                  <div class="rm-modal-head">
+                    <div>
+                      <p class="rm-modal-kicker">tl;dr · what it advances</p>
+                      <p class="rm-modal-title">{u.name}{u.codename ? ` · ${u.codename}` : ''}</p>
+                    </div>
+                    <button type="button" class="rm-modal-x" data-tldr-close aria-label="Close">esc ✕</button>
+                  </div>
+
+                  <ul class="rm-modal-crops">
+                    {CROPS.filter((l) => advances(u.crops, l)).map((l) => (
+                      <li class="rm-modal-crop">
+                        <span class="rm-modal-crop-k">{l}</span>
+                        <span class="rm-modal-crop-v">{CROPS_LABEL[l]}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <p class="rm-modal-lede">{u.significance}</p>
+
+                  <ul class="rm-modal-eips">
+                    {u.eips.map((e) => (
+                      <li class="rm-modal-eip">
+                        <span class="rm-modal-eip-n">EIP-{e.eip}</span>
+                        <span class="rm-modal-eip-t">
+                          {e.title}
+                          {e.phase && <span class="rm-modal-eip-phase"> · {e.phase}</span>}
+                        </span>
+                        {e.summary && <span class="rm-modal-eip-s">{e.summary}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </dialog>
             </li>
           ))
         }
@@ -166,10 +243,11 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
   </main>
 
   <script>
-    // Progressive enhancement: the panels are already in the SSR HTML. This
-    // turns the vertical fallback into a horizontal ◀▶ carousel with ⏎ dive and
-    // swipe, matching the channel grammar. ▲▼ (channel switch) stays with the
-    // Layout handler; we only claim ◀ ▶ ⏎.
+    // Progressive enhancement: panels are already in the SSR HTML. This turns the
+    // vertical fallback into a horizontal ◀▶ carousel with ⏎ dive, swipe, a
+    // terminal decode reveal of the upgrade name, and a "+" TL;DR modal. ▲▼
+    // (channel switch) stays with the Layout handler; we claim ◀ ▶ ⏎ only, and
+    // only when no modal is open.
     const initRoadmap = () => {
       const root = document.querySelector('[data-rm-root]') as HTMLElement | null;
       const track = document.querySelector('[data-rm-track]') as HTMLElement | null;
@@ -177,27 +255,56 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
       root.dataset.rmBound = '1';
       root.dataset.rmOn = '1'; // CSS switches to carousel mode only when enhanced
 
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const panels = [...track.querySelectorAll('.rm-panel')] as HTMLElement[];
       const ticks = [...document.querySelectorAll('.rm-tick')] as HTMLElement[];
       const counter = document.querySelector('[data-rm-counter]');
       const n = panels.length;
       let idx = 0;
 
-      const render = () => {
+      // terminal decode reveal of the active panel's name
+      const GLYPHS = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789#%&/=+·';
+      const decode = (panel: HTMLElement) => {
+        const el = panel.querySelector('.rm-name') as HTMLElement | null;
+        if (!el) return;
+        const final = el.dataset.final ?? (el.dataset.final = el.textContent ?? '');
+        if (reduce) { el.textContent = final; return; }
+        const chars = [...final];
+        const start = performance.now();
+        const dur = 460;
+        const step = (now: number) => {
+          const t = Math.min(1, (now - start) / dur);
+          const locked = Math.floor(t * chars.length);
+          el.textContent = chars
+            .map((c, i) => (c === ' ' || c === '/' || i < locked ? c : GLYPHS[(Math.floor(now / 40) + i * 7) % GLYPHS.length]))
+            .join('');
+          if (t < 1) requestAnimationFrame(step);
+          else el.textContent = final;
+        };
+        requestAnimationFrame(step);
+      };
+
+      const render = (animate = true) => {
         track.style.setProperty('--rm-idx', String(idx));
         panels.forEach((p, i) => p.classList.toggle('rm-panel--active', i === idx));
         ticks.forEach((t, i) => t.classList.toggle('rm-tick--active', i === idx));
         if (counter) counter.textContent = String(idx + 1).padStart(2, '0');
+        if (animate && panels[idx]) decode(panels[idx]!);
       };
       const go = (d: number) => {
-        idx = Math.min(n - 1, Math.max(0, idx + d)); // clamp at the ends
+        const next = Math.min(n - 1, Math.max(0, idx + d)); // clamp at the ends
+        if (next === idx) return;
+        idx = next;
         render();
       };
       const toDetail = () => panels[idx]?.classList.toggle('rm-panel--dived');
 
-      // keyboard: ◀ ▶ ⏎ only on /roadmap; leave ▲▼ to the Layout channel switch
+      const modalOpen = () => !!document.querySelector('dialog.rm-modal[open]');
+
+      // keyboard: ◀ ▶ ⏎ only on /roadmap, and never while a modal is open
       window.addEventListener('keydown', (e) => {
         if (!location.pathname.startsWith('/roadmap')) return;
+        if (modalOpen()) return; // <dialog> owns Esc + focus while open
         const tag = (e.target as HTMLElement | null)?.tagName ?? '';
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
         if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
@@ -209,7 +316,22 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
       root.querySelector('[data-rm-prev]')?.addEventListener('click', () => go(-1));
       root.querySelector('[data-rm-next]')?.addEventListener('click', () => go(1));
       root.querySelector('[data-rm-dive]')?.addEventListener('click', toDetail);
-      ticks.forEach((t, i) => t.addEventListener('click', () => { idx = i; render(); }));
+      ticks.forEach((t, i) => t.addEventListener('click', () => { if (i !== idx) { idx = i; render(); } }));
+
+      // TL;DR modals — native <dialog> gives focus-trap + Esc for free
+      root.querySelectorAll('[data-tldr-open]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = (btn as HTMLElement).dataset.tldrOpen;
+          const dlg = document.getElementById(`tldr-${id}`) as HTMLDialogElement | null;
+          dlg?.showModal();
+        });
+      });
+      root.querySelectorAll('dialog.rm-modal').forEach((dlg) => {
+        const d = dlg as HTMLDialogElement;
+        d.querySelector('[data-tldr-close]')?.addEventListener('click', () => d.close());
+        // click on the backdrop (outside the inner card) closes
+        d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+      });
 
       // swipe (horizontal) — ignore mostly-vertical drags so the panel can scroll
       let sx = 0, sy = 0, sw = false;
@@ -217,6 +339,7 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
       vp?.addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; sw = true; });
       window.addEventListener('pointerup', (e) => {
         if (!sw) return; sw = false;
+        if (modalOpen()) return;
         const dx = e.clientX - sx, dy = e.clientY - sy;
         if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
       });

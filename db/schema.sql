@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS roadmap_upgrades (
   name TEXT NOT NULL,               -- display: Fusaka, Glamsterdam, Hegotá
   codename TEXT,                    -- "Fulu + Osaka" (decoration; may be null)
   status TEXT NOT NULL,             -- live | scheduled | testnet | devnet | planning | research
+  category TEXT,                    -- upgrade | horizon (long-range research; migration 008)
   sort INTEGER NOT NULL DEFAULT 0,  -- timeline order (near-term low → horizon high)
   target_label TEXT,                -- human window: "Dec 2025 · live", "H2 2026 target"
   date_locked INTEGER NOT NULL DEFAULT 0, -- 1 ONLY when a mainnet date is actually fixed
@@ -72,6 +73,7 @@ CREATE TABLE IF NOT EXISTS roadmap_eips (
   rationale TEXT,                   -- fuller why-it-matters (editorial; migration 007)
   layer TEXT,                       -- EL | CL | EL+CL (execution / consensus; migration 007)
   crops TEXT,                       -- CR,O,P,S this EIP advances
+  phase TEXT,                       -- Verge | Purge — horizon grouping; NULL otherwise (migration 008)
   sort INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (upgrade_id, eip)
 );
