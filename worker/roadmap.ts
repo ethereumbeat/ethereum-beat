@@ -20,6 +20,8 @@ export interface RoadmapEip {
   /** EL | CL | EL+CL — execution / consensus layer (migration 007) */
   layer: string | null;
   crops: string | null;
+  /** Verge | Purge — horizon thematic grouping; null for dated upgrades (migration 008) */
+  phase: string | null;
   sort: number;
 }
 
@@ -28,6 +30,8 @@ export interface RoadmapUpgrade {
   name: string;
   codename: string | null;
   status: string;
+  /** upgrade | horizon — horizon is un-dated long-range research (migration 008) */
+  category: string | null;
   sort: number;
   target_label: string | null;
   date_locked: number;
