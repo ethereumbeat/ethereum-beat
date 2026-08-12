@@ -42,18 +42,18 @@ VALUES
    'Forkcast', 'https://forkcast.org/upgrade/glamsterdam', NULL),
 
   ('hegota', 'Hegotá', 'Heze + Bogotá', 'planning', 'upgrade', 30, 'late 2026 · planning', 0, NULL,
-   'Early planning for late 2026, with headliner selection under way. FOCIL is the leading censorship-resistance candidate, alongside native account abstraction and statelessness research.',
-   'Hegotá is shaping up around censorship resistance. Its lead candidate, FOCIL, would let a committee of validators force valid transactions to be included, turning censorship resistance from something the network hopes for into something the protocol enforces.',
-   'CR,O',
+   'Planning for late 2026. FOCIL is the selected censorship-resistance headliner; native account abstraction is a committed minor feature, with verkle-tree statelessness and 2D PeerDAS still under discussion.',
+   'Hegotá is shaping up around censorship resistance. Its selected headliner, FOCIL, lets a committee of validators force valid transactions to be included, turning censorship resistance from something the network hopes for into something the protocol enforces. Native account abstraction is committed as a minor feature, while verkle-tree statelessness and 2D PeerDAS remain under discussion.',
+   'CR,O,S',
    'https://ethereum-magicians.org/t/eip-8081-hegota-network-upgrade-meta-thread/26876',
    'Forkcast', 'https://forkcast.org/upgrade/hegota', NULL),
 
-  ('verge-purge', 'Verge / Purge', NULL, 'research', 'horizon', 40, 'long-range · research', 0, NULL,
-   'Not a scheduled upgrade — the long-range direction of the roadmap. The Verge aims to make verifying the chain cheap enough for anyone; the Purge aims to shrink what nodes must store and simplify the protocol.',
-   'These are research directions, not dated forks. Together they keep Ethereum verifiable on modest hardware over the long run: stateless clients that check blocks without storing all state, and history and state expiry that stop a node footprint from growing without bound.',
-   'O,S',
+  ('i-star', 'I-star', NULL, 'next', 'horizon', 40, 'unnamed star · no date', 0, NULL,
+   'The next fork after Hegotá. By the roadmap convention its consensus-layer name will be a star beginning with I — not yet chosen, with no scope fixed and no date set.',
+   'Nothing here is committed. Ideas floated for this slot include shorter six-second slots — undecided between Hegotá and this fork — and, on a longer arc, verifying Layer-1 execution with a ZK-EVM, with no date. Names follow the alphabetical star convention: Fulu, Gloas, Heze, then an I-star as it is defined.',
    NULL,
-   'Strawmap', 'https://strawmap.org', NULL);
+   NULL,
+   'Forkcast', 'https://forkcast.org', NULL);
 
 INSERT OR REPLACE INTO roadmap_eips
   (upgrade_id, eip, title, inclusion, summary, rationale, layer, crops, phase, sort)
@@ -121,29 +121,15 @@ VALUES
    'CL', NULL, NULL, 40),
 
   -- ── HEGOTÁ ─────────────────────────────────────────────────────────────
-  ('hegota', 7805, 'Fork-choice enforced inclusion lists (FOCIL)', 'candidate',
-   'A validator committee builds inclusion lists that proposers must honour, enforced by the fork-choice rule.',
-   'Inclusion lists let a committee name transactions the next block must include if they are valid and there is room, and honest validators reject a block that ignores the list. Censoring a transaction then costs the block itself, making timely inclusion a protocol-enforced property rather than a norm.',
+  ('hegota', 7805, 'Fork-choice enforced inclusion lists (FOCIL)', 'headliner',
+   'The selected headliner: a validator committee builds inclusion lists that proposers must honour, enforced by the fork-choice rule.',
+   'Inclusion lists let a committee name transactions the next block must include if they are valid and there is room, and honest validators reject a block that ignores the list. Censoring a transaction then costs the block itself, making timely inclusion a protocol-enforced property rather than a norm. FOCIL is the selected censorship-resistance headliner for the upgrade.',
    'CL', 'CR', NULL, 10),
-  ('hegota', 8141, 'Frame transaction', 'considered',
-   'A transaction type whose validation and fee payment are defined by contract-call frames — native account abstraction.',
+  ('hegota', 8141, 'Frame transaction', 'committed',
+   'Native account abstraction, committed as a minor feature: a transaction type whose validation and fee payment are defined by contract-call frames.',
    'It moves account abstraction into the protocol, so an account becomes simply an address with code, without the external relayer and separate mempool that ERC-4337 relies on. Reducing off-protocol infrastructure supports decentralization and a simpler trust model. It supersedes the earlier, withdrawn native account-abstraction design.',
    'EL', 'O', NULL, 20),
-  ('hegota', 7864, 'Ethereum state using a unified binary tree', 'research',
-   'Replaces the state trie with a single binary tree to shrink proofs and enable stateless clients.',
-   'Small witnesses would let a client verify a block without holding the full state, the core of the statelessness effort. The direction has moved from earlier verkle-tree designs toward binary trees. It is an active research candidate for Hegotá, not yet fixed in the upgrade scope.',
-   'EL', 'O,S', NULL, 30),
-
-  -- ── VERGE / PURGE HORIZON ──────────────────────────────────────────────
-  ('verge-purge', 6800, 'Ethereum state using a unified verkle tree', 'research',
-   'Replaces the state trie with a verkle tree so blocks can be verified without storing the state.',
-   'Proofs today are too large for practical stateless clients, forcing verifiers to hold the full state. Verkle trees shrink witnesses enough to verify a block on near-trivial hardware — the heart of the Verge. The exact tree design may evolve toward binary or hash-based forms, but the goal of cheap, independent verification is constant.',
-   'EL', 'O,S', 'Verge', 10),
-  ('verge-purge', 4444, 'Bound historical data in execution clients', 'research',
-   'Execution clients stop serving chain data older than a bounded window, capping node disk growth.',
-   'Unbounded history means every full node stores an ever-growing archive that slowly prices out home operators. Bounding it keeps the disk footprint flat so nodes stay cheap to run, protecting decentralization. Old history remains available from out-of-band providers, so verification is unaffected.',
-   'EL', 'O,S', 'Purge', 20),
-  ('verge-purge', 7736, 'Leaf-level state expiry', 'research',
-   'Expired state can be set aside with a path to restore it, keeping the active state bounded.',
-   'State, unlike history, must be held by every validating node, so its growth is the harder long-term problem. Leaf-level expiry lets the active set stay small while preserving a way to reactivate old entries, keeping nodes light without losing data. It depends on the state-tree transition, so it is genuinely long-range.',
-   'EL', 'O,S', 'Purge', 30);
+  ('hegota', 6800, 'Ethereum state using a unified verkle tree', 'under discussion',
+   'Under discussion: replaces the state trie with a verkle tree to shrink proofs and enable stateless clients.',
+   'Small witnesses would let a client verify a block without holding the full state — the core of statelessness. It is under discussion for this upgrade alongside 2D PeerDAS, a further data-availability scaling step; neither is committed, and the tree design itself may still evolve.',
+   'EL', 'O,S', NULL, 30);

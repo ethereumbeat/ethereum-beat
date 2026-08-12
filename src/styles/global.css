@@ -1895,7 +1895,8 @@ html[data-dock='left'] .channel-dock {
 /* more status colours for the longer timeline */
 .rm-status[data-status='planning'] .rm-status-dot { background: var(--ink-soft); }
 .rm-status[data-status='research'] .rm-status-dot,
-.rm-status[data-status='scheduled'] .rm-status-dot {
+.rm-status[data-status='scheduled'] .rm-status-dot,
+.rm-status[data-status='next'] .rm-status-dot {
   background: var(--paper); border: 1.5px solid var(--ink-soft);
 }
 .rm-tick[data-status='devnet'] .rm-tick-dot { background: var(--warn); border-color: var(--warn); }
@@ -1921,6 +1922,15 @@ html[data-dock='left'] .channel-dock {
 
 /* decode caret while the active name resolves */
 @media (prefers-reduced-motion: no-preference) {
+  /* typewriter mask-wipe reveal of the active upgrade name — clip-path only, so
+     accented / proportional names ("Hegotá", "I-star") reveal cleanly with no
+     character wobble. The settled state (no clip) is the plain, legible,
+     contrast-passing name. */
+  .rm-panel--active .rm-name { animation: rm-name-wipe 0.5s var(--ease-settle) both; }
+  @keyframes rm-name-wipe {
+    from { clip-path: inset(0 100% 0 0); }
+    to   { clip-path: inset(0 0 0 0); }
+  }
   .rm-panel--active .rm-name::after {
     content: '_'; color: var(--accent); animation: rm-caret 0.9s steps(1) infinite; margin-left: 0.05em;
   }
