@@ -118,14 +118,15 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
               data-idx={i}
               data-status={u.status}
               data-category={u.category ?? 'upgrade'}
-              aria-label={`${u.name}${u.category === 'horizon' ? ' roadmap horizon' : ' upgrade'}`}
+              aria-label={`${u.name}${u.id === 'i-star' ? ' — next fork, unscoped' : u.category === 'horizon' ? ' roadmap horizon' : ' upgrade'}`}
             >
               <div class="rm-panel-inner">
                 <div class="rm-head">
-                  <span class="rm-year">{yearOf(u)}</span>
+                  {/* decorative token: the star initial for the next unnamed fork, else the year */}
+                  <span class="rm-year">{u.id === 'i-star' ? 'I' : yearOf(u)}</span>
                   <div class="rm-head-main">
                     <div class="rm-head-line">
-                      <h2 class="rm-name" data-decode>{u.name}</h2>
+                      <h2 class="rm-name">{u.name}</h2>
                       <span class="rm-status" data-status={u.status}>
                         <span class="rm-status-dot" aria-hidden="true" />
                         {STATUS_LABEL[u.status] ?? u.status}
@@ -143,15 +144,18 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
 
                 <div class="rm-summary-row">
                   <p class="rm-summary">{u.summary}</p>
-                  <button
-                    type="button"
-                    class="rm-tldr"
-                    data-tldr-open={u.id}
-                    aria-haspopup="dialog"
-                    aria-label={`TL;DR — full benefits of ${u.name}`}
-                  >
-                    <span aria-hidden="true">+</span> tl;dr
-                  </button>
+                  {/* TL;DR modal only where there are committed EIPs to expand */}
+                  {u.eips.length > 0 && (
+                    <button
+                      type="button"
+                      class="rm-tldr"
+                      data-tldr-open={u.id}
+                      aria-haspopup="dialog"
+                      aria-label={`TL;DR — full benefits of ${u.name}`}
+                    >
+                      <span aria-hidden="true">+</span> tl;dr
+                    </button>
+                  )}
                 </div>
 
                 <div class="rm-crops" aria-label="CROPS properties this upgrade advances">
@@ -200,7 +204,9 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
                 </div>
               </div>
 
-              {/* TL;DR modal — full benefits, in the SSR DOM (crawlable), hidden until opened */}
+              {/* TL;DR modal — full benefits, in the SSR DOM (crawlable), hidden until opened.
+                  Only rendered where there are committed EIPs (skipped for the unscoped horizon). */}
+              {u.eips.length > 0 && (
               <dialog class="rm-modal" id={`tldr-${u.id}`} aria-label={`${u.name} — full benefits`}>
                 <div class="rm-modal-inner">
                   <div class="rm-modal-head">
@@ -236,6 +242,7 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
                   </ul>
                 </div>
               </dialog>
+              )}
             </li>
           ))
         }
@@ -258,7 +265,7 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
   <script>
     // Progressive enhancement: panels are already in the SSR HTML. This turns the
     // vertical fallback into a horizontal ◀▶ carousel with ⏎ dive, swipe, a
-    // terminal decode reveal of the upgrade name, and a "+" TL;DR modal. ▲▼
+    // mask-wipe reveal of the upgrade name, and a "+" TL;DR modal. ▲▼
     // (channel switch) stays with the Layout handler; we claim ◀ ▶ ⏎ only, and
     // only when no modal is open.
     const initRoadmap = () => {
@@ -268,41 +275,21 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
       root.dataset.rmBound = '1';
       root.dataset.rmOn = '1'; // CSS switches to carousel mode only when enhanced
 
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const panels = [...track.querySelectorAll('.rm-panel')] as HTMLElement[];
       const ticks = [...document.querySelectorAll('.rm-tick')] as HTMLElement[];
       const counter = document.querySelector('[data-rm-counter]');
       const n = panels.length;
       let idx = 0;
 
-      // terminal decode reveal of the active panel's name
-      const GLYPHS = 'ABCDEFGHIJKLMNPQRSTUVWXYZ0123456789#%&/=+·';
-      const decode = (panel: HTMLElement) => {
-        const el = panel.querySelector('.rm-name') as HTMLElement | null;
-        if (!el) return;
-        const final = el.dataset.final ?? (el.dataset.final = el.textContent ?? '');
-        if (reduce) { el.textContent = final; return; }
-        const chars = [...final];
-        const start = performance.now();
-        const dur = 460;
-        const step = (now: number) => {
-          const t = Math.min(1, (now - start) / dur);
-          const locked = Math.floor(t * chars.length);
-          el.textContent = chars
-            .map((c, i) => (c === ' ' || c === '/' || i < locked ? c : GLYPHS[(Math.floor(now / 40) + i * 7) % GLYPHS.length]))
-            .join('');
-          if (t < 1) requestAnimationFrame(step);
-          else el.textContent = final;
-        };
-        requestAnimationFrame(step);
-      };
-
-      const render = (animate = true) => {
+      // The upgrade name reveals with a CSS mask-wipe keyed off .rm-panel--active
+      // (see global.css) — a typewriter wipe, never a character-scramble, so
+      // proportional / accented names like "Hegotá" never wobble. The name text is
+      // never mutated here, so it stays intact in the DOM for crawlers.
+      const render = () => {
         track.style.setProperty('--rm-idx', String(idx));
         panels.forEach((p, i) => p.classList.toggle('rm-panel--active', i === idx));
         ticks.forEach((t, i) => t.classList.toggle('rm-tick--active', i === idx));
         if (counter) counter.textContent = String(idx + 1).padStart(2, '0');
-        if (animate && panels[idx]) decode(panels[idx]!);
       };
       const go = (d: number) => {
         const next = Math.min(n - 1, Math.max(0, idx + d)); // clamp at the ends
