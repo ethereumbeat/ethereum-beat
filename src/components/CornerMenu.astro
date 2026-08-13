@@ -1,28 +1,46 @@
 ---
 /**
- * Corner menu (spec §28.C): global site chrome on every non-ambient route. A
- * blinking signal-red arrow in the bottom-right corner expands a LARGE red panel
- * with big square tiles for the site's ancillary destinations. The main site nav
- * (channels, about, roadmap, GitHub) stays in the footer; this holds the extras.
+ * Corner menu (spec §29.A-D): a LEFT-anchored, full viewport-height red rail,
+ * opened by a blinking arrow at the bottom-left beside the ETHEREUM BEAT
+ * wordmark. Tiles are a vertical column of large square buttons with custom 1px
+ * house-style SVG icons; the wordmark is lowercase grotesk.
  *
- * Palette (documented in DESIGN.md): the panel is a fixed #c90500 signal-red
- * field with pure-white ink + icons — white on #c90500 is 6.07:1, clearing WCAG
- * AA for normal text (no large-text-tier reliance). Icons are hand-drawn 1px
- * monochrome SVGs in the structural-index style — no icon font/library. All JS
- * is nonced by the Worker; no inline handlers.
+ * Palette (documented in DESIGN.md): a fixed #c90500 signal-red field with
+ * pure-white ink + icons — white on #c90500 is 6.07:1, clearing WCAG AA for
+ * normal text. All JS is nonced by the Worker; no inline handlers.
  *
- * Farcaster + X were dropped from the tile set: the repo carries no Farcaster
- * profile URL and no X handle (only a runtime FID secret + a manual X-draft), so
- * inventing warpcast/x.com URLs was declined. GitHub is the one real outbound
- * project link.
+ * Farcaster + X destinations are resolved from the social broadcast config.
+ * Both are absent today — only a runtime Farcaster FID secret and a manual
+ * X-draft exist, no public profile URL / handle — so their tiles render in a
+ * visible DISABLED state and the build logs a warning. They are NEVER
+ * substituted with GitHub or any other destination (the Pass 17 silent-fallback
+ * bug). GitHub is not in this menu; it lives in the footer.
  */
-const REPO = 'https://github.com/ethereumbeat/ethereum-beat';
-const TILES = [
-  { href: '/ambient', label: 'ambient', icon: 'ambient', external: false },
-  { href: '/rss.xml', label: 'rss', icon: 'rss', external: false },
-  { href: '/badges', label: 'badges', icon: 'badges', external: false },
-  { href: REPO, label: 'github', icon: 'github', external: true },
-] as const;
+
+// Social destinations from config. null → no public destination → disabled tile.
+// Do NOT hardcode a fabricated profile URL here; set these only from a real
+// config value if one is ever added.
+const FARCASTER_URL: string | null = null;
+const X_URL: string | null = null;
+
+if (!FARCASTER_URL)
+  console.warn('[corner-menu] farcaster tile DISABLED — no public Farcaster destination in the social config (only a runtime FID secret exists)');
+if (!X_URL)
+  console.warn('[corner-menu] x tile DISABLED — no public X destination in the social config (X broadcast is a manual draft only)');
+
+interface Tile {
+  label: string;
+  href: string | null;
+  icon: 'ambient' | 'rss' | 'farcaster' | 'x' | 'badges';
+  external?: boolean;
+}
+const TILES: Tile[] = [
+  { label: 'ambient', href: '/ambient', icon: 'ambient' },
+  { label: 'rss', href: '/rss.xml', icon: 'rss' },
+  { label: 'farcaster', href: FARCASTER_URL, icon: 'farcaster', external: true },
+  { label: 'x', href: X_URL, icon: 'x', external: true },
+  { label: 'badges', href: '/badges', icon: 'badges' },
+];
 ---
 
 <div class="corner-menu" data-corner-menu transition:persist="corner-menu">
@@ -34,57 +52,68 @@ const TILES = [
     aria-expanded="false"
     aria-controls="corner-panel"
   >
+    <!-- chevron opening rightward out of the left edge -->
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <!-- a chevron opening up-left into the panel -->
-      <path d="M4 20 L12 6 L20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" />
+      <path d="M8 4 L16 12 L8 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="miter" stroke-linecap="butt" />
     </svg>
   </button>
 
   <div class="corner-panel" id="corner-panel" role="menu" aria-label="Ethereum Beat menu" aria-hidden="true">
     <p class="corner-panel-kicker">ethereum beat</p>
-    <div class="corner-panel-grid">
+    <div class="corner-panel-col">
       {
-        TILES.map((t) => (
-          <a
-            class="corner-tile"
-            href={t.href}
-            role="menuitem"
-            {...(t.external ? { target: '_blank', rel: 'noopener' } : {})}
-          >
+        TILES.map((t) => {
+          const icon = (
             <span class="corner-tile-icon" aria-hidden="true">
               {t.icon === 'ambient' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
-                  <rect x="2.5" y="4.5" width="19" height="12.5" rx="1" />
-                  <polygon points="12,7.5 9,11.5 12,15.5 15,11.5" />
-                  <path d="M9.5 20.5 h5" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
+                  <rect x="3" y="4" width="18" height="13" />
+                  <path d="M9 20 H15" />
+                  <path d="M6 11 H9 L10.5 7.5 L12.5 14.5 L14 11 H18" />
                 </svg>
               )}
               {t.icon === 'rss' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
-                  <circle cx="5.5" cy="18.5" r="1.6" fill="currentColor" stroke="none" />
-                  <path d="M4.5 11.5 a8 8 0 0 1 8 8" />
-                  <path d="M4.5 5.5 a14 14 0 0 1 14 14" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
+                  <rect x="4.2" y="16.8" width="3" height="3" fill="currentColor" stroke="none" />
+                  <path d="M4.5 12 A7.5 7.5 0 0 1 12 19.5" />
+                  <path d="M4.5 7 A12.5 12.5 0 0 1 17 19.5" />
+                  <path d="M4.5 4 L4.5 4" />
+                </svg>
+              )}
+              {t.icon === 'farcaster' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
+                  <path d="M6 20 V9 L12 5 L18 9 V20" />
+                  <path d="M4.5 9 H8" />
+                  <path d="M16 9 H19.5" />
+                  <path d="M9 20 V13 H15 V20" />
+                </svg>
+              )}
+              {t.icon === 'x' && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
+                  <path d="M5 5 L19 19" />
+                  <path d="M19 5 L5 19" />
                 </svg>
               )}
               {t.icon === 'badges' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
-                  <circle cx="12" cy="9" r="5.2" />
-                  <path d="M8.6 13.4 L7.5 21 L12 18 L16.5 21 L15.4 13.4" />
-                  <path d="M10 9 l1.6 1.6 L14.4 7.4" />
-                </svg>
-              )}
-              {t.icon === 'github' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
-                  <circle cx="7" cy="6" r="2" />
-                  <circle cx="7" cy="18" r="2" />
-                  <circle cx="17" cy="9.5" r="2" />
-                  <path d="M7 8 v8 M7 12.5 h6.4 a2.6 2.6 0 0 0 2.6 -2.6 v-.4" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
+                  <path d="M12 3 L19 6 V11 L12 21 L5 11 V6 Z" />
+                  <path d="M8.5 10.5 L11 13 L15.5 8" />
                 </svg>
               )}
             </span>
-            <span class="corner-tile-label">{t.label}</span>
-          </a>
-        ))
+          );
+          return t.href ? (
+            <a class="corner-tile" href={t.href} role="menuitem" {...(t.external ? { target: '_blank', rel: 'noopener' } : {})}>
+              {icon}
+              <span class="corner-tile-label">{t.label}</span>
+            </a>
+          ) : (
+            <span class="corner-tile corner-tile--disabled" role="menuitem" aria-disabled="true" title="no public destination configured yet">
+              {icon}
+              <span class="corner-tile-label">{t.label} <span class="corner-tile-note">soon</span></span>
+            </span>
+          );
+        })
       }
     </div>
     <button type="button" class="corner-close" data-corner-close aria-label="Close menu">esc ✕</button>
@@ -92,8 +121,7 @@ const TILES = [
 </div>
 
 <script>
-  // Nonced by the Worker. Idempotent bind that survives view transitions
-  // (the element uses transition:persist, so bind once and re-check on load).
+  // Nonced by the Worker. Idempotent bind that survives view transitions.
   const initCornerMenu = () => {
     const root = document.querySelector('[data-corner-menu]') as HTMLElement | null;
     if (!root || root.dataset.bound) return;
@@ -115,7 +143,6 @@ const TILES = [
     document.addEventListener('click', (e) => {
       if (isOpen() && e.target instanceof Node && !root.contains(e.target)) setOpen(false);
     });
-    // close after choosing a destination
     panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
   };
   initCornerMenu();
