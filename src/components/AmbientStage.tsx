@@ -414,16 +414,24 @@ export default function AmbientStage({ design: initial, interactive = false }: P
   const live = useAmbientLive(rootRef);
   const [design, setDesign] = useState(clampDesign(initial));
   const [copied, setCopied] = useState(false);
+  const [setup, setSetup] = useState(false);
 
   useEffect(() => {
     if (!interactive) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (setup) setSetup(false); // modal owns Esc while open
+        else location.href = '/'; // otherwise Esc exits to the main site
+        return;
+      }
+      if (setup) return; // freeze cycling while the setup modal is open
       if (e.key === 'ArrowRight') { e.preventDefault(); setDesign((d) => wrap(d + 1)); setCopied(false); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); setDesign((d) => wrap(d - 1)); setCopied(false); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [interactive]);
+  }, [interactive, setup]);
 
   const copyLink = () => {
     void navigator.clipboard
@@ -439,6 +447,9 @@ export default function AmbientStage({ design: initial, interactive = false }: P
       {renderDesign(design, live)}
       {interactive && (
         <div className="amb-hud">
+          <button type="button" className="amb-hud-exit" onClick={() => (location.href = '/')}>
+            esc · exit
+          </button>
           <span className="amb-hud-arrows" aria-hidden="true">← →</span>
           <span>
             design <b>{pad2(design)}</b> / {pad2(DESIGN_COUNT)} · <b>{DESIGN_NAMES[design - 1]}</b>
@@ -446,6 +457,55 @@ export default function AmbientStage({ design: initial, interactive = false }: P
           <button type="button" onClick={copyLink} className={copied ? 'amb-copied' : ''}>
             {copied ? 'link copied ✓' : 'copy wallpaper link'}
           </button>
+          <button type="button" onClick={() => setSetup(true)}>wallpaper setup</button>
+        </div>
+      )}
+
+      {interactive && setup && (
+        <div className="amb-modal-scrim" onClick={() => setSetup(false)}>
+          <div
+            className="amb-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Wallpaper setup"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="amb-modal-head">
+              <p className="amb-modal-kicker">ethereum beat · ambient</p>
+              <p className="amb-modal-title">wallpaper setup</p>
+              <button type="button" className="amb-modal-x" onClick={() => setSetup(false)} aria-label="Close">
+                esc ✕
+              </button>
+            </div>
+            <ol className="amb-modal-steps">
+              <li>
+                <span className="amb-modal-n">1</span>
+                <span>Install <b>Plash</b> — a free desktop-wallpaper app on the Mac App Store.</span>
+              </li>
+              <li>
+                <span className="amb-modal-n">2</span>
+                <span>
+                  Pick a design here, then hit <span className="amb-modal-code">copy wallpaper link</span> — it
+                  copies an <span className="amb-modal-code">/ambient/N</span> URL.
+                </span>
+              </li>
+              <li>
+                <span className="amb-modal-n">3</span>
+                <span>Paste that URL into Plash as the website to show.</span>
+              </li>
+              <li>
+                <span className="amb-modal-n">4</span>
+                <span>Use Plash&apos;s <b>Browsing Mode</b> to preview, then <b>lock</b> it as your wallpaper.</span>
+              </li>
+              <li>
+                <span className="amb-modal-n">5</span>
+                <span>Optionally set a <b>reload interval</b> in Plash for a periodic refresh.</span>
+              </li>
+            </ol>
+            <p className="amb-modal-note">
+              The 12-second live pulse keeps running on its own — the wallpaper stays live without a reload.
+            </p>
+          </div>
         </div>
       )}
     </div>
