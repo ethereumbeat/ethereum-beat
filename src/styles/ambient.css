@@ -1,0 +1,195 @@
+/* ── /ambient — desktop wallpaper system (spec §28.A) ────────────────────────
+   LOCKED palette: hard black field, bone-white ink, one signal-red accent.
+   THEME-INDEPENDENT — none of the +/- theme tokens are read here, so the
+   contrast matrix stays 10 designs, not 10×7. Departure Mono for live data and
+   indices, lowercase Inter for human labels, 1px lines, procedural slot-synced
+   motion. The onFrame loop writes four custom properties on .amb-root and every
+   design reads them, so per-frame work touches one element:
+     --amb-scale   glyph pulse scale (1 = rest)
+     --amb-glow    0..1 systole halo intensity
+     --amb-slot    0..1 progress through the current 12s slot
+     --amb-sys     1 during the systole window, else 0
+*/
+
+:root {
+  --amb-bg: #0a0a0a;         /* hard near-black field */
+  --amb-fg: #f4f2ec;         /* bone white — ~17:1 on the field */
+  --amb-dim: rgba(244, 242, 236, 0.66); /* ~11:1 — safe for small labels */
+  --amb-faint: rgba(244, 242, 236, 0.32); /* non-text hairlines only */
+  --amb-red: #ff4136;        /* 5.6:1 on black — safe for small red text */
+  --amb-red-lg: #ff2a1f;     /* brighter — large glyphs / fills only */
+  --amb-line: rgba(244, 242, 236, 0.18); /* 1px structure lines */
+}
+
+.amb-root {
+  --amb-scale: 1;
+  --amb-glow: 0;
+  --amb-slot: 0;
+  --amb-sys: 0;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--amb-bg);
+  color: var(--amb-fg);
+  font-family: var(--font-grotesk);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* pixel face for live data + indices, grotesk for human labels */
+.amb-data { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.amb-label {
+  font-family: var(--font-grotesk); text-transform: lowercase; letter-spacing: 0.14em;
+  color: var(--amb-dim); font-weight: 500;
+}
+.amb-red { color: var(--amb-red); }
+
+/* the faceted ETH glyph pulses on every design that uses it */
+.amb-glyph { transform-box: fill-box; transform-origin: center; transform: scale(var(--amb-scale)); }
+.amb-glyph-halo { opacity: calc(var(--amb-glow) * 0.9); }
+
+/* shared 1px sparkline */
+.amb-spark { display: block; width: 100%; height: auto; }
+
+/* the interactive chooser's affordances (only on /ambient, never /ambient/N) */
+.amb-hud {
+  position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 1rem; z-index: 10;
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--amb-dim);
+}
+.amb-hud b { color: var(--amb-fg); font-weight: 700; }
+.amb-hud button {
+  font: inherit; text-transform: uppercase; color: var(--amb-fg);
+  background: transparent; border: 1px solid var(--amb-line); padding: 0.35rem 0.7rem;
+  cursor: pointer; letter-spacing: 0.12em;
+}
+.amb-hud button:hover { color: var(--amb-bg); background: var(--amb-red); border-color: var(--amb-red); }
+.amb-hud .amb-copied { color: var(--amb-red); }
+.amb-hud-arrows { color: var(--amb-fg); }
+
+/* faint procedural dither so the field is never a dead flat black */
+.amb-field {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+  background-image: radial-gradient(circle at 50% 50%, rgba(244, 242, 236, 0.05), transparent 60%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .amb-scan {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.35;
+    background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.5) 3px 4px);
+    animation: amb-scan 8s linear infinite;
+  }
+  @keyframes amb-scan { from { background-position: 0 0; } to { background-position: 0 -200px; } }
+}
+
+/* ── design 1 · glyph — lone pulsing ETH glyph, tiny, bottom-right corner ──── */
+.amb-1 { position: absolute; right: 3.5vw; bottom: 3.5vh; }
+.amb-1 svg { display: block; width: clamp(64px, 9vw, 132px); height: auto; }
+.amb-1 .amb-1-slot {
+  margin-top: 0.5rem; text-align: right; font-size: 0.7rem;
+}
+.amb-1 .amb-1-slot .amb-data { color: var(--amb-fg); font-size: 0.9rem; }
+
+/* ── design 2 · slot — glyph + 12s countdown ring + slot number ──────────────── */
+.amb-2 { position: absolute; right: 3.5vw; bottom: 4.5vh; display: flex; align-items: center; gap: 1.3rem; }
+.amb-2-ring { position: relative; width: clamp(104px, 12vw, 176px); height: clamp(104px, 12vw, 176px); }
+.amb-2-ring > svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.amb-2-track { fill: none; stroke: var(--amb-line); stroke-width: 1.5; }
+.amb-2-fill { fill: none; stroke: var(--amb-red); stroke-width: 2.5; stroke-linecap: round; }
+.amb-2-glyph { position: absolute; inset: 26%; }
+.amb-2-glyph svg { width: 100%; height: 100%; }
+.amb-2-read .amb-label { font-size: 0.72rem; }
+.amb-2-read .amb-data { display: block; margin-top: 0.15rem; font-size: clamp(1.3rem, 2.4vw, 2.1rem); color: var(--amb-fg); }
+
+/* ── design 3 · beat — EKG line across the bottom edge ───────────────────────── */
+.amb-3 { position: absolute; inset: auto 0 0 0; height: clamp(90px, 14vh, 150px); }
+.amb-3-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.amb-3-base { stroke: var(--amb-line); stroke-width: 1; }
+.amb-3-line { stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; opacity: calc(0.7 + var(--amb-glow) * 0.3); }
+@media (prefers-reduced-motion: no-preference) {
+  .amb-3-scroll { animation: amb-ekg 12s linear infinite; }
+  @keyframes amb-ekg { from { transform: translateX(0); } to { transform: translateX(-150px); } }
+}
+.amb-3-tag { position: absolute; right: 3vw; bottom: calc(50% - 0.5rem); font-size: 0.7rem; }
+
+/* ── design 4 · ticker — bottom marquee ─────────────────────────────────────── */
+.amb-4 { position: absolute; inset: auto 0 0 0; border-top: 1px solid var(--amb-line); padding: 0.8rem 0; overflow: hidden; }
+.amb-4-track { display: inline-flex; white-space: nowrap; will-change: transform; }
+@media (prefers-reduced-motion: no-preference) {
+  .amb-4-track { animation: amb-marquee 46s linear infinite; }
+  @keyframes amb-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+}
+.amb-4-item { display: inline-flex; align-items: baseline; gap: 0.5rem; padding: 0 0.6rem; }
+.amb-4-item .amb-label { font-size: 0.8rem; }
+.amb-4-item .amb-data { font-size: 1.05rem; color: var(--amb-fg); }
+.amb-4-sub { font-size: 0.66rem; }
+.amb-4-dot { color: var(--amb-red); padding-left: 0.5rem; }
+
+/* ── design 5 · stack — right-corner column ─────────────────────────────────── */
+.amb-5 { position: absolute; right: 3.5vw; bottom: 5vh; display: flex; flex-direction: column; gap: 0.55rem; text-align: right; }
+.amb-5-row { display: flex; align-items: baseline; justify-content: flex-end; gap: 0.8rem; border-bottom: 1px solid var(--amb-line); padding-bottom: 0.4rem; }
+.amb-5-row .amb-label { font-size: 0.72rem; }
+.amb-5-row .amb-data { font-size: clamp(1.05rem, 1.8vw, 1.5rem); color: var(--amb-fg); }
+.amb-5-sub { margin-left: 0.4rem; font-size: 0.6rem; }
+
+/* ── design 6 · grid — 3×2 tile cluster ─────────────────────────────────────── */
+.amb-6 { position: absolute; right: 3vw; bottom: 4vh; display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 1px; background: var(--amb-line); border: 1px solid var(--amb-line); }
+.amb-6-cell { background: var(--amb-bg); padding: 0.75rem 0.9rem 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.amb-6-cell .amb-label { font-size: 0.66rem; }
+.amb-6-val { font-size: clamp(1.1rem, 1.8vw, 1.55rem); color: var(--amb-fg); }
+.amb-6 .amb-spark { height: 26px; }
+.amb-6-sub { font-size: 0.58rem; }
+
+/* ── design 7 · dial — hero gauge + side readouts (right half-panel) ─────────── */
+.amb-7 { position: absolute; right: 4vw; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 2vw; }
+.amb-7-dial { position: relative; width: clamp(220px, 26vw, 360px); height: clamp(220px, 26vw, 360px); }
+.amb-7-dial > svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.amb-7-track { fill: none; stroke: var(--amb-line); stroke-width: 1; }
+.amb-7-fill { fill: none; stroke: var(--amb-red); stroke-width: 2; stroke-linecap: round; }
+.amb-7-tick { stroke: var(--amb-line); stroke-width: 1; }
+.amb-7-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; }
+.amb-7-big { font-size: clamp(1.6rem, 3vw, 2.6rem); color: var(--amb-fg); }
+.amb-7-epoch { font-size: 0.7rem; }
+.amb-7-side { display: flex; flex-direction: column; gap: 0.55rem; }
+.amb-7-read { display: flex; align-items: baseline; justify-content: space-between; gap: 1.4rem; border-bottom: 1px solid var(--amb-line); padding-bottom: 0.35rem; min-width: 150px; }
+.amb-7-read .amb-label { font-size: 0.7rem; }
+.amb-7-read .amb-data { font-size: 1.1rem; color: var(--amb-fg); }
+
+/* ── design 8 · strip — full-height left rail ───────────────────────────────── */
+.amb-8 { position: absolute; inset: 0 auto 0 0; width: clamp(240px, 22vw, 320px); border-right: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 1.4rem; padding: 0 1.6rem; }
+.amb-8-row { display: flex; flex-direction: column; gap: 0.35rem; border-bottom: 1px solid var(--amb-line); padding-bottom: 1.2rem; }
+.amb-8-row:last-child { border-bottom: 0; }
+.amb-8-head { display: flex; align-items: baseline; justify-content: space-between; }
+.amb-8-head .amb-label { font-size: 0.74rem; }
+.amb-8-head .amb-data { font-size: clamp(1.15rem, 1.6vw, 1.5rem); color: var(--amb-fg); }
+.amb-8 .amb-spark { height: 32px; }
+.amb-8-sub { font-size: 0.6rem; }
+
+/* ── design 9 · console — terminal side panel ───────────────────────────────── */
+.amb-9 { position: absolute; inset: 0 0 0 auto; width: clamp(300px, 34vw, 460px); border-left: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 1.4rem; padding: 0 1.8rem; font-family: var(--font-mono); }
+.amb-9-head { font-size: 0.72rem; letter-spacing: 0.16em; }
+.amb-9-log { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.82rem; color: var(--amb-dim); }
+.amb-9-line { white-space: nowrap; }
+.amb-9-caret { padding-right: 0.4rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .amb-9-cursor { animation: amb-blink 1s steps(1) infinite; }
+  @keyframes amb-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+}
+.amb-9-reads { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.4rem; border-top: 1px solid var(--amb-line); padding-top: 1.1rem; }
+.amb-9-read { display: flex; align-items: baseline; justify-content: space-between; }
+.amb-9-read .amb-label { font-size: 0.68rem; }
+.amb-9-read .amb-data { font-size: 1.05rem; color: var(--amb-fg); }
+
+/* ── design 10 · wall — full data wall on the right side ─────────────────────── */
+.amb-10 { position: absolute; inset: 0 0 0 auto; width: clamp(360px, 46vw, 640px); border-left: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 2rem; padding: 2.4rem 2.2rem; }
+.amb-10-top { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.amb-10-clock { display: flex; flex-direction: column; gap: 0.2rem; }
+.amb-10-clock .amb-label { font-size: 0.74rem; }
+.amb-10-slot { font-size: clamp(1.8rem, 3.4vw, 3rem); color: var(--amb-fg); line-height: 1; }
+.amb-10-glyph { width: clamp(64px, 8vw, 108px); }
+.amb-10-glyph svg { width: 100%; height: auto; }
+.amb-10-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--amb-line); border: 1px solid var(--amb-line); }
+.amb-10-cell { background: var(--amb-bg); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.amb-10-cell .amb-label { font-size: 0.68rem; }
+.amb-10-val { font-size: clamp(1.3rem, 2vw, 1.8rem); color: var(--amb-fg); }
+.amb-10 .amb-spark { height: 38px; }
+.amb-10-sub { font-size: 0.6rem; }

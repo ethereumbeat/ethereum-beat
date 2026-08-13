@@ -102,6 +102,25 @@ function SourceCredit({
   if (collapsed)
     return (
       <span className="micro pointer-events-auto whitespace-nowrap text-[color:var(--ink-faint)]">
+        {/* footer refocus (spec §28.D): the bottom chrome is core site nav —
+            the command bar carries the channels + about + roadmap, this strip
+            adds GitHub (the one main-site essential not in the bar). Ancillary
+            destinations (ambient/rss/badges) moved to the corner menu. The
+            growthepie / source-registry attribution stays put and one-click,
+            and must not clip at 1024/1280. /design is never linked. */}
+        {/* GitHub only where the strip has room (≥1280) so the attribution never
+            clips at 1024; GitHub stays reachable everywhere via the corner menu. */}
+        <span className="hidden xl:inline">
+          <a
+            href="https://github.com/ethereumbeat/ethereum-beat"
+            target="_blank"
+            rel="noopener"
+            className="!no-underline hover:font-bold text-[color:var(--ink)]"
+          >
+            GITHUB
+          </a>
+          {' · '}
+        </span>
         <a href="/about#sources" className="!no-underline hover:font-bold text-[color:var(--ink)]">
           DATA · {sources.length} OPEN SOURCES
         </a>

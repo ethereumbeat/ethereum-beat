@@ -39,7 +39,11 @@ const CI = process.argv.includes('--ci');
 
 // /pulse/* opens the detail overlay on load (PR D sci-fi HUD modal), so the
 // audit covers that new surface in every theme too.
-const ROUTES = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/roadmap', '/about', '/design', '/pulse/txcount_combined'];
+// /ambient is theme-locked (its own mono+red palette, ignores data-theme), so it
+// renders identically in all 7 themes; /ambient/10 (the maximal "wall" design) is
+// the representative single design. Both are chrome-free wallpaper routes kept out
+// of the sitemap. (spec §28.A)
+const ROUTES = ['/', '/nodes', '/blobs', '/flow', '/finality', '/layers', '/roadmap', '/about', '/design', '/pulse/txcount_combined', '/ambient', '/ambient/10'];
 const VIEWPORTS = [
   [1280, 700],
   [1440, 900],

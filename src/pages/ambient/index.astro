@@ -1,0 +1,12 @@
+---
+// /ambient — the interactive chooser (spec §28.A): renders a design, ← → cycle
+// 1..10, and a "copy wallpaper link" affordance that yields the /ambient/N URL.
+import Ambient from '../../layouts/Ambient.astro';
+import AmbientStage from '../../components/AmbientStage';
+
+export const prerender = false;
+---
+
+<Ambient title="Ethereum Beat — ambient wallpapers">
+  <AmbientStage design={1} interactive client:load />
+</Ambient>

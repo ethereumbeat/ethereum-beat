@@ -176,6 +176,29 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   `micro` mono label, a value, and the red accent, self-contained for any README.
 - **Command bar** — the persistent nav strip: `accent` background, `paper` text
   (5.9:1), one-key channel switching.
+- **Corner menu** — global bottom-right chrome: a blinking signal-red arrow
+  expands a large panel of square tiles (ambient · rss · badges · github) with
+  hand-drawn 1px monochrome icons in the structural-index style. **Panel palette:**
+  a fixed `#c90500` signal-red field with pure-white ink and icons — white on
+  `#c90500` is **6.07:1**, clearing AA for normal text (no large-text-tier
+  reliance). Opened/closed by click, Esc or click-outside; all script nonced.
+- **Ambient wallpapers** — a chrome-free, full-viewport system for desktop tools
+  like Plash. It **ignores the seven-theme system** and runs on a LOCKED mono+red
+  palette so its contrast matrix is ten designs, not ten×seven:
+  - field `#0a0a0a` · ink `#f4f2ec` (~17:1) · dim `rgba(244,242,236,0.66)` (~11:1,
+    small labels) · signal red `#ff4136` (5.6:1, small red text).
+  - `data` face for live values and indices, lowercase grotesk for labels, 1px
+    lines, procedural slot-synced motion — never fully still.
+  - Ten designs, simple→complex: glyph · slot · beat · ticker · stack · grid ·
+    dial · strip · console · wall.
+  - **/ambient** is the interactive chooser (← → cycle, copy-wallpaper-link);
+    **/ambient/N** is the clean locked single design (nothing interactive — Plash
+    freezes the page, so the URL is how you pick), with noindex + canonical to
+    /ambient. Neither is in the sitemap.
+- **Footer** — the command bar carries the channels + about + roadmap; the credit
+  strip keeps the growthepie / source-registry attribution **one click from the
+  homepage**; ancillary destinations (ambient · rss · badges · github) live in the
+  corner menu. `/design` is never linked from the footer.
 
 ## Do's and Don'ts
 

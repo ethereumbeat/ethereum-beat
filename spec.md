@@ -1193,3 +1193,69 @@ F. SEO/AEO — llms.txt confirmed (correct name), still free of contact email an
 
 Gates: clean build; audit-contrast green across 7 channels + /design × 7 themes;
 audit-meta + audit-csp green. One PR; squash-merge on green.
+
+## 28. Pass 17 — ambient wallpaper system, RSS, corner menu, footer refocus
+
+Add an /ambient desktop-wallpaper system, a public RSS feed, a global corner
+menu, and refocus the footer. Non-financial framing unchanged; nothing here
+touches metric_meta, adds no channel or metric, and needs no D1 migration or KV
+bust. The six channels stay BEAT, NODES, BLOBS, FLOW, FINALITY, LAYERS.
+
+A. /ambient — a chrome-free, full-viewport wallpaper system for desktop tools
+   like Plash. LOCKED palette: hard black + white + one signal-red accent ONLY,
+   THEME-INDEPENDENT — the +/- theme system is ignored so the contrast matrix
+   stays 10 designs, not 10×7. Wires the same live 12-second slot layer and
+   snapshot:latest the main site uses (blockfeed + clock + snapshot metrics).
+   URL SCHEME:
+   - /ambient   — interactive chooser: renders a design, ← → cycle 1..10, and a
+     "copy wallpaper link" affordance that yields the /ambient/N URL.
+   - /ambient/N — the clean locked single design, no picker, nothing
+     interactive (Plash freezes page state, so arrows cannot work in wallpaper
+     mode — the URL is how you pick). Gets noindex + canonical to /ambient.
+   THE TEN DESIGNS, simple → complex, mono+red, Departure Mono for live
+   data/indices, lowercase grotesk (Inter) for human labels, 1px lines,
+   procedural slot-synced motion — never completely still:
+     1 glyph · 2 slot · 3 beat · 4 ticker · 5 stack · 6 grid ·
+     7 dial · 8 strip · 9 console · 10 wall.
+   /ambient and a representative /ambient/N are added to the audit-contrast and
+   audit-csp ROUTES arrays; both are kept OUT of sitemap.xml (so audit-meta,
+   which crawls the sitemap, never runs HTML checks on them).
+
+B. RSS — a public feed at /rss.xml (Astro endpoint, application/rss+xml). Items
+   derive from the SAME source the daily social broadcast uses: the daily
+   channel digest (worker/broadcast/digest.ts buildDigest) plus roadmap status
+   flips (roadmap_upgrades). Protocol-health only — no price, TVL or market
+   framing. Title/description carry the network-health framing; data-derived
+   items keep the growthepie CC BY 4.0 attribution. Built from snapshot:latest /
+   D1 at request time; zero paid services. The existing rss+rss autodiscovery
+   <link> in the head is repointed from the never-created /feed.xml to /rss.xml.
+   The feed is NOT added to the sitemap.
+
+C. Corner menu — global site chrome on every route. A blinking signal-red arrow
+   anchored bottom-right beside the beating glyph (blink via a CSP-compliant CSS
+   animation). Click (Esc / click-outside to close) expands a LARGE red panel
+   out of that corner — a substantial red field, not a tray. Inside, five big
+   square tiles with hand-drawn 1px monochrome SVG icons in the structural-index
+   style (no icon font/library): Ambient → /ambient, RSS → /rss.xml, Farcaster,
+   X, Badges → /badges. Social targets come from the real project config, never
+   invented. Tiles sit on the red field, so icon + label colour clears WCAG AA
+   on the exact red token (large-text tier permitted; size/weight up, never
+   loosen thresholds). All menu JS is nonced; no inline handlers. The chosen
+   panel palette is documented in DESIGN.md.
+
+D. Footer refocus — the footer carries core site navigation only (About,
+   Roadmap, the six channels, GitHub); ancillary destinations (ambient, feed,
+   social, badges) move to the corner menu. The growthepie / source-registry
+   CC BY 4.0 attribution block STAYS in the footer, one-click reachable from the
+   homepage — it is NOT moved behind the menu. /design stays README-only (never
+   linked from the footer).
+
+E. Docs — /design and DESIGN.md document the ambient system (the ten designs,
+   the /ambient vs /ambient/N URL scheme, the locked mono+red palette, Plash
+   usage), the corner-menu pattern + its red-panel palette, and the footer
+   refocus.
+
+Gates: clean build; audit-contrast green across 7 channels + /design + /ambient
++ /ambient/N (ambient is theme-locked, so 10 designs not 10×7); audit-meta +
+audit-csp green; contrast failures fixed by weight/size, never thresholds. All
+new JS through the CSP nonce gate. Commit and push per completed item; one PR.

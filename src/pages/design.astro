@@ -345,5 +345,42 @@ const CROPS = [
         SOURCED FROM src/styles/tokens.css · SEE DESIGN.md IN THE REPO
       </p>
     </section>
+
+    <section class="flex flex-col gap-5">
+      <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[color:var(--hairline)] pb-2">
+        <span class="font-mono font-bold text-[color:var(--ink)]" style="font-size:1.05rem">10</span>
+        <span class="font-grotesk font-bold lowercase text-[color:var(--ink)]" style="font-size:1rem">ambient &amp; chrome</span>
+        <span class="font-grotesk lowercase text-[color:var(--ink-soft)]" style="font-size:0.8125rem">wallpapers, corner menu, footer</span>
+      </div>
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        <span class="font-bold text-[color:var(--ink)]">Ambient</span> is a chrome-free
+        wallpaper system for desktop tools like Plash. It ignores the seven-theme
+        system entirely and runs on a LOCKED mono + red palette — black field
+        <span class="font-mono">#0a0a0a</span>, bone ink <span class="font-mono">#f4f2ec</span>,
+        signal red <span class="font-mono">#ff4136</span> — so its contrast matrix is
+        ten designs, not ten times seven. Departure Mono carries the live data and
+        indices, lowercase Inter the labels; motion is procedural and slot-synced.
+      </p>
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        Ten designs, simple to complex:
+        <span class="font-mono text-[color:var(--ink)]">glyph · slot · beat · ticker · stack · grid · dial · strip · console · wall</span>.
+        <span class="font-bold text-[color:var(--ink)]">/ambient</span> is the interactive
+        chooser (← → cycle 1–10, plus a copy-wallpaper-link affordance);
+        <span class="font-bold text-[color:var(--ink)]">/ambient/N</span> is the clean
+        locked single design with nothing interactive, since Plash freezes page state
+        — the URL is how you pick — and carries noindex + canonical to /ambient.
+      </p>
+      <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
+        The <span class="font-bold text-[color:var(--ink)]">corner menu</span> is global
+        chrome: a blinking signal-red arrow in the bottom-right expands a large red
+        panel of square tiles (ambient, rss, badges, github) with hand-drawn 1px
+        icons. Its panel is a fixed <span class="font-mono">#c90500</span> field with
+        pure-white ink and icons — <span class="font-mono">6.07:1</span>, clearing AA
+        for normal text. The <span class="font-bold text-[color:var(--ink)]">footer</span>
+        stays focused: the command bar carries the channels, about and roadmap; the
+        credit strip keeps the growthepie / source-registry attribution one click from
+        the homepage; ancillary destinations live in the corner menu.
+      </p>
+    </section>
   </main>
 </Layout>

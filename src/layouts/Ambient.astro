@@ -1,0 +1,36 @@
+---
+// Chrome-free full-viewport layout for the /ambient wallpaper system (spec §28.A).
+// No theme system, no MarginFrame, no CommandBar, no corner menu — a wallpaper is
+// just the field. global.css brings the self-hosted fonts + reset; ambient.css
+// holds the LOCKED mono+red palette (theme-independent).
+import '../styles/global.css';
+import '../styles/ambient.css';
+
+interface Props {
+  title?: string;
+  noindex?: boolean;
+  canonical?: string;
+}
+const { title = 'Ethereum Beat — ambient', noindex = false, canonical } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta
+      name="description"
+      content="Ethereum Beat ambient wallpapers: chrome-free, live protocol-health designs for your desktop."
+    />
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="preload" href="/fonts/departure-mono.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#0a0a0a" />
+  </head>
+  <body style="background:#0a0a0a; margin:0">
+    <slot />
+  </body>
+</html>

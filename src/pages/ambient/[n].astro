@@ -1,0 +1,26 @@
+---
+// /ambient/N — the clean locked single design (spec §28.A): no picker, nothing
+// interactive (Plash freezes page state, so the URL is how you pick). noindex +
+// canonical to /ambient.
+import Ambient from '../../layouts/Ambient.astro';
+import AmbientStage from '../../components/AmbientStage';
+import { DESIGN_COUNT, DESIGN_NAMES } from '../../components/AmbientStage';
+import { siteOrigin } from '../../lib/site';
+
+export const prerender = false;
+
+const num = Number(Astro.params.n);
+if (!Number.isInteger(num) || num < 1 || num > DESIGN_COUNT) {
+  return Astro.redirect('/ambient', 302);
+}
+const origin = siteOrigin(Astro.locals.runtime.env);
+const name = DESIGN_NAMES[num - 1];
+---
+
+<Ambient
+  title={`Ethereum Beat — ambient ${num} · ${name}`}
+  noindex
+  canonical={`${origin}/ambient`}
+>
+  <AmbientStage design={num} interactive={false} client:load />
+</Ambient>
