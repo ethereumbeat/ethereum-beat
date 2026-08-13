@@ -365,21 +365,29 @@ const CROPS = [
         Ten designs, simple to complex:
         <span class="font-mono text-[color:var(--ink)]">glyph · slot · beat · ticker · stack · grid · dial · strip · console · wall</span>.
         <span class="font-bold text-[color:var(--ink)]">/ambient</span> is the interactive
-        chooser (← → cycle 1–10, plus a copy-wallpaper-link affordance);
+        chooser (← → cycle 1–10, copy-wallpaper-link, an <span class="font-mono">esc · exit</span>
+        back to the main site, and a WALLPAPER SETUP modal with Plash install steps);
         <span class="font-bold text-[color:var(--ink)]">/ambient/N</span> is the clean
         locked single design with nothing interactive, since Plash freezes page state
-        — the URL is how you pick — and carries noindex + canonical to /ambient.
+        — the URL is how you pick — and carries noindex + canonical to /ambient. The
+        full-side designs (strip, console, wall) anchor LEFT so they clear the desktop
+        icon column.
       </p>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         The <span class="font-bold text-[color:var(--ink)]">corner menu</span> is global
-        chrome: a blinking signal-red arrow in the bottom-right expands a large red
-        panel of square tiles (ambient, rss, badges, github) with hand-drawn 1px
-        icons. Its panel is a fixed <span class="font-mono">#c90500</span> field with
+        chrome: a blinking signal-red arrow at the bottom-LEFT (beside the wordmark)
+        opens a full viewport-height red rail down the left edge. Its tiles — ambient,
+        rss, farcaster, x, badges — are large square buttons with hand-built 1px SVG
+        icons (single stroke, square butt caps, sharp corners, one weight/box; no icon
+        library). The panel is a fixed <span class="font-mono">#c90500</span> field with
         pure-white ink and icons — <span class="font-mono">6.07:1</span>, clearing AA
-        for normal text. The <span class="font-bold text-[color:var(--ink)]">footer</span>
-        stays focused: the command bar carries the channels, about and roadmap; the
-        credit strip keeps the growthepie / source-registry attribution one click from
-        the homepage; ancillary destinations live in the corner menu.
+        for normal text. Destinations that are not configured (farcaster, x) render in a
+        visible DISABLED state — never silently substituted. The wordmark renders in
+        lowercase grotesk, not the pixel face. The
+        <span class="font-bold text-[color:var(--ink)]">footer</span> stays focused: the
+        command bar carries the channels, about and roadmap; the credit strip keeps the
+        growthepie / source-registry attribution one click from the homepage; ancillary
+        destinations live in the corner menu (GitHub stays in the footer).
       </p>
     </section>
   </main>
