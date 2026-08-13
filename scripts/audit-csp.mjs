@@ -33,6 +33,8 @@ const ROUTES = [
   '/badges', // has its own inline copy-to-clipboard script — must stay nonced
   '/pulse/txcount_combined',
   '/pulse/txcount', // 404 page — still HTML, still under the CSP
+  '/ambient', // chrome-free wallpaper chooser — its stage island script must stay nonced
+  '/ambient/10', // representative locked single design (spec §28.A)
 ];
 
 const EXPECT_HEADERS = {
