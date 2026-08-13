@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import CommandBar from '../components/CommandBar.astro';
 import DPad from '../components/DPad.astro';
+import CornerMenu from '../components/CornerMenu.astro';
 import MarginFrame from '../components/MarginFrame';
 import { siteOrigin, ROUTES, SITE_NAME, siteJsonLd } from '../lib/site';
 
@@ -127,6 +128,8 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
     <CommandBar path={path} />
 
     <DPad />
+
+    <CornerMenu />
     <!-- drag ghost: the snap-zone preview while dragging the command bar -->
     <div id="cmd-ghost" class="cmd-ghost hidden" transition:persist aria-hidden="true"></div>
 
