@@ -1,0 +1,88 @@
+/* ── /ambient — desktop wallpaper system (spec §28.A) ────────────────────────
+   LOCKED palette: hard black field, bone-white ink, one signal-red accent.
+   THEME-INDEPENDENT — none of the +/- theme tokens are read here, so the
+   contrast matrix stays 10 designs, not 10×7. Departure Mono for live data and
+   indices, lowercase Inter for human labels, 1px lines, procedural slot-synced
+   motion. The onFrame loop writes four custom properties on .amb-root and every
+   design reads them, so per-frame work touches one element:
+     --amb-scale   glyph pulse scale (1 = rest)
+     --amb-glow    0..1 systole halo intensity
+     --amb-slot    0..1 progress through the current 12s slot
+     --amb-sys     1 during the systole window, else 0
+*/
+
+:root {
+  --amb-bg: #0a0a0a;         /* hard near-black field */
+  --amb-fg: #f4f2ec;         /* bone white — ~17:1 on the field */
+  --amb-dim: rgba(244, 242, 236, 0.66); /* ~11:1 — safe for small labels */
+  --amb-faint: rgba(244, 242, 236, 0.32); /* non-text hairlines only */
+  --amb-red: #ff4136;        /* 5.6:1 on black — safe for small red text */
+  --amb-red-lg: #ff2a1f;     /* brighter — large glyphs / fills only */
+  --amb-line: rgba(244, 242, 236, 0.18); /* 1px structure lines */
+}
+
+.amb-root {
+  --amb-scale: 1;
+  --amb-glow: 0;
+  --amb-slot: 0;
+  --amb-sys: 0;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--amb-bg);
+  color: var(--amb-fg);
+  font-family: var(--font-grotesk);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* pixel face for live data + indices, grotesk for human labels */
+.amb-data { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.amb-label {
+  font-family: var(--font-grotesk); text-transform: lowercase; letter-spacing: 0.14em;
+  color: var(--amb-dim); font-weight: 500;
+}
+.amb-red { color: var(--amb-red); }
+
+/* the interactive chooser's affordances (only on /ambient, never /ambient/N) */
+.amb-hud {
+  position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 1rem; z-index: 10;
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--amb-dim);
+}
+.amb-hud b { color: var(--amb-fg); font-weight: 700; }
+.amb-hud button {
+  font: inherit; text-transform: uppercase; color: var(--amb-fg);
+  background: transparent; border: 1px solid var(--amb-line); padding: 0.35rem 0.7rem;
+  cursor: pointer; letter-spacing: 0.12em;
+}
+.amb-hud button:hover { color: var(--amb-bg); background: var(--amb-red); border-color: var(--amb-red); }
+.amb-hud .amb-copied { color: var(--amb-red); }
+.amb-hud-arrows { color: var(--amb-fg); }
+
+/* faint procedural dither so the field is never a dead flat black */
+.amb-field {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+  background-image: radial-gradient(circle at 50% 50%, rgba(244, 242, 236, 0.05), transparent 60%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .amb-scan {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.35;
+    background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.5) 3px 4px);
+    animation: amb-scan 8s linear infinite;
+  }
+  @keyframes amb-scan { from { background-position: 0 0; } to { background-position: 0 -200px; } }
+}
+
+/* ── design 1 · glyph — lone pulsing ETH glyph, tiny, bottom-right corner ──── */
+.amb-1 { position: absolute; right: 3.5vw; bottom: 3.5vh; }
+.amb-1 svg { display: block; width: clamp(64px, 9vw, 132px); height: auto; }
+.amb-1 .amb-glyph {
+  transform-box: fill-box; transform-origin: center;
+  transform: scale(var(--amb-scale));
+}
+.amb-1 .amb-glyph-halo { opacity: calc(var(--amb-glow) * 0.9); }
+.amb-1 .amb-1-slot {
+  margin-top: 0.5rem; text-align: right; font-size: 0.7rem;
+}
+.amb-1 .amb-1-slot .amb-data { color: var(--amb-fg); font-size: 0.9rem; }
