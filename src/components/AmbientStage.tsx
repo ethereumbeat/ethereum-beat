@@ -72,8 +72,8 @@ function useAmbientLive(rootRef: RefObject<HTMLDivElement | null>): Live {
 
     let alive = true;
     fetch('/api/snapshot')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((s: Snapshot | null) => { if (alive && s) setLive((p) => ({ ...p, snap: s })); })
+      .then((r) => (r.ok ? (r.json() as Promise<Snapshot>) : null))
+      .then((s) => { if (alive && s) setLive((p) => ({ ...p, snap: s })); })
       .catch(() => {});
 
     return () => { offFrame(); offBeat(); offFeed(); alive = false; };
