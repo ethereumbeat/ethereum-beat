@@ -53,11 +53,65 @@
 /* the interactive chooser's affordances (only on /ambient, never /ambient/N) */
 .amb-hud {
   position: fixed; left: 50%; bottom: 1.4rem; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 1rem; z-index: 10;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 0.8rem 1rem; z-index: 10; max-width: 94vw;
   font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--amb-dim);
 }
 .amb-hud b { color: var(--amb-fg); font-weight: 700; }
+/* the exit control reads as the way out (accent, like the corner arrow) */
+.amb-hud-exit { color: var(--amb-red); border-color: var(--amb-red) !important; }
+.amb-hud-exit:hover { color: var(--amb-bg); background: var(--amb-red); }
+
+/* ── /ambient wallpaper-setup modal (spec §29.F) ────────────────────────────── */
+.amb-modal-scrim {
+  position: fixed; inset: 0; z-index: 50; background: rgba(4, 4, 4, 0.84);
+  display: grid; place-items: center; padding: 1.5rem;
+}
+.amb-modal {
+  width: min(560px, 92vw); background: #0d0d0d; color: var(--amb-fg);
+  border: 1px solid var(--amb-red); padding: clamp(1.3rem, 3vw, 2rem);
+  font-family: var(--font-grotesk);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .amb-modal { animation: amb-modal-in 0.2s var(--ease-settle) both; }
+  @keyframes amb-modal-in { from { opacity: 0; transform: translateY(10px); } }
+}
+.amb-modal-head { position: relative; display: grid; gap: 0.15rem; margin-bottom: 1.1rem; padding-right: 4rem; }
+.amb-modal-kicker {
+  font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--amb-red);
+}
+.amb-modal-title {
+  font-family: var(--font-grotesk); font-weight: 800; font-size: clamp(1.25rem, 3vw, 1.6rem);
+  text-transform: lowercase; color: var(--amb-fg); line-height: 1;
+}
+.amb-modal-x {
+  position: absolute; top: 0; right: 0; font-family: var(--font-mono); font-size: 0.64rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--amb-fg);
+  background: transparent; border: 1px solid var(--amb-line); padding: 0.28rem 0.5rem; cursor: pointer;
+}
+.amb-modal-x:hover { color: var(--amb-bg); background: var(--amb-fg); }
+.amb-modal-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.amb-modal-steps li {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.7rem; align-items: start;
+  font-size: 0.9rem; line-height: 1.5; color: var(--amb-dim);
+}
+.amb-modal-steps b { color: var(--amb-fg); font-weight: 700; }
+.amb-modal-n {
+  font-family: var(--font-display); font-size: 0.9rem; color: var(--amb-red);
+  border: 1px solid var(--amb-line); box-sizing: border-box;
+  width: 1.8rem; height: 1.8rem; justify-self: start; align-self: start;
+  display: grid; place-items: center;
+}
+.amb-modal-code {
+  font-family: var(--font-mono); font-size: 0.82rem; color: var(--amb-fg);
+  border-bottom: 1px solid var(--amb-red); padding-bottom: 1px;
+}
+.amb-modal-note {
+  margin-top: 1.1rem; padding-top: 0.9rem; border-top: 1px solid var(--amb-line);
+  font-size: 0.82rem; line-height: 1.5; color: var(--amb-dim);
+}
 .amb-hud button {
   font: inherit; text-transform: uppercase; color: var(--amb-fg);
   background: transparent; border: 1px solid var(--amb-line); padding: 0.35rem 0.7rem;
@@ -165,7 +219,7 @@
 .amb-8-sub { font-size: 0.6rem; }
 
 /* ── design 9 · console — terminal side panel ───────────────────────────────── */
-.amb-9 { position: absolute; inset: 0 0 0 auto; width: clamp(300px, 34vw, 460px); border-left: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 1.4rem; padding: 0 1.8rem; font-family: var(--font-mono); }
+.amb-9 { position: absolute; inset: 0 auto 0 0; width: clamp(300px, 34vw, 460px); border-right: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 1.4rem; padding: 0 1.8rem; font-family: var(--font-mono); }
 .amb-9-head { font-size: 0.72rem; letter-spacing: 0.16em; }
 .amb-9-log { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.82rem; color: var(--amb-dim); }
 .amb-9-line { white-space: nowrap; }
@@ -180,7 +234,7 @@
 .amb-9-read .amb-data { font-size: 1.05rem; color: var(--amb-fg); }
 
 /* ── design 10 · wall — full data wall on the right side ─────────────────────── */
-.amb-10 { position: absolute; inset: 0 0 0 auto; width: clamp(360px, 46vw, 640px); border-left: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 2rem; padding: 2.4rem 2.2rem; }
+.amb-10 { position: absolute; inset: 0 auto 0 0; width: clamp(360px, 46vw, 640px); border-right: 1px solid var(--amb-line); display: flex; flex-direction: column; justify-content: center; gap: 2rem; padding: 2.4rem 2.2rem; }
 .amb-10-top { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
 .amb-10-clock { display: flex; flex-direction: column; gap: 0.2rem; }
 .amb-10-clock .amb-label { font-size: 0.74rem; }

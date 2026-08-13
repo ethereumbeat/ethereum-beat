@@ -1259,3 +1259,58 @@ Gates: clean build; audit-contrast green across 7 channels + /design + /ambient
 + /ambient/N (ambient is theme-locked, so 10 designs not 10×7); audit-meta +
 audit-csp green; contrast failures fixed by weight/size, never thresholds. All
 new JS through the CSP nonce gate. Commit and push per completed item; one PR.
+
+## 29. Pass 18 — menu + ambient iteration
+
+Iterate on the Pass 17 corner menu and /ambient system after review of the
+deployed work. Non-financial framing unchanged; nothing here touches
+metric_meta, needs no D1 migration or KV bust, and does not mutate wrangler.toml.
+
+A. MENU — reposition to a LEFT-anchored, full viewport-height rail (top to
+   bottom), expanding from the left edge, width min(40vw, 460px). The blinking
+   trigger arrow moves to the bottom-LEFT, beside the ETHEREUM BEAT wordmark
+   ("open by the beats"). Esc and click-outside close; blink + expand are
+   nonced CSS.
+
+B. MENU — tile set + the silent-fallback fix. Tiles are a vertical column of
+   large square buttons: ambient (/ambient), rss (/rss.xml), farcaster, x,
+   badges (/badges). The farcaster + x destinations are resolved from the
+   social broadcast config; when a destination is absent (as both are today —
+   only a runtime Farcaster FID secret and a manual X-draft exist, no public
+   profile URL / handle), the tile renders in a visible DISABLED state and the
+   build logs a warning. It is NEVER silently substituted with GitHub or any
+   other destination — that substitution was the Pass 17 bug. GitHub is removed
+   from the menu; it stays in the footer.
+
+C. MENU — custom icons. Hand-built inline SVG marks in the structural-index
+   house style: a single 1px stroke, square (butt) caps, sharp corners only (no
+   border-radius), monochrome, grid-aligned, one stroke weight and box size
+   across the set. No icon library. ambient = hard-edged screen rectangle with
+   a pulse tick; rss = three concentric quarter-arcs + a dot; farcaster = the
+   geometric arch mark; x = the geometric X mark; badges = a hard-geometry
+   shield/rosette.
+
+D. MENU — wordmark font. The ETHEREUM BEAT wordmark in the menu (and anywhere a
+   wordmark used the pixel face) renders in the lowercase grotesk display face,
+   per the human-label rule and the roadmap grotesk decision. The pixel face
+   stays reserved for live data and indices.
+
+E. /ambient — a persistent "ESC · EXIT" control in the chooser bar returns to /
+   (the main site); the Esc key does the same. /ambient/N stays chrome-free (it
+   is the locked wallpaper) — the exit lives on the chooser only.
+
+F. /ambient — a "WALLPAPER SETUP" button in the chooser bar opens an on-brand,
+   nonced modal (mono + grotesk, 1px borders, red accent, hard corners):
+   install Plash (free, Mac App Store, attributed), paste an /ambient/N link,
+   use Browsing Mode to configure then lock, set a reload interval, and note the
+   12-second live pulse keeps running. Esc and click-outside close it.
+
+G. /ambient — the full-side designs 8 (strip), 9 (console) and 10 (wall)
+   re-anchor to the LEFT edge so they clear the macOS desktop-icon column and
+   match the intended wallpaper layout.
+
+Gates: clean build; audit-contrast green across all routes/themes/viewports
+including the larger left red rail (tile icon + label clears AA on the exact red
+token, fixed by weight/size never thresholds); audit-meta + audit-csp green with
+every new inline script nonced. The growthepie / source-registry attribution
+stays in the footer, one click from home. Commit and push per item; one PR.

@@ -2000,9 +2000,9 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
   .rm-summary-row { flex-direction: column; gap: 0.5rem; }
 }
 
-/* ── corner menu (spec §28.C) — global bottom-right red-panel launcher ──────── */
+/* ── corner menu (spec §29.A-D) — LEFT full-height red rail, opened bottom-left ─ */
 .corner-menu {
-  position: fixed; right: 0.6rem; z-index: 40;
+  position: fixed; left: 0.6rem; z-index: 40;
   bottom: calc(38px + env(safe-area-inset-bottom, 0px));
 }
 .corner-arrow {
@@ -2016,38 +2016,52 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
 }
 .corner-open .corner-arrow { opacity: 0; pointer-events: none; }
 
-/* the panel is a fixed signal-red field with pure-white ink (6.07:1 AA) */
+/* full viewport-height rail anchored to the left edge; a fixed signal-red field
+   with pure-white ink (white on #c90500 = 6.07:1, AA normal-text) */
 .corner-panel {
-  position: fixed; right: 0; bottom: 0; z-index: 45;
-  width: min(460px, 94vw); height: min(460px, 74vh);
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 45;
+  width: min(40vw, 460px); height: 100vh; height: 100dvh;
   background: #c90500; color: #ffffff;
-  display: flex; flex-direction: column; gap: 1rem;
-  padding: clamp(1.2rem, 3vw, 2.2rem);
-  transform-origin: 100% 100%; transform: scale(0); opacity: 0;
+  display: flex; flex-direction: column; gap: clamp(0.8rem, 2vh, 1.4rem);
+  padding: clamp(1.2rem, 3vh, 2.2rem);
+  transform-origin: 0 0; transform: translateX(-100%);
   visibility: hidden; pointer-events: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .corner-panel { transition: transform 0.24s var(--ease-settle), opacity 0.2s; }
+  .corner-panel { transition: transform 0.26s var(--ease-settle); }
 }
-.corner-open .corner-panel { transform: scale(1); opacity: 1; visibility: visible; pointer-events: auto; }
+.corner-open .corner-panel { transform: translateX(0); visibility: visible; pointer-events: auto; }
+/* wordmark: lowercase grotesk (human-label rule), not the pixel/mono face */
 .corner-panel-kicker {
-  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
-  text-transform: uppercase; color: #ffffff; font-weight: 650;
+  font-family: var(--font-grotesk); font-size: 0.9rem; letter-spacing: 0.08em;
+  text-transform: lowercase; color: #ffffff; font-weight: 700;
 }
-.corner-panel-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.6rem, 1.6vw, 1rem); }
+.corner-panel-col { flex: 1; display: flex; flex-direction: column; gap: clamp(0.5rem, 1.4vh, 0.9rem); min-height: 0; }
 .corner-tile {
-  display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between;
-  gap: 0.6rem; padding: clamp(0.8rem, 1.8vw, 1.2rem);
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+  gap: clamp(0.4rem, 1.2vh, 0.7rem); padding: clamp(0.7rem, 2vh, 1.3rem);
   border: 1px solid rgba(255, 255, 255, 0.55); color: #ffffff; text-decoration: none;
 }
 .corner-tile:hover, .corner-tile:focus-visible { background: #ffffff; color: #c90500; outline: none; }
-.corner-tile-icon svg { width: clamp(30px, 5vw, 44px); height: auto; display: block; }
+/* disabled tile: visibly inactive (dashed border, cursor), label stays full-white
+   so it never drops below AA — the destination is simply not configured yet */
+.corner-tile--disabled {
+  border-style: dashed; border-color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed; opacity: 0.9;
+}
+.corner-tile--disabled:hover { background: transparent; color: #ffffff; }
+.corner-tile-icon svg { width: clamp(28px, 4.5vh, 44px); height: auto; display: block; }
 .corner-tile-label {
-  font-family: var(--font-grotesk); font-weight: 700; font-size: clamp(1rem, 2vw, 1.35rem);
+  font-family: var(--font-grotesk); font-weight: 700; font-size: clamp(1rem, 2.2vh, 1.35rem);
   letter-spacing: 0.02em; text-transform: lowercase;
 }
+.corner-tile-note {
+  font-family: var(--font-mono); font-weight: 650; font-size: 0.62rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: #ffffff;
+}
 .corner-close {
-  align-self: flex-end; font-family: var(--font-mono); font-size: 0.7rem;
+  align-self: flex-start; font-family: var(--font-mono); font-size: 0.7rem;
   letter-spacing: 0.1em; text-transform: uppercase; font-weight: 650;
   color: #ffffff; background: transparent; border: 1px solid rgba(255, 255, 255, 0.55);
   padding: 0.3rem 0.55rem; cursor: pointer;

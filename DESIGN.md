@@ -176,12 +176,20 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   `micro` mono label, a value, and the red accent, self-contained for any README.
 - **Command bar** — the persistent nav strip: `accent` background, `paper` text
   (5.9:1), one-key channel switching.
-- **Corner menu** — global bottom-right chrome: a blinking signal-red arrow
-  expands a large panel of square tiles (ambient · rss · badges · github) with
-  hand-drawn 1px monochrome icons in the structural-index style. **Panel palette:**
-  a fixed `#c90500` signal-red field with pure-white ink and icons — white on
+- **Corner menu** — global chrome: a blinking signal-red arrow at the
+  bottom-LEFT (beside the ETHEREUM BEAT wordmark) opens a **full viewport-height
+  red rail** down the left edge (`min(40vw, 460px)`, slides in from the left).
+  Tiles are a vertical column of large square buttons — ambient · rss · farcaster
+  · x · badges — with **hand-built 1px SVG icons** in the structural-index house
+  style: a single stroke, square (butt) caps, sharp corners only, monochrome, one
+  stroke weight and box size across the set, no icon library. **Panel palette:** a
+  fixed `#c90500` signal-red field with pure-white ink and icons — white on
   `#c90500` is **6.07:1**, clearing AA for normal text (no large-text-tier
-  reliance). Opened/closed by click, Esc or click-outside; all script nonced.
+  reliance). The wordmark renders in **lowercase grotesk**, not the pixel face.
+  Destinations resolved from config that are absent (farcaster, x today) render in
+  a visible **DISABLED** state (dashed border, "soon") and log a warning — never
+  silently substituted with another destination. GitHub is **not** in the menu; it
+  stays in the footer. Opened/closed by click, Esc or click-outside; script nonced.
 - **Ambient wallpapers** — a chrome-free, full-viewport system for desktop tools
   like Plash. It **ignores the seven-theme system** and runs on a LOCKED mono+red
   palette so its contrast matrix is ten designs, not ten×seven:
@@ -191,14 +199,19 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
     lines, procedural slot-synced motion — never fully still.
   - Ten designs, simple→complex: glyph · slot · beat · ticker · stack · grid ·
     dial · strip · console · wall.
-  - **/ambient** is the interactive chooser (← → cycle, copy-wallpaper-link);
+  - **/ambient** is the interactive chooser (← → cycle, copy-wallpaper-link, an
+    `esc · exit` back to the main site, and a WALLPAPER SETUP modal — mono +
+    grotesk, 1px red border, hard corners — with Plash install steps);
     **/ambient/N** is the clean locked single design (nothing interactive — Plash
     freezes the page, so the URL is how you pick), with noindex + canonical to
     /ambient. Neither is in the sitemap.
+  - The full-side designs (strip, console, wall) anchor to the **LEFT** edge so
+    they clear the macOS desktop-icon column.
 - **Footer** — the command bar carries the channels + about + roadmap; the credit
   strip keeps the growthepie / source-registry attribution **one click from the
-  homepage**; ancillary destinations (ambient · rss · badges · github) live in the
-  corner menu. `/design` is never linked from the footer.
+  homepage**; ancillary destinations (ambient · rss · farcaster · x · badges) live
+  in the corner menu, while **GitHub stays in the footer** (not the menu).
+  `/design` is never linked from the footer.
 
 ## Do's and Don'ts
 
