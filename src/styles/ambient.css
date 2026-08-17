@@ -69,9 +69,29 @@
   display: grid; place-items: center; padding: 1.5rem;
 }
 .amb-modal {
-  width: min(560px, 92vw); background: #0d0d0d; color: var(--amb-fg);
+  width: min(560px, 92vw); max-height: 88vh; overflow-y: auto;
+  background: #0d0d0d; color: var(--amb-fg);
   border: 1px solid var(--amb-red); padding: clamp(1.3rem, 3vw, 2rem);
   font-family: var(--font-grotesk);
+}
+.amb-modal a { color: var(--amb-fg); text-decoration: underline; text-underline-offset: 2px; }
+.amb-modal a:hover { color: var(--amb-red); }
+
+/* two install paths: open-source primary, closed-source secondary */
+.amb-modal-paths { display: grid; gap: 1.3rem; }
+.amb-modal-path { display: grid; gap: 0.7rem; }
+.amb-modal-path--primary { border-left: 2px solid var(--amb-red); padding-left: 0.9rem; }
+.amb-modal-path-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.7rem; }
+.amb-modal-path-name { font-family: var(--font-grotesk); font-weight: 800; font-size: 1.1rem; color: var(--amb-fg); }
+.amb-modal-tag {
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.12rem 0.4rem; border: 1px solid var(--amb-line);
+}
+.amb-modal-tag--os { color: var(--amb-fg); border-color: var(--amb-red); }
+.amb-modal-tag--cs { color: var(--amb-dim); }
+.amb-modal-rec {
+  font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--amb-red);
 }
 @media (prefers-reduced-motion: no-preference) {
   .amb-modal { animation: amb-modal-in 0.2s var(--ease-settle) both; }

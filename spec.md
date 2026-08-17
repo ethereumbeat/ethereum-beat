@@ -1314,3 +1314,43 @@ including the larger left red rail (tile icon + label clears AA on the exact red
 token, fixed by weight/size never thresholds); audit-meta + audit-csp green with
 every new inline script nonced. The growthepie / source-registry attribution
 stays in the footer, one click from home. Commit and push per item; one PR.
+
+## 30. Pass 19 — pulse overflow fix + open-source-first ambient install
+
+Iterate again on the ambient/menu work and fix a pulse-detail layout bug. The
+LEFT full-height corner menu, its disabled-tile/no-github behaviour, custom 1px
+icons, grotesk wordmark, the /ambient ESC·EXIT control and the left-anchored
+full-side designs all landed in Pass 18 (§29) and stand unchanged; this pass
+carries the three deltas below. Non-financial throughout; nothing here touches
+metric_meta, needs no D1 migration or KV bust, and does not mutate wrangler.toml.
+
+A. PULSE DETAIL — value overflow. On /pulse/[metric] the hero pixel numeral
+   overflowed its left column and painted across the divider into the chart /
+   y-axis ticks for high-digit-count values (e.g. daily transactions
+   "40,772,554" over a "71.8M" axis tick). Fix: the value column reserves its
+   grid track (`min-width:0` on `.hud-col-left`, so the `minmax(0,…)` tracks are
+   honoured) and clips as a hard safety net (`overflow:hidden`) so text can NEVER
+   cross the divider; the value font-size is a `clamp()` whose middle term is
+   column-relative (`cqi`, via `container-type:inline-size`) and whose MAX scales
+   down with the digit count, so a billion-scale value shrinks to fit rather than
+   overflow. Verified with a forced max-width value at every breakpoint.
+
+B. ÜBERSICHT WIDGET — shipped in-repo. A small, open-source Übersicht widget at
+   `/desktop/ubersicht/ethereum-beat.jsx` renders /ambient in a transparent,
+   left/bottom-anchored iframe on the desktop layer (the inner page keeps its own
+   12-second pulse; no shell command). A short README in that folder: drop the
+   file in Übersicht's widgets folder, done. Non-financial and self-contained.
+
+C. /ambient INSTALL MODAL — open-source first. The WALLPAPER SETUP modal (nonced;
+   mono + grotesk, 1px red border, hard corners; Esc + click-outside close) now
+   leads with the CROPS-aligned path:
+   - PRIMARY — Übersicht, labelled "free · open source": install Übersicht and
+     drop in the shipped ethereum-beat.jsx widget (linked in-repo). Recommended.
+   - SECONDARY — Plash, labelled "free · closed source": paste an /ambient/N link,
+     use Browsing Mode to configure then lock, set a reload interval. Zero-friction.
+   Both are labelled honestly; Plash's closed-source status is not hidden.
+
+Gates: clean build; audit-contrast green across all routes/themes/viewports
+(incl. the pulse routes and the larger left red rail); audit-meta + audit-csp
+green with every new inline script nonced. The growthepie / source-registry
+attribution stays in the footer, one click from home. Commit and push per item.

@@ -64,6 +64,13 @@ export default function PulseOverlay({
   const rootRef = useRef<HTMLDivElement>(null);
 
   const kpi = metric.latest ? kpiValue(metric.latest.value, metric.unit) : null;
+  // the pixel numeral must fit the value column without ever crossing the divider
+  // (pass 19): scale its MAX size down as the digit count grows, and size the
+  // middle clamp term to the column width (cqi) rather than the viewport (vw), so
+  // a billion-scale value like "1,234,567,890" cannot paint over the chart.
+  const valChars = kpi ? kpi.value.length : 0;
+  const valMaxRem =
+    valChars <= 5 ? 6 : valChars <= 7 ? 5 : valChars <= 9 ? 4 : valChars <= 11 ? 3.3 : 2.8;
   const principle = principleFor(metric.category);
   const licence = metric.source_name === 'growthepie' ? ' · CC BY 4.0' : '';
 
@@ -230,8 +237,8 @@ export default function PulseOverlay({
             <h1 className="mono-label mt-5 uppercase tracking-[0.2em] text-[color:var(--ink-soft)]">{metric.label}</h1>
             {kpi ? (
               <p
-                className="mt-1 font-display font-normal leading-none tabular-nums text-[color:var(--ink)]"
-                style={{ fontSize: 'clamp(2.75rem, 9vw, 6rem)', viewTransitionName: reducedMotion ? undefined : 'kpi-morph' }}
+                className="mt-1 max-w-full font-display font-normal leading-none tabular-nums text-[color:var(--ink)]"
+                style={{ fontSize: `clamp(2.4rem, 20cqi, ${valMaxRem}rem)`, viewTransitionName: reducedMotion ? undefined : 'kpi-morph' }}
               >
                 {kpi.value}
                 {kpi.suffix && (

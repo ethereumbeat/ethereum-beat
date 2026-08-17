@@ -143,6 +143,13 @@ A fluid gutter — `spacing.gutter` = `clamp(0.875rem, 3vw, 2.5rem)`. The dial
 sizes to the viewport: `spacing.disc` = `min(78vmin, 44rem, 100dvh − 13rem)`.
 Information is laid out identically in every theme.
 
+**Reserved tracks — a value never paints into a neighbour.** Two-column HUDs
+(the /pulse detail: big numeral left, chart right) use `minmax(0, …)` grid tracks
+with `min-width: 0` on each column, so a long token cannot force a track wider.
+The numeral column also sets `overflow: hidden` (a hard clip) and scales its
+pixel font by digit count via `clamp(…, cqi, max)` (`container-type: inline-size`),
+so a billion-scale value shrinks to fit rather than crossing the divider.
+
 **The 1px line system.** Every rule is exactly one pixel (`spacing.hair`):
 
 - `--hairline` — ink @ 0.2 — dividers, section rules.
@@ -201,7 +208,10 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
     dial · strip · console · wall.
   - **/ambient** is the interactive chooser (← → cycle, copy-wallpaper-link, an
     `esc · exit` back to the main site, and a WALLPAPER SETUP modal — mono +
-    grotesk, 1px red border, hard corners — with Plash install steps);
+    grotesk, 1px red border, hard corners — that leads with the **open-source
+    path**: Übersicht (free · open source) + the shipped
+    `desktop/ubersicht/ethereum-beat.jsx` widget, then Plash (free · closed
+    source), each labelled honestly);
     **/ambient/N** is the clean locked single design (nothing interactive — Plash
     freezes the page, so the URL is how you pick), with noindex + canonical to
     /ambient. Neither is in the sitemap.

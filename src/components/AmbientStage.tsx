@@ -477,31 +477,72 @@ export default function AmbientStage({ design: initial, interactive = false }: P
                 esc ✕
               </button>
             </div>
-            <ol className="amb-modal-steps">
-              <li>
-                <span className="amb-modal-n">1</span>
-                <span>Install <b>Plash</b> — a free desktop-wallpaper app on the Mac App Store.</span>
-              </li>
-              <li>
-                <span className="amb-modal-n">2</span>
-                <span>
-                  Pick a design here, then hit <span className="amb-modal-code">copy wallpaper link</span> — it
-                  copies an <span className="amb-modal-code">/ambient/N</span> URL.
-                </span>
-              </li>
-              <li>
-                <span className="amb-modal-n">3</span>
-                <span>Paste that URL into Plash as the website to show.</span>
-              </li>
-              <li>
-                <span className="amb-modal-n">4</span>
-                <span>Use Plash&apos;s <b>Browsing Mode</b> to preview, then <b>lock</b> it as your wallpaper.</span>
-              </li>
-              <li>
-                <span className="amb-modal-n">5</span>
-                <span>Optionally set a <b>reload interval</b> in Plash for a periodic refresh.</span>
-              </li>
-            </ol>
+
+            <div className="amb-modal-paths">
+              {/* PRIMARY — open source, CROPS-aligned */}
+              <section className="amb-modal-path amb-modal-path--primary">
+                <div className="amb-modal-path-head">
+                  <span className="amb-modal-path-name">Übersicht</span>
+                  <span className="amb-modal-tag amb-modal-tag--os">free · open source</span>
+                  <span className="amb-modal-rec">recommended</span>
+                </div>
+                <ol className="amb-modal-steps">
+                  <li>
+                    <span className="amb-modal-n">1</span>
+                    <span>
+                      Install <b>Übersicht</b> — free, open source (
+                      <a href="https://tracesof.net/uebersicht/" target="_blank" rel="noopener">tracesof.net/uebersicht</a>).
+                    </span>
+                  </li>
+                  <li>
+                    <span className="amb-modal-n">2</span>
+                    <span>
+                      Drop the shipped{' '}
+                      <a
+                        href="https://github.com/ethereumbeat/ethereum-beat/blob/main/desktop/ubersicht/ethereum-beat.jsx"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        <span className="amb-modal-code">ethereum-beat.jsx</span>
+                      </a>{' '}
+                      widget into Übersicht&apos;s widgets folder.
+                    </span>
+                  </li>
+                  <li>
+                    <span className="amb-modal-n">3</span>
+                    <span>Done — it renders /ambient on the desktop and stays live on its own.</span>
+                  </li>
+                </ol>
+              </section>
+
+              {/* SECONDARY — closed source, zero-friction; labelled honestly */}
+              <section className="amb-modal-path">
+                <div className="amb-modal-path-head">
+                  <span className="amb-modal-path-name">Plash</span>
+                  <span className="amb-modal-tag amb-modal-tag--cs">free · closed source</span>
+                </div>
+                <ol className="amb-modal-steps">
+                  <li>
+                    <span className="amb-modal-n">1</span>
+                    <span>Install <b>Plash</b> from the Mac App Store.</span>
+                  </li>
+                  <li>
+                    <span className="amb-modal-n">2</span>
+                    <span>
+                      Pick a design here, hit <span className="amb-modal-code">copy wallpaper link</span> — an{' '}
+                      <span className="amb-modal-code">/ambient/N</span> URL — and paste it into Plash.
+                    </span>
+                  </li>
+                  <li>
+                    <span className="amb-modal-n">3</span>
+                    <span>
+                      Use <b>Browsing Mode</b> to configure, then <b>lock</b> it; set a <b>reload interval</b> if you like.
+                    </span>
+                  </li>
+                </ol>
+              </section>
+            </div>
+
             <p className="amb-modal-note">
               The 12-second live pulse keeps running on its own — the wallpaper stays live without a reload.
             </p>
