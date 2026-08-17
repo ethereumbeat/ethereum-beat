@@ -1354,3 +1354,48 @@ Gates: clean build; audit-contrast green across all routes/themes/viewports
 (incl. the pulse routes and the larger left red rail); audit-meta + audit-csp
 green with every new inline script nonced. The growthepie / source-registry
 attribution stays in the footer, one click from home. Commit and push per item.
+
+## 31. Pass 20 — terminal menu + wordmark trigger
+
+Redesign the corner menu (from Pass 18/19) into a terminal-style list opened by
+the wordmark itself. Non-financial throughout; nothing here touches metric_meta,
+needs no D1 migration or KV bust, and does not mutate wrangler.toml. Respects
+prefers-reduced-motion; all new JS goes through the nonce gate.
+
+A. TRIGGER — the wordmark opens the menu. The standalone blinking-arrow box is
+   removed. The bottom-left "ethereum beat" wordmark (lowercase grotesk,
+   unchanged face) is the clickable + keyboard-focusable trigger. On hover AND
+   keyboard focus it shows a small lowercase "more options" tooltip whose border
+   DRAWS IN, reusing the existing corner-bracket border-animation primitive
+   (.hud-frame / .hud-edge / .hud-tick + the hud-line-draw keyframe) so it is
+   identical to the pulse HUD and dive panels. Click / Enter opens the panel; Esc
+   and click-outside close.
+
+B. OPEN MENU — a terminal list. All tile icons and per-tile bordered boxes are
+   gone. The options are a vertical stack of large lowercase labels in Departure
+   Mono (the pixel face) at a very large size: ambient (/ambient), rss
+   (/rss.xml), farcaster, x, badges (/badges). farcaster + x keep their disabled
+   "soon" state — no destination is wired or substituted. The ESC control stays
+   at the bottom; the "ethereum beat" wordmark at the top stays grotesk.
+
+C. BLINKING CARET. The hovered / focused option renders a blinking "_" caret
+   after its label (a terminal cursor) via a nonced CSS animation. Up / Down
+   arrow keys move focus between options and move the caret; Enter activates.
+   Only one caret is visible at a time.
+
+D. REACTIVE PIXEL TEXTURE. The red panel carries a procedural background: a grid
+   of small red pixel cells at varying opacity (a subtle dither). The cursor
+   drives a spotlight/ripple that raises the opacity of nearby cells; cells
+   settle back when the cursor leaves. Driven by a nonced script (canvas). HARD
+   CONSTRAINT: the cells only ever DARKEN the field (dark-red over the #c90500
+   token), and their opacity is clamped, so white option labels — which sit on
+   the solid red token — never drop below WCAG AA in the texture's worst-case
+   (max-opacity) state; darkening only raises white-on-red contrast. Under
+   prefers-reduced-motion the texture is static (drawn once, no ripple).
+
+Gates: clean build; audit-contrast green across all routes/themes/viewports
+(the big pixel labels clear AA on the red token in the texture's worst case,
+fixed by weight/size never thresholds); audit-meta + audit-csp green with every
+new inline script nonced. The panel palette + texture opacity ceiling are
+documented in DESIGN.md. The growthepie attribution stays in the footer. Commit
+and push per item; one PR.
