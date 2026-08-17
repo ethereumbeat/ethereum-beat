@@ -974,6 +974,15 @@ a {
     height: auto;
   }
 }
+/* the value column reserves its grid track and never lets a wide number paint
+   across the divider (pass 19): min-width:0 respects the minmax(0,…) track,
+   overflow:hidden clips as a hard safety net, and container-type makes the
+   value font-size (cqi below) scale to THIS column, not the viewport. */
+.hud-col-left {
+  min-width: 0;
+  overflow: hidden;
+  container-type: inline-size;
+}
 .hud-col-right {
   display: flex;
   flex-direction: column;
