@@ -26,13 +26,33 @@ const origin = siteOrigin(Astro.locals?.runtime?.env);
 const normalized = path === '/' ? '/' : path.replace(/\/$/, '');
 const canonical = origin + normalized;
 
-// social card: per-channel build-time renders under /og/ (see
-// scripts/build-og.mjs); /pulse/* shares the generic pulse card
+// Social card: the live BEAT card is the site-wide social image (spec §33.B) —
+// a dynamic 1200x800 (3:2) PNG rendered by /og/beat.png from the KV snapshot.
+// The 3:2 ratio is what the Farcaster Mini App embed requires; Twitter/OG accept
+// it too. (Per-channel build-time cards under /og/*.png still exist for anyone
+// who wants them, but the live card is the one the head points at.)
 const channel = ROUTES.find((r) => r.path === normalized);
-const ogImage = `${origin}/og/${channel?.og ?? (normalized.startsWith('/pulse/') ? 'pulse' : 'beat')}.png`;
+const ogImage = `${origin}/og/beat.png`;
 const ogAlt = channel
-  ? `${SITE_NAME} — ${channel.channel} channel card: ${channel.oneLine}`
-  : `${SITE_NAME} share card: ${description}`;
+  ? `${SITE_NAME} — ${channel.channel}: ${channel.oneLine}. Live network-health card.`
+  : `${SITE_NAME} — live network-health card: ${description}`;
+
+// Farcaster Mini App embed (spec §33.C): one inert meta tag, so it ships
+// site-wide; the launch action always opens the app root.
+const miniApp = {
+  version: '1',
+  imageUrl: ogImage,
+  button: {
+    title: 'Open Ethereum Beat',
+    action: {
+      type: 'launch_miniapp',
+      url: `${origin}/`,
+      name: SITE_NAME,
+      splashImageUrl: `${origin}/splash.png`,
+      splashBackgroundColor: '#fbfbf9',
+    },
+  },
+};
 
 const jsonLdBlocks = [...siteJsonLd(origin), ...jsonLd];
 
@@ -57,13 +77,16 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:height" content="800" />
     <meta property="og:image:alt" content={ogAlt} />
+    <meta property="og:image:type" content="image/png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={ogAlt} />
+    {/* Farcaster Mini App embed (spec §33.C) */}
+    <meta name="fc:miniapp" content={JSON.stringify(miniApp)} />
     {
       jsonLdBlocks.map((block) => (
         <script
