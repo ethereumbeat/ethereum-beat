@@ -378,15 +378,20 @@ const CROPS = [
       </p>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         The <span class="font-bold text-[color:var(--ink)]">corner menu</span> is global
-        chrome: a blinking signal-red arrow at the bottom-LEFT (beside the wordmark)
-        opens a full viewport-height red rail down the left edge. Its tiles — ambient,
-        rss, farcaster, x, badges — are large square buttons with hand-built 1px SVG
-        icons (single stroke, square butt caps, sharp corners, one weight/box; no icon
-        library). The panel is a fixed <span class="font-mono">#c90500</span> field with
-        pure-white ink and icons — <span class="font-mono">6.07:1</span>, clearing AA
-        for normal text. Destinations that are not configured (farcaster, x) render in a
-        visible DISABLED state — never silently substituted. The wordmark renders in
-        lowercase grotesk, not the pixel face. The
+        chrome, a terminal list opened by the wordmark itself: the bottom-left
+        <span class="font-mono">ethereum beat</span> wordmark (lowercase grotesk) is the
+        trigger — no arrow — and on hover/focus a <span class="font-mono">more options</span>
+        tooltip draws its corner-bracket border in (the shared HUD line-draw primitive).
+        It opens a full viewport-height red rail whose options are large lowercase
+        Departure Mono labels — ambient, rss, farcaster, x, badges — no icons, no boxes;
+        the hovered/focused option shows a blinking <span class="font-mono">_</span> caret
+        (↑/↓ move it, Enter activates, one at a time). The panel is a fixed
+        <span class="font-mono">#c90500</span> field with pure-white ink
+        (<span class="font-mono">6.07:1</span>), and a nonced canvas paints a reactive
+        dark-red pixel dither that only ever DARKENS the field (opacity ceiling
+        <span class="font-mono">0.34</span>), so white labels never drop below AA; static
+        under reduced motion. Destinations that are not configured (farcaster, x) render
+        in a visible DISABLED “soon” state — never substituted. The
         <span class="font-bold text-[color:var(--ink)]">footer</span> stays focused: the
         command bar carries the channels, about and roadmap; the credit strip keeps the
         growthepie / source-registry attribution one click from the homepage; ancillary

@@ -183,20 +183,25 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   `micro` mono label, a value, and the red accent, self-contained for any README.
 - **Command bar** — the persistent nav strip: `accent` background, `paper` text
   (5.9:1), one-key channel switching.
-- **Corner menu** — global chrome: a blinking signal-red arrow at the
-  bottom-LEFT (beside the ETHEREUM BEAT wordmark) opens a **full viewport-height
-  red rail** down the left edge (`min(40vw, 460px)`, slides in from the left).
-  Tiles are a vertical column of large square buttons — ambient · rss · farcaster
-  · x · badges — with **hand-built 1px SVG icons** in the structural-index house
-  style: a single stroke, square (butt) caps, sharp corners only, monochrome, one
-  stroke weight and box size across the set, no icon library. **Panel palette:** a
-  fixed `#c90500` signal-red field with pure-white ink and icons — white on
-  `#c90500` is **6.07:1**, clearing AA for normal text (no large-text-tier
-  reliance). The wordmark renders in **lowercase grotesk**, not the pixel face.
-  Destinations resolved from config that are absent (farcaster, x today) render in
-  a visible **DISABLED** state (dashed border, "soon") and log a warning — never
-  silently substituted with another destination. GitHub is **not** in the menu; it
-  stays in the footer. Opened/closed by click, Esc or click-outside; script nonced.
+- **Corner menu** — global chrome, a **terminal-style list opened by the
+  wordmark**. The bottom-left "ethereum beat" wordmark (lowercase grotesk) is the
+  trigger — there is no arrow; on hover/focus a **"more options" tooltip** draws
+  its corner-bracket border in (the shared `.hud-frame`/`.hud-edge`/`.hud-tick` +
+  `hud-line-draw` primitive). Click/Enter opens a **full viewport-height red rail**
+  (`min(40vw, 460px)`) down the left edge. Options are a vertical stack of **large
+  lowercase Departure Mono (pixel) labels** — ambient · rss · farcaster · x ·
+  badges — no icons, no boxes. The hovered/focused option shows a blinking `_`
+  caret; ↑/↓ move it, Enter activates, one caret at a time. **Panel palette:** a
+  fixed `#c90500` signal-red field with pure-white ink — white on `#c90500` is
+  **6.07:1**, clearing AA (the big pixel labels are large-text). **Reactive
+  texture:** a nonced canvas paints a dark-red pixel dither whose cells brighten
+  under the cursor and settle back; cells only ever **DARKEN** the field
+  (`rgba(58,0,0,α)`, **opacity ceiling α ≤ 0.34**), so white labels never drop
+  below AA — darkening only raises white-on-red contrast — and the labels sit on
+  the solid token in the negative space. Static under `prefers-reduced-motion`.
+  farcaster + x have no configured destination, so they stay **DISABLED** ("soon")
+  — never substituted. GitHub is **not** in the menu; it stays in the footer.
+  Esc / click-outside close; all JS nonced.
 - **Ambient wallpapers** — a chrome-free, full-viewport system for desktop tools
   like Plash. It **ignores the seven-theme system** and runs on a LOCKED mono+red
   palette so its contrast matrix is ten designs, not ten×seven:
