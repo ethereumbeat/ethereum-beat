@@ -1905,3 +1905,14 @@ metric_meta changes, so no migration/KV step. (SPEC §27.)
   component, expected); it is a local aid, deliberately NOT added to verify so the
   merge stays clean. Fluid values (clamp/min) live in prose, not the frontmatter
   (the linter rejects non-fixed dimensions).
+- **Farcaster is deferred, not deleted (Pass 23, spec §34).** The user-facing
+  Farcaster entry — the corner-menu `farcaster` tile — is removed, but the entire
+  Pass 22 backend is intentionally KEPT live-but-unlinked: `/.well-known/
+  farcaster.json`, the `fc:miniapp` embed, the `/og/beat.png` card, the CSP
+  `frame-ancestors` allowlist, the icon/splash assets, and the FARCASTER_* env
+  bindings. **So a future session must NOT read the live-but-unlinked manifest (or
+  the manifest serving without an `accountAssociation`) as a bug** — it is dormant
+  by design, awaiting the deferred Mini App verification step (domain custody
+  signing + the `FARCASTER_ACCOUNT_ASSOCIATION` secret). Re-linking is a one-line
+  menu change. The separate §25 daily broadcast (Nostr/Farcaster/X) is unrelated
+  and untouched.
