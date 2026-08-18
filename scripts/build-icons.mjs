@@ -12,6 +12,9 @@
  * - public/icons/icon-192.png          192, transparent
  * - public/icons/icon-512.png          512, transparent
  * - public/icons/icon-maskable-512.png 512, opaque paper, 20% safe-zone pad
+ * - public/icon.png                    1024, opaque paper  (Farcaster app icon,
+ *                                       spec §33.E — must have NO alpha)
+ * - public/splash.png                  200, opaque paper   (Farcaster splash)
  */
 
 import { chromium } from 'playwright';
@@ -32,6 +35,9 @@ const JOBS = [
   { file: 'icons/icon-512.png', size: 512, pad: 0, bg: null },
   // maskable: opaque, glyph inside the 80% safe zone so platform masks never clip it
   { file: 'icons/icon-maskable-512.png', size: 512, pad: 0.2, bg: PAPER },
+  // Farcaster Mini App assets (spec §33.E): opaque paper, no alpha
+  { file: 'icon.png', size: 1024, pad: 0.14, bg: PAPER },
+  { file: 'splash.png', size: 200, pad: 0.24, bg: PAPER },
 ];
 
 const browser = await chromium.launch();
