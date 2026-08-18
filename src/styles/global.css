@@ -534,6 +534,9 @@ a {
 #command-bar .live-dot {
   background: var(--bar-text);
 }
+/* pixel-beat mark (spec §32.A): crisp 3×2 pixel glyph in the wordmark's colour */
+.beat-mark { display: inline-flex; align-items: center; }
+.beat-mark svg { height: 0.62em; width: auto; display: block; shape-rendering: crispEdges; }
 #command-bar .cmd-active {
   border-color: var(--bar-text);
   color: var(--bar-text);

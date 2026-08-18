@@ -48,7 +48,14 @@ const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolea
     title="Drag to dock (left · right · top · float) · double-click to reset"
   >⠿</span>
   <a href="/" class="micro flex flex-none items-center gap-1.5 whitespace-nowrap !no-underline">
-    <span class="live-dot"></span>
+    <span class="beat-mark" aria-hidden="true">
+      {/* pixel-beat mark — 3×2 bitmap 1 0 1 / 0 1 0, crisp square pixels, wordmark colour */}
+      <svg viewBox="0 0 3 2" fill="currentColor" shape-rendering="crispEdges">
+        <rect x="0" y="0" width="1" height="1" />
+        <rect x="2" y="0" width="1" height="1" />
+        <rect x="1" y="1" width="1" height="1" />
+      </svg>
+    </span>
     <span class="hidden md:inline">ETHEREUM&nbsp;BEAT</span>
     <span class="md:hidden">EB</span>
   </a>
