@@ -197,7 +197,9 @@ const OPTIONS: Opt[] = [
       mouse.y = e.clientY - r.top;
     };
     const onLeave = () => { mouse.x = -999; mouse.y = -999; };
-    function startTexture() {
+    // arrow consts (not hoisted `function`s) so the panel null-narrowing from the
+    // guard above is preserved inside them under astro check / tsc
+    const startTexture = () => {
       if (!canvas || !ctx) return;
       resize();
       paint();
@@ -206,13 +208,13 @@ const OPTIONS: Opt[] = [
       panel.addEventListener('pointermove', onMove);
       panel.addEventListener('pointerleave', onLeave);
       raf = window.requestAnimationFrame(tick);
-    }
-    function stopTexture() {
+    };
+    const stopTexture = () => {
       texOn = false;
       window.cancelAnimationFrame(raf);
       panel.removeEventListener('pointermove', onMove);
       panel.removeEventListener('pointerleave', onLeave);
-    }
+    };
     window.addEventListener('resize', () => { if (isOpen()) { resize(); paint(); } });
   };
   initCornerMenu();
