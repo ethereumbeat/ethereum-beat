@@ -1,21 +1,19 @@
 ---
 /**
- * Corner menu (spec §31) — a terminal-style option list opened by the wordmark.
+ * Corner menu (spec §32) — a terminal-style option panel. The TRIGGER now lives
+ * on the command-bar logo lockup (CommandBar.astro, `[data-corner-toggle]`), so
+ * this component renders only the panel. The open handler is a DELEGATED document
+ * listener because the command bar re-renders on soft-nav; the "more options"
+ * tooltip on the trigger is pure CSS, so it needs no binding.
  *
- * TRIGGER (§31.A): the bottom-left "ethereum beat" wordmark (lowercase grotesk)
- * is the clickable + keyboard-focusable trigger; there is no separate arrow. On
- * hover / focus it shows a "more options" tooltip whose corner-bracket border
- * draws in, reusing the site's .hud-frame / .hud-edge / .hud-tick primitive.
+ * PANEL: a red left rail (50vw desktop, full-width below the tablet breakpoint).
+ * Options are large lowercase Departure Mono labels — no icons, no boxes, no top
+ * wordmark. The hovered/focused option shows a blinking "_" caret; ↑/↓ move it,
+ * Enter activates. A dark-red reactive pixel dither brightens under the cursor
+ * (darken-only, so white labels stay ≥ AA on #c90500). All JS nonced.
  *
- * PANEL (§31.B-D): a full-height red left rail. Options are a vertical stack of
- * large lowercase Departure Mono (pixel) labels — no icons, no boxes. The
- * hovered / focused option shows a blinking "_" caret; ↑/↓ move it, Enter
- * activates. The red field carries a reactive dark-red pixel dither whose cells
- * brighten under the cursor and settle back — clamped to DARKEN only, so white
- * labels on the solid #c90500 token never drop below AA. All JS is nonced.
- *
- * farcaster + x have no public destination in the social config, so they stay
- * DISABLED ("soon") — never wired or substituted. GitHub lives in the footer.
+ * farcaster + x have no configured destination, so they stay DISABLED ("soon").
+ * GitHub lives in the footer.
  */
 const FARCASTER_URL: string | null = null;
 const X_URL: string | null = null;
@@ -33,28 +31,8 @@ const OPTIONS: Opt[] = [
 ---
 
 <div class="corner-menu" data-corner-menu transition:persist="corner-menu">
-  <button
-    type="button"
-    class="corner-trigger"
-    data-corner-toggle
-    aria-haspopup="menu"
-    aria-expanded="false"
-    aria-controls="corner-panel"
-  >
-    <span class="corner-trigger-word">ethereum beat</span>
-    <span class="corner-tip" role="tooltip">
-      <svg class="hud-frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="hud-edge" pathLength="1" d="M 0.6 0.6 L 99.4 0.6 L 99.4 99.4 L 0.6 99.4 L 0.6 0.6" />
-        <path class="hud-tick" pathLength="1" d="M 0.6 22 L 0.6 0.6 L 22 0.6" />
-        <path class="hud-tick" pathLength="1" d="M 78 99.4 L 99.4 99.4 L 99.4 78" />
-      </svg>
-      <span class="corner-tip-label">more options</span>
-    </span>
-  </button>
-
   <nav class="corner-panel" id="corner-panel" aria-label="Ethereum Beat menu" aria-hidden="true">
     <canvas class="corner-tex" data-corner-tex aria-hidden="true"></canvas>
-    <p class="corner-panel-kicker">ethereum beat</p>
     <ul class="corner-term" role="menu" data-corner-list>
       {
         OPTIONS.map((o) =>
@@ -85,19 +63,21 @@ const OPTIONS: Opt[] = [
 </div>
 
 <script>
-  // Nonced by the Worker. Idempotent bind that survives view transitions.
+  // Nonced by the Worker. The trigger ([data-corner-toggle]) lives in the command
+  // bar (re-rendered on soft-nav), so opening is DELEGATED on document; the panel
+  // container persists, so per-panel listeners bind once.
   const initCornerMenu = () => {
     const root = document.querySelector('[data-corner-menu]') as HTMLElement | null;
     if (!root || root.dataset.bound) return;
-    root.dataset.bound = '1';
-    const btn = root.querySelector('[data-corner-toggle]') as HTMLElement | null;
     const panel = root.querySelector('#corner-panel') as HTMLElement | null;
     const opts = [...root.querySelectorAll('[data-opt]')] as HTMLElement[];
-    if (!btn || !panel || !opts.length) return;
+    if (!panel || !opts.length) return;
+    root.dataset.bound = '1';
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let active = 0;
 
+    const trigger = () => document.querySelector('[data-corner-toggle]') as HTMLElement | null;
     const setActive = (i: number) => {
       active = (i + opts.length) % opts.length;
       opts.forEach((o, n) => o.classList.toggle('corner-opt--active', n === active));
@@ -105,27 +85,40 @@ const OPTIONS: Opt[] = [
     const isOpen = () => root.classList.contains('corner-open');
     const setOpen = (open: boolean) => {
       root.classList.toggle('corner-open', open);
-      btn.setAttribute('aria-expanded', String(open));
+      trigger()?.setAttribute('aria-expanded', String(open));
       panel.setAttribute('aria-hidden', String(!open));
-      if (open) {
-        setActive(0);
-        opts[0]?.focus();
-        startTexture();
-      } else {
-        stopTexture();
-        btn.focus();
-      }
+      if (open) { setActive(0); opts[0]?.focus(); startTexture(); }
+      else { stopTexture(); trigger()?.focus(); }
     };
 
-    btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!isOpen()); });
-    root.querySelector('[data-corner-close]')?.addEventListener('click', () => setOpen(false));
+    // delegated open/toggle + click-outside (survives the command bar re-render)
     document.addEventListener('click', (e) => {
+      const t = e.target instanceof Element ? e.target.closest('[data-corner-toggle]') : null;
+      if (t) { e.preventDefault(); e.stopPropagation(); setOpen(!isOpen()); return; }
       if (isOpen() && e.target instanceof Node && !root.contains(e.target)) setOpen(false);
     });
-    // one caret at a time: hover and keyboard both drive the single active index
+
+    // the tooltip is position:fixed (to escape the command bar's overflow clip),
+    // so pin it above the trigger on hover / focus; CSS handles show + border-draw
+    const positionTip = (t: Element) => {
+      const tip = t.querySelector('.corner-tip') as HTMLElement | null;
+      if (!tip) return;
+      const r = t.getBoundingClientRect();
+      tip.style.left = `${Math.round(r.left)}px`;
+      tip.style.top = 'auto';
+      tip.style.bottom = `${Math.round(window.innerHeight - r.top + 8)}px`;
+    };
+    const onTipHint = (e: Event) => {
+      const t = e.target instanceof Element ? e.target.closest('[data-corner-toggle]') : null;
+      if (t) positionTip(t);
+    };
+    document.addEventListener('pointerover', onTipHint);
+    document.addEventListener('focusin', onTipHint);
+    root.querySelector('[data-corner-close]')?.addEventListener('click', () => setOpen(false));
     opts.forEach((o, i) => {
       o.addEventListener('mouseenter', () => setActive(i));
       o.addEventListener('focus', () => setActive(i));
+      o.addEventListener('click', () => setOpen(false));
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && isOpen()) { e.preventDefault(); setOpen(false); return; }
@@ -137,12 +130,11 @@ const OPTIONS: Opt[] = [
         if (el && !el.dataset.disabled && el instanceof HTMLAnchorElement) el.click();
       }
     });
-    opts.forEach((o) => o.addEventListener('click', () => setOpen(false)));
 
     // ── reactive pixel texture (§31.D) — dark-red dither, cursor spotlight ──
     const canvas = root.querySelector('[data-corner-tex]') as HTMLCanvasElement | null;
     const ctx = canvas?.getContext('2d') ?? null;
-    const CELL = 16, BASE = 0.05, MAX = 0.34, SPOT = 5; // MAX is the opacity ceiling
+    const CELL = 16, BASE = 0.05, MAX = 0.34, SPOT = 5;
     let cols = 0, rows = 0, dpr = 1;
     let base = new Float32Array(0), level = new Float32Array(0);
     let raf = 0, texOn = false;
@@ -159,7 +151,7 @@ const OPTIONS: Opt[] = [
       base = new Float32Array(cols * rows);
       level = new Float32Array(cols * rows);
       for (let i = 0; i < base.length; i++) {
-        base[i] = BASE * (0.35 + ((i * 2654435761) % 1000) / 1000 * 0.65); // stable pseudo-dither
+        base[i] = BASE * (0.35 + ((i * 2654435761) % 1000) / 1000 * 0.65);
         level[i] = base[i];
       }
     };
@@ -171,7 +163,7 @@ const OPTIONS: Opt[] = [
         for (let x = 0; x < cols; x++) {
           const a = level[y * cols + x];
           if (a < 0.02) continue;
-          ctx.fillStyle = `rgba(58,0,0,${Math.min(MAX, a)})`; // DARK red only — darkening raises white contrast
+          ctx.fillStyle = `rgba(58,0,0,${Math.min(MAX, a)})`;
           ctx.fillRect(x * s + s * 0.16, y * s + s * 0.16, s * 0.68, s * 0.68);
         }
       }
@@ -185,7 +177,7 @@ const OPTIONS: Opt[] = [
           const d = Math.sqrt(dx * dx + dy * dy);
           const spot = d < SPOT ? (1 - d / SPOT) : 0;
           const target = base[i] + spot * (MAX - base[i]);
-          level[i] += (target - level[i]) * 0.22; // rise fast, settle back when cursor leaves
+          level[i] += (target - level[i]) * 0.22;
         }
       }
       paint();
@@ -197,8 +189,7 @@ const OPTIONS: Opt[] = [
       mouse.y = e.clientY - r.top;
     };
     const onLeave = () => { mouse.x = -999; mouse.y = -999; };
-    // arrow consts (not hoisted `function`s) so the panel null-narrowing from the
-    // guard above is preserved inside them under astro check / tsc
+    // arrow consts so the panel null-narrowing is preserved under astro check
     const startTexture = () => {
       if (!canvas || !ctx) return;
       resize();

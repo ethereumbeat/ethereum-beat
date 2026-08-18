@@ -1399,3 +1399,39 @@ fixed by weight/size never thresholds); audit-meta + audit-csp green with every
 new inline script nonced. The panel palette + texture opacity ceiling are
 documented in DESIGN.md. The growthepie attribution stays in the footer. Commit
 and push per item; one PR.
+
+## 32. Pass 21 — footer-logo opener + pixel-beat mark
+
+Move the menu trigger onto the footer/command-bar logo and give it a pixel mark.
+Non-financial throughout; nothing here touches metric_meta, needs no D1 migration
+or KV bust, and does not mutate wrangler.toml. Respects prefers-reduced-motion;
+all new JS is nonced.
+
+A. PIXEL-BEAT MARK. A small hard-edged pixel glyph, the 3×2 bitmap
+   `1 0 1 / 0 1 0` (filled cells top-left, top-right, bottom-centre), rendered as
+   crisp square pixels (no radius, no antialias) in the wordmark's own colour so
+   it clears WCAG AA on the red command-bar token (#ffffff on #c90500 = 5.9:1).
+   Static this pass. It replaces the "•" live-dot in the footer wordmark lockup,
+   site-wide.
+
+B. TRIGGER → FOOTER LOGO. The command-bar logo lockup ([pixel-beat mark] +
+   ETHEREUM BEAT) becomes the menu opener; the separate v3 bottom-left grotesk
+   trigger is removed. Behaviour is preserved: hover AND keyboard focus show the
+   animated-border "more options" tooltip (the shared .hud-frame primitive);
+   click / Enter opens; Esc + click-outside close. Because the command bar
+   re-renders on soft-nav, the open handler is a delegated document listener
+   (the tooltip is pure CSS), so it survives navigation.
+
+C. PANEL WIDTH. The open panel is 50vw on desktop (full viewport height,
+   unchanged). Below the tablet breakpoint (768px) it is full-width — the big
+   pixel labels need the room; 50vw is not applied on mobile.
+
+D. NO TOP WORDMARK. The "ethereum beat" header at the top of the open panel is
+   removed; the panel opens directly to the terminal option list. The ESC control
+   stays at the bottom.
+
+Gates: clean build; audit-contrast green across all routes/themes/viewports (the
+pixel-beat mark clears AA on the red token; the big pixel labels clear AA at the
+new 50vw width in the reactive texture's worst case, fixed by weight/size never
+thresholds); audit-meta + audit-csp green with every new script nonced. The
+DESIGN.md records the mark bitmap + the width rule. Commit and push per item.

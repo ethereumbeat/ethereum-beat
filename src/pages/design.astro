@@ -378,17 +378,23 @@ const CROPS = [
       </p>
       <p class="max-w-2xl text-[color:var(--ink-soft)]" style="font-size: var(--text-body); line-height: 1.55">
         The <span class="font-bold text-[color:var(--ink)]">corner menu</span> is global
-        chrome, a terminal list opened by the wordmark itself: the bottom-left
-        <span class="font-mono">ethereum beat</span> wordmark (lowercase grotesk) is the
-        trigger — no arrow — and on hover/focus a <span class="font-mono">more options</span>
-        tooltip draws its corner-bracket border in (the shared HUD line-draw primitive).
-        It opens a full viewport-height red rail whose options are large lowercase
-        Departure Mono labels — ambient, rss, farcaster, x, badges — no icons, no boxes;
-        the hovered/focused option shows a blinking <span class="font-mono">_</span> caret
-        (↑/↓ move it, Enter activates, one at a time). The panel is a fixed
-        <span class="font-mono">#c90500</span> field with pure-white ink
-        (<span class="font-mono">6.07:1</span>), and a nonced canvas paints a reactive
-        dark-red pixel dither that only ever DARKENS the field (opacity ceiling
+        chrome, a terminal list opened by the command-bar logo: the
+        <span class="font-mono">[pixel-beat mark] ETHEREUM BEAT</span> lockup in the red
+        command bar is the trigger — no arrow — and on hover/focus a
+        <span class="font-mono">more options</span> tooltip draws its corner-bracket border
+        in (the shared HUD line-draw primitive). The
+        <span class="font-bold text-[color:var(--ink)]">pixel-beat mark</span> is a 3×2
+        bitmap — <span class="font-mono">1 0 1 / 0 1 0</span> — of hard-edged square pixels
+        in <span class="font-mono">currentColor</span>, replacing the old dot. Opening it
+        (delegated, since the command bar re-renders on soft-nav) reveals a full
+        viewport-height red rail — <span class="font-mono">50vw</span> on desktop,
+        full-width below the 768px breakpoint — that opens straight to the option list,
+        no top wordmark. Options are large lowercase Departure Mono labels — ambient, rss,
+        farcaster, x, badges — no icons, no boxes; the hovered/focused option shows a
+        blinking <span class="font-mono">_</span> caret (↑/↓ move it, Enter activates, one
+        at a time). The panel is a fixed <span class="font-mono">#c90500</span> field with
+        pure-white ink (<span class="font-mono">6.07:1</span>), and a nonced canvas paints a
+        reactive dark-red pixel dither that only ever DARKENS the field (opacity ceiling
         <span class="font-mono">0.34</span>), so white labels never drop below AA; static
         under reduced motion. Destinations that are not configured (farcaster, x) render
         in a visible DISABLED “soon” state — never substituted. The
