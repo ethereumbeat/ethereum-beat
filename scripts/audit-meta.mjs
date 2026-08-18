@@ -120,6 +120,28 @@ for (const route of routes) {
     const wp = parsed.find((p) => p['@type'] === 'WebPage');
     if (!wp?.citation?.length) fail(route, 'about missing WebPage.citation');
   }
+  // Farcaster Mini App embed (spec §33.C) — homepage carries fc:miniapp with
+  // valid JSON: version "1" and a PNG imageUrl.
+  if (route === '/') {
+    const m = html.match(/<meta name="fc:miniapp" content="([^"]*)"/);
+    if (!m) fail(route, 'missing fc:miniapp meta');
+    else {
+      const json = m[1]
+        .replace(/&#34;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+      try {
+        const mini = JSON.parse(json);
+        if (mini.version !== '1') fail(route, `fc:miniapp version "${mini.version}" != "1"`);
+        if (!(mini.imageUrl ?? '').endsWith('.png')) fail(route, `fc:miniapp imageUrl not PNG: ${mini.imageUrl}`);
+        if (mini.button?.action?.type !== 'launch_miniapp') fail(route, 'fc:miniapp action.type != launch_miniapp');
+      } catch {
+        fail(route, 'fc:miniapp content is not valid JSON');
+      }
+    }
+  }
 
   if (!/<meta name="theme-color"/.test(html)) fail(route, 'missing theme-color');
   if (!/<link rel="manifest"/.test(html)) fail(route, 'missing manifest link');

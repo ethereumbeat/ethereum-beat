@@ -17,9 +17,11 @@
     "@astrojs/react": "^4.2.0",
     "@noble/curves": "^2.3.0",
     "@noble/hashes": "^2.3.0",
+    "@resvg/resvg-wasm": "^2.6.2",
     "astro": "^5.7.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "satori": "^0.29.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
@@ -32,6 +34,7 @@
     "pngjs": "^7.0.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.7.0",
+    "wawoff2": "^2.0.1",
     "wrangler": "^4.0.0"
   }
 }
