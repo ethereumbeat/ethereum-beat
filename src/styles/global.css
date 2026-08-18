@@ -2048,15 +2048,20 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
   .corner-tip .hud-edge, .corner-tip .hud-tick { stroke-dashoffset: 0; }
 }
 
-/* PANEL: full viewport-height red left rail (white ink on #c90500 = 6.07:1 AA) */
+/* PANEL: full viewport-height red left rail (white ink on #c90500 = 6.07:1 AA).
+   Full-width by default so the big pixel labels have room on phones; 50vw from
+   the tablet breakpoint up (§32.C). */
 .corner-panel {
   position: fixed; left: 0; top: 0; bottom: 0; z-index: 45;
-  width: min(40vw, 460px); height: 100vh; height: 100dvh;
+  width: 100vw; height: 100vh; height: 100dvh;
   background: #c90500; color: #ffffff; overflow: hidden;
   display: flex; flex-direction: column; gap: clamp(0.8rem, 2vh, 1.4rem);
   padding: clamp(1.2rem, 3vh, 2.2rem);
   transform: translateX(-100%); visibility: hidden; pointer-events: none;
   border-right: 1px solid rgba(255, 255, 255, 0.6);
+}
+@media (min-width: 768px) {
+  .corner-panel { width: 50vw; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .corner-panel { transition: transform 0.26s var(--ease-settle); }
@@ -2066,11 +2071,6 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
 /* reactive dark-red pixel texture, painted behind the content */
 .corner-tex { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .corner-term, .corner-close { position: relative; z-index: 1; }
-
-.corner-panel-kicker {
-  font-family: var(--font-grotesk); font-size: 0.9rem; letter-spacing: 0.08em;
-  text-transform: lowercase; color: #ffffff; font-weight: 700;
-}
 
 /* TERMINAL LIST: large lowercase pixel labels, no icons, no boxes */
 .corner-term {
