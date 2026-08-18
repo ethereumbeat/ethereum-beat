@@ -33,6 +33,13 @@ interface Env {
   FARCASTER_SIGNER?: string;
   /** hub base URL for submitMessage; defaults to a public write hub if unset */
   FARCASTER_HUB?: string;
+  /**
+   * Farcaster Mini App manifest accountAssociation (spec §33.D) — the
+   * maintainer-signed { header, payload, signature } JSON that binds this
+   * domain to their FID, as a single JSON string. Absent → the manifest serves
+   * without accountAssociation (valid but unverified). NEVER fabricated.
+   */
+  FARCASTER_ACCOUNT_ASSOCIATION?: string;
 }
 
 // The Workers runtime provides this built-in module; declared so the collector's

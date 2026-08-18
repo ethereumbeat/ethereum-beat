@@ -1453,8 +1453,9 @@ A. DYNAMIC OG IMAGE `/og/beat.png`. An Astro endpoint (`prerender = false`) that
    Cloudflare Workers; the resvg wasm (~2.4 MB, ~1 MB gzipped) is imported as a
    Worker module and instantiated lazily on first request. The design language is
    exact: paper `#fbfbf9`, ink `#0a0a0a`, red `#c90500` as the only accent, 1px
-   lines, corner crop-marks, Departure Mono for the live value + slot (the pixel
-   data face), the site grotesk for labels — no rounded cards, no shadows.
+   lines, corner crop-marks, and Departure Mono throughout (the pixel data face,
+   sized/weighted for hierarchy — a single family keeps the Worker bundle small
+   against the wasm) — no rounded cards, no shadows.
    Cache-Control is `public, s-maxage=3600, max-age=300`, matching the snapshot
    API's cadence (deliberately NOT the 12s slot). The route NEVER 500s: any throw
    (KV miss, satori/resvg failure) falls back to a baked static PNG committed in

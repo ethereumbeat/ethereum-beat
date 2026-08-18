@@ -9,6 +9,18 @@ import astro from '../dist/_worker.js/index.js';
 import { runCollector } from './collector.ts';
 import { runBroadcast } from './broadcast/index.ts';
 import { refreshRoadmap } from './roadmap.ts';
+// The /og/beat.png route renders with two wasm engines — satori's yoga (layout)
+// and resvg (raster). Cloudflare Workers can't COMPILE wasm from bytes at
+// request time, and Astro loads routes lazily. Importing both HERE, in the eager
+// worker entry, makes wrangler esbuild pre-compile them to WebAssembly.Modules;
+// the route reads them off globalThis and only *instantiates* them (permitted,
+// via the sync-instance shim in src/lib/og-card.mjs).
+// @ts-ignore — wrangler bundles .wasm as a compiled WebAssembly.Module
+import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm';
+// @ts-ignore
+import yogaWasm from 'satori/yoga.wasm';
+(globalThis as Record<string, unknown>).__resvgWasm = resvgWasm;
+(globalThis as Record<string, unknown>).__yogaWasm = yogaWasm;
 
 /**
  * Script CSP: a per-request nonce + 'strict-dynamic'.
