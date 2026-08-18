@@ -200,7 +200,7 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   the left edge — **50vw on desktop, full-width below the 768px tablet breakpoint**
   (the big pixel labels need room on phones). The panel **opens directly to the
   option list** — no top wordmark. Options are a vertical stack of **large
-  lowercase Departure Mono (pixel) labels** — ambient · rss · farcaster · x ·
+  lowercase Departure Mono (pixel) labels** — ambient · rss · x ·
   badges — no icons, no boxes. The hovered/focused option shows a blinking `_`
   caret; ↑/↓ move it, Enter activates, one caret at a time. **Panel palette:** a
   fixed `#c90500` signal-red field with pure-white ink — white on `#c90500` is
@@ -211,9 +211,11 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   below AA — darkening only raises white-on-red contrast — and the labels sit on
   the solid token in the negative space. Widening the panel to 50vw doesn't touch
   per-pixel contrast (labels stay white on the same token). Static under
-  `prefers-reduced-motion`. farcaster + x have no configured destination, so they
-  stay **DISABLED** ("soon") — never substituted. GitHub is **not** in the menu;
-  it stays in the footer. Esc / click-outside close; all JS nonced.
+  `prefers-reduced-motion`. x has no configured destination, so it stays
+  **DISABLED** ("soon") — never substituted. Farcaster is **deferred** (spec §34):
+  its Pass 22 backend (manifest, `fc:miniapp` embed, `/og/beat.png`) stays
+  live-but-dormant, but there is no menu entry for it. GitHub is **not** in the
+  menu; it stays in the footer. Esc / click-outside close; all JS nonced.
 - **Ambient wallpapers** — a chrome-free, full-viewport system for desktop tools
   like Plash. It **ignores the seven-theme system** and runs on a LOCKED mono+red
   palette so its contrast matrix is ten designs, not ten×seven:
@@ -236,7 +238,7 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
     they clear the macOS desktop-icon column.
 - **Footer** — the command bar carries the channels + about + roadmap; the credit
   strip keeps the growthepie / source-registry attribution **one click from the
-  homepage**; ancillary destinations (ambient · rss · farcaster · x · badges) live
+  homepage**; ancillary destinations (ambient · rss · x · badges) live
   in the corner menu, while **GitHub stays in the footer** (not the menu).
   `/design` is never linked from the footer.
 
