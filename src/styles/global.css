@@ -2009,65 +2009,96 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
   .rm-summary-row { flex-direction: column; gap: 0.5rem; }
 }
 
-/* ── corner menu (spec §29.A-D) — LEFT full-height red rail, opened bottom-left ─ */
+/* ── corner menu (spec §31) — terminal list opened by the wordmark ─────────── */
 .corner-menu {
   position: fixed; left: 0.6rem; z-index: 40;
   bottom: calc(38px + env(safe-area-inset-bottom, 0px));
 }
-.corner-arrow {
-  width: 30px; height: 30px; display: grid; place-items: center;
-  background: transparent; border: 0; padding: 0; cursor: pointer; color: var(--accent);
-}
-.corner-arrow svg { width: 22px; height: 22px; display: block; }
-@media (prefers-reduced-motion: no-preference) {
-  .corner-arrow svg { animation: corner-blink 1.2s steps(1) infinite; }
-  @keyframes corner-blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0.15; } }
-}
-.corner-open .corner-arrow { opacity: 0; pointer-events: none; }
 
-/* full viewport-height rail anchored to the left edge; a fixed signal-red field
-   with pure-white ink (white on #c90500 = 6.07:1, AA normal-text) */
+/* TRIGGER: the "ethereum beat" wordmark itself (grotesk) — no arrow box */
+.corner-trigger {
+  position: relative; display: inline-flex; align-items: center;
+  background: transparent; border: 0; padding: 0.2rem 0.1rem; cursor: pointer;
+}
+.corner-trigger-word {
+  font-family: var(--font-grotesk); font-weight: 700; font-size: 0.95rem;
+  letter-spacing: 0.02em; text-transform: lowercase; color: var(--ink);
+}
+.corner-trigger:hover .corner-trigger-word,
+.corner-trigger:focus-visible .corner-trigger-word { color: var(--accent); }
+.corner-open .corner-trigger { opacity: 0; pointer-events: none; }
+
+/* "more options" tooltip — the site's corner-bracket border, drawn in on show */
+.corner-tip {
+  position: absolute; left: 0; bottom: calc(100% + 0.5rem);
+  display: inline-flex; align-items: center; white-space: nowrap;
+  padding: 0.35rem 0.65rem; background: var(--paper);
+  font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em;
+  text-transform: lowercase; color: var(--ink);
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.corner-trigger:hover .corner-tip,
+.corner-trigger:focus-visible .corner-tip { opacity: 1; visibility: visible; }
+.corner-tip .hud-frame { position: absolute; inset: 0; }
+.corner-tip .hud-edge { stroke: var(--ink); stroke-dashoffset: 1; }
+.corner-tip .hud-tick { stroke: var(--accent); stroke-dashoffset: 1; }
+.corner-tip-label { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .corner-trigger:hover .corner-tip .hud-edge,
+  .corner-trigger:focus-visible .corner-tip .hud-edge { animation: hud-line-draw 380ms ease-out both; }
+  .corner-trigger:hover .corner-tip .hud-tick,
+  .corner-trigger:focus-visible .corner-tip .hud-tick { animation: hud-line-draw 260ms ease-out 120ms both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .corner-tip .hud-edge, .corner-tip .hud-tick { stroke-dashoffset: 0; }
+}
+
+/* PANEL: full viewport-height red left rail (white ink on #c90500 = 6.07:1 AA) */
 .corner-panel {
   position: fixed; left: 0; top: 0; bottom: 0; z-index: 45;
   width: min(40vw, 460px); height: 100vh; height: 100dvh;
-  background: #c90500; color: #ffffff;
+  background: #c90500; color: #ffffff; overflow: hidden;
   display: flex; flex-direction: column; gap: clamp(0.8rem, 2vh, 1.4rem);
   padding: clamp(1.2rem, 3vh, 2.2rem);
-  transform-origin: 0 0; transform: translateX(-100%);
-  visibility: hidden; pointer-events: none;
+  transform: translateX(-100%); visibility: hidden; pointer-events: none;
   border-right: 1px solid rgba(255, 255, 255, 0.6);
 }
 @media (prefers-reduced-motion: no-preference) {
   .corner-panel { transition: transform 0.26s var(--ease-settle); }
 }
 .corner-open .corner-panel { transform: translateX(0); visibility: visible; pointer-events: auto; }
-/* wordmark: lowercase grotesk (human-label rule), not the pixel/mono face */
+
+/* reactive dark-red pixel texture, painted behind the content */
+.corner-tex { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.corner-panel-kicker, .corner-term, .corner-close { position: relative; z-index: 1; }
+
 .corner-panel-kicker {
   font-family: var(--font-grotesk); font-size: 0.9rem; letter-spacing: 0.08em;
   text-transform: lowercase; color: #ffffff; font-weight: 700;
 }
-.corner-panel-col { flex: 1; display: flex; flex-direction: column; gap: clamp(0.5rem, 1.4vh, 0.9rem); min-height: 0; }
-.corner-tile {
-  flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
-  gap: clamp(0.4rem, 1.2vh, 0.7rem); padding: clamp(0.7rem, 2vh, 1.3rem);
-  border: 1px solid rgba(255, 255, 255, 0.55); color: #ffffff; text-decoration: none;
+
+/* TERMINAL LIST: large lowercase pixel labels, no icons, no boxes */
+.corner-term {
+  list-style: none; margin: 0; padding: 0; flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: clamp(0.3rem, 1.4vh, 0.9rem);
 }
-.corner-tile:hover, .corner-tile:focus-visible { background: #ffffff; color: #c90500; outline: none; }
-/* disabled tile: visibly inactive (dashed border, cursor), label stays full-white
-   so it never drops below AA — the destination is simply not configured yet */
-.corner-tile--disabled {
-  border-style: dashed; border-color: rgba(255, 255, 255, 0.5);
-  cursor: not-allowed; opacity: 0.9;
+.corner-opt {
+  display: inline-block; width: fit-content; text-decoration: none; color: #ffffff;
+  font-family: var(--font-display); text-transform: lowercase; line-height: 1.05;
+  font-size: clamp(2.2rem, 7.2vh, 3.9rem); letter-spacing: 0.01em;
+  background: transparent; border: 0; cursor: pointer; padding: 0.04em 0;
 }
-.corner-tile--disabled:hover { background: transparent; color: #ffffff; }
-.corner-tile-icon svg { width: clamp(28px, 4.5vh, 44px); height: auto; display: block; }
-.corner-tile-label {
-  font-family: var(--font-grotesk); font-weight: 700; font-size: clamp(1rem, 2.2vh, 1.35rem);
-  letter-spacing: 0.02em; text-transform: lowercase;
+.corner-opt:focus-visible { outline: none; }
+.corner-opt--active::after { content: '_'; margin-left: 0.06em; color: #ffffff; }
+@media (prefers-reduced-motion: no-preference) {
+  .corner-opt--active::after { animation: corner-caret 1s steps(1) infinite; }
+  @keyframes corner-caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 }
-.corner-tile-note {
-  font-family: var(--font-mono); font-weight: 650; font-size: 0.62rem;
-  letter-spacing: 0.1em; text-transform: uppercase; color: #ffffff;
+.corner-opt--disabled { cursor: not-allowed; }
+.corner-soon {
+  font-family: var(--font-mono); font-size: 0.32em; letter-spacing: 0.12em;
+  text-transform: uppercase; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.7);
+  padding: 0.18em 0.45em; vertical-align: middle; margin-left: 0.35em;
 }
 .corner-close {
   align-self: flex-start; font-family: var(--font-mono); font-size: 0.7rem;

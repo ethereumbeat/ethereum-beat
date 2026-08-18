@@ -1,123 +1,87 @@
 ---
 /**
- * Corner menu (spec §29.A-D): a LEFT-anchored, full viewport-height red rail,
- * opened by a blinking arrow at the bottom-left beside the ETHEREUM BEAT
- * wordmark. Tiles are a vertical column of large square buttons with custom 1px
- * house-style SVG icons; the wordmark is lowercase grotesk.
+ * Corner menu (spec §31) — a terminal-style option list opened by the wordmark.
  *
- * Palette (documented in DESIGN.md): a fixed #c90500 signal-red field with
- * pure-white ink + icons — white on #c90500 is 6.07:1, clearing WCAG AA for
- * normal text. All JS is nonced by the Worker; no inline handlers.
+ * TRIGGER (§31.A): the bottom-left "ethereum beat" wordmark (lowercase grotesk)
+ * is the clickable + keyboard-focusable trigger; there is no separate arrow. On
+ * hover / focus it shows a "more options" tooltip whose corner-bracket border
+ * draws in, reusing the site's .hud-frame / .hud-edge / .hud-tick primitive.
  *
- * Farcaster + X destinations are resolved from the social broadcast config.
- * Both are absent today — only a runtime Farcaster FID secret and a manual
- * X-draft exist, no public profile URL / handle — so their tiles render in a
- * visible DISABLED state and the build logs a warning. They are NEVER
- * substituted with GitHub or any other destination (the Pass 17 silent-fallback
- * bug). GitHub is not in this menu; it lives in the footer.
+ * PANEL (§31.B-D): a full-height red left rail. Options are a vertical stack of
+ * large lowercase Departure Mono (pixel) labels — no icons, no boxes. The
+ * hovered / focused option shows a blinking "_" caret; ↑/↓ move it, Enter
+ * activates. The red field carries a reactive dark-red pixel dither whose cells
+ * brighten under the cursor and settle back — clamped to DARKEN only, so white
+ * labels on the solid #c90500 token never drop below AA. All JS is nonced.
+ *
+ * farcaster + x have no public destination in the social config, so they stay
+ * DISABLED ("soon") — never wired or substituted. GitHub lives in the footer.
  */
-
-// Social destinations from config. null → no public destination → disabled tile.
-// Do NOT hardcode a fabricated profile URL here; set these only from a real
-// config value if one is ever added.
 const FARCASTER_URL: string | null = null;
 const X_URL: string | null = null;
+if (!FARCASTER_URL) console.warn('[corner-menu] farcaster option disabled — no public destination in the social config');
+if (!X_URL) console.warn('[corner-menu] x option disabled — no public destination in the social config');
 
-if (!FARCASTER_URL)
-  console.warn('[corner-menu] farcaster tile DISABLED — no public Farcaster destination in the social config (only a runtime FID secret exists)');
-if (!X_URL)
-  console.warn('[corner-menu] x tile DISABLED — no public X destination in the social config (X broadcast is a manual draft only)');
-
-interface Tile {
-  label: string;
-  href: string | null;
-  icon: 'ambient' | 'rss' | 'farcaster' | 'x' | 'badges';
-  external?: boolean;
-}
-const TILES: Tile[] = [
-  { label: 'ambient', href: '/ambient', icon: 'ambient' },
-  { label: 'rss', href: '/rss.xml', icon: 'rss' },
-  { label: 'farcaster', href: FARCASTER_URL, icon: 'farcaster', external: true },
-  { label: 'x', href: X_URL, icon: 'x', external: true },
-  { label: 'badges', href: '/badges', icon: 'badges' },
+interface Opt { label: string; href: string | null; external?: boolean }
+const OPTIONS: Opt[] = [
+  { label: 'ambient', href: '/ambient' },
+  { label: 'rss', href: '/rss.xml' },
+  { label: 'farcaster', href: FARCASTER_URL, external: true },
+  { label: 'x', href: X_URL, external: true },
+  { label: 'badges', href: '/badges' },
 ];
 ---
 
 <div class="corner-menu" data-corner-menu transition:persist="corner-menu">
   <button
     type="button"
-    class="corner-arrow"
+    class="corner-trigger"
     data-corner-toggle
-    aria-label="Open menu"
+    aria-haspopup="menu"
     aria-expanded="false"
     aria-controls="corner-panel"
   >
-    <!-- chevron opening rightward out of the left edge -->
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8 4 L16 12 L8 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="miter" stroke-linecap="butt" />
-    </svg>
+    <span class="corner-trigger-word">ethereum beat</span>
+    <span class="corner-tip" role="tooltip">
+      <svg class="hud-frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="hud-edge" pathLength="1" d="M 0.6 0.6 L 99.4 0.6 L 99.4 99.4 L 0.6 99.4 L 0.6 0.6" />
+        <path class="hud-tick" pathLength="1" d="M 0.6 22 L 0.6 0.6 L 22 0.6" />
+        <path class="hud-tick" pathLength="1" d="M 78 99.4 L 99.4 99.4 L 99.4 78" />
+      </svg>
+      <span class="corner-tip-label">more options</span>
+    </span>
   </button>
 
-  <div class="corner-panel" id="corner-panel" role="menu" aria-label="Ethereum Beat menu" aria-hidden="true">
+  <nav class="corner-panel" id="corner-panel" aria-label="Ethereum Beat menu" aria-hidden="true">
+    <canvas class="corner-tex" data-corner-tex aria-hidden="true"></canvas>
     <p class="corner-panel-kicker">ethereum beat</p>
-    <div class="corner-panel-col">
+    <ul class="corner-term" role="menu" data-corner-list>
       {
-        TILES.map((t) => {
-          const icon = (
-            <span class="corner-tile-icon" aria-hidden="true">
-              {t.icon === 'ambient' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
-                  <rect x="3" y="4" width="18" height="13" />
-                  <path d="M9 20 H15" />
-                  <path d="M6 11 H9 L10.5 7.5 L12.5 14.5 L14 11 H18" />
-                </svg>
-              )}
-              {t.icon === 'rss' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
-                  <rect x="4.2" y="16.8" width="3" height="3" fill="currentColor" stroke="none" />
-                  <path d="M4.5 12 A7.5 7.5 0 0 1 12 19.5" />
-                  <path d="M4.5 7 A12.5 12.5 0 0 1 17 19.5" />
-                  <path d="M4.5 4 L4.5 4" />
-                </svg>
-              )}
-              {t.icon === 'farcaster' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
-                  <path d="M6 20 V9 L12 5 L18 9 V20" />
-                  <path d="M4.5 9 H8" />
-                  <path d="M16 9 H19.5" />
-                  <path d="M9 20 V13 H15 V20" />
-                </svg>
-              )}
-              {t.icon === 'x' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
-                  <path d="M5 5 L19 19" />
-                  <path d="M19 5 L5 19" />
-                </svg>
-              )}
-              {t.icon === 'badges' && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="miter" stroke-linecap="butt">
-                  <path d="M12 3 L19 6 V11 L12 21 L5 11 V6 Z" />
-                  <path d="M8.5 10.5 L11 13 L15.5 8" />
-                </svg>
-              )}
-            </span>
-          );
-          return t.href ? (
-            <a class="corner-tile" href={t.href} role="menuitem" {...(t.external ? { target: '_blank', rel: 'noopener' } : {})}>
-              {icon}
-              <span class="corner-tile-label">{t.label}</span>
-            </a>
+        OPTIONS.map((o) =>
+          o.href ? (
+            <li role="none">
+              <a
+                class="corner-opt"
+                role="menuitem"
+                href={o.href}
+                data-opt
+                {...(o.external ? { target: '_blank', rel: 'noopener' } : {})}
+              >
+                {o.label}
+              </a>
+            </li>
           ) : (
-            <span class="corner-tile corner-tile--disabled" role="menuitem" aria-disabled="true" title="no public destination configured yet">
-              {icon}
-              <span class="corner-tile-label">{t.label} <span class="corner-tile-note">soon</span></span>
-            </span>
-          );
-        })
+            <li role="none">
+              <span class="corner-opt corner-opt--disabled" role="menuitem" aria-disabled="true" tabindex="-1" data-opt data-disabled>
+                {o.label} <span class="corner-soon">soon</span>
+              </span>
+            </li>
+          ),
+        )
       }
-    </div>
+    </ul>
     <button type="button" class="corner-close" data-corner-close aria-label="Close menu">esc ✕</button>
-  </div>
+  </nav>
 </div>
 
 <script>
@@ -128,22 +92,130 @@ const TILES: Tile[] = [
     root.dataset.bound = '1';
     const btn = root.querySelector('[data-corner-toggle]') as HTMLElement | null;
     const panel = root.querySelector('#corner-panel') as HTMLElement | null;
-    if (!btn || !panel) return;
+    const opts = [...root.querySelectorAll('[data-opt]')] as HTMLElement[];
+    if (!btn || !panel || !opts.length) return;
 
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let active = 0;
+
+    const setActive = (i: number) => {
+      active = (i + opts.length) % opts.length;
+      opts.forEach((o, n) => o.classList.toggle('corner-opt--active', n === active));
+    };
+    const isOpen = () => root.classList.contains('corner-open');
     const setOpen = (open: boolean) => {
       root.classList.toggle('corner-open', open);
       btn.setAttribute('aria-expanded', String(open));
       panel.setAttribute('aria-hidden', String(!open));
+      if (open) {
+        setActive(0);
+        opts[0]?.focus();
+        startTexture();
+      } else {
+        stopTexture();
+        btn.focus();
+      }
     };
-    const isOpen = () => root.classList.contains('corner-open');
 
     btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!isOpen()); });
     root.querySelector('[data-corner-close]')?.addEventListener('click', () => setOpen(false));
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isOpen()) setOpen(false); });
     document.addEventListener('click', (e) => {
       if (isOpen() && e.target instanceof Node && !root.contains(e.target)) setOpen(false);
     });
-    panel.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    // one caret at a time: hover and keyboard both drive the single active index
+    opts.forEach((o, i) => {
+      o.addEventListener('mouseenter', () => setActive(i));
+      o.addEventListener('focus', () => setActive(i));
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) { e.preventDefault(); setOpen(false); return; }
+      if (!isOpen()) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); opts[active]?.focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); opts[active]?.focus(); }
+      else if (e.key === 'Enter') {
+        const el = opts[active];
+        if (el && !el.dataset.disabled && el instanceof HTMLAnchorElement) el.click();
+      }
+    });
+    opts.forEach((o) => o.addEventListener('click', () => setOpen(false)));
+
+    // ── reactive pixel texture (§31.D) — dark-red dither, cursor spotlight ──
+    const canvas = root.querySelector('[data-corner-tex]') as HTMLCanvasElement | null;
+    const ctx = canvas?.getContext('2d') ?? null;
+    const CELL = 16, BASE = 0.05, MAX = 0.34, SPOT = 5; // MAX is the opacity ceiling
+    let cols = 0, rows = 0, dpr = 1;
+    let base = new Float32Array(0), level = new Float32Array(0);
+    let raf = 0, texOn = false;
+    const mouse = { x: -999, y: -999 };
+
+    const resize = () => {
+      if (!canvas || !ctx) return;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      const r = panel.getBoundingClientRect();
+      canvas.width = Math.max(1, Math.round(r.width * dpr));
+      canvas.height = Math.max(1, Math.round(r.height * dpr));
+      cols = Math.ceil(r.width / CELL);
+      rows = Math.ceil(r.height / CELL);
+      base = new Float32Array(cols * rows);
+      level = new Float32Array(cols * rows);
+      for (let i = 0; i < base.length; i++) {
+        base[i] = BASE * (0.35 + ((i * 2654435761) % 1000) / 1000 * 0.65); // stable pseudo-dither
+        level[i] = base[i];
+      }
+    };
+    const paint = () => {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const s = CELL * dpr;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const a = level[y * cols + x];
+          if (a < 0.02) continue;
+          ctx.fillStyle = `rgba(58,0,0,${Math.min(MAX, a)})`; // DARK red only — darkening raises white contrast
+          ctx.fillRect(x * s + s * 0.16, y * s + s * 0.16, s * 0.68, s * 0.68);
+        }
+      }
+    };
+    const tick = () => {
+      const mx = mouse.x / CELL, my = mouse.y / CELL;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const i = y * cols + x;
+          const dx = x - mx, dy = y - my;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          const spot = d < SPOT ? (1 - d / SPOT) : 0;
+          const target = base[i] + spot * (MAX - base[i]);
+          level[i] += (target - level[i]) * 0.22; // rise fast, settle back when cursor leaves
+        }
+      }
+      paint();
+      if (texOn) raf = window.requestAnimationFrame(tick);
+    };
+    const onMove = (e: PointerEvent) => {
+      const r = panel.getBoundingClientRect();
+      mouse.x = e.clientX - r.left;
+      mouse.y = e.clientY - r.top;
+    };
+    const onLeave = () => { mouse.x = -999; mouse.y = -999; };
+    // arrow consts (not hoisted `function`s) so the panel null-narrowing from the
+    // guard above is preserved inside them under astro check / tsc
+    const startTexture = () => {
+      if (!canvas || !ctx) return;
+      resize();
+      paint();
+      if (reduce) return; // static dither only, no ripple loop
+      texOn = true;
+      panel.addEventListener('pointermove', onMove);
+      panel.addEventListener('pointerleave', onLeave);
+      raf = window.requestAnimationFrame(tick);
+    };
+    const stopTexture = () => {
+      texOn = false;
+      window.cancelAnimationFrame(raf);
+      panel.removeEventListener('pointermove', onMove);
+      panel.removeEventListener('pointerleave', onLeave);
+    };
+    window.addEventListener('resize', () => { if (isOpen()) { resize(); paint(); } });
   };
   initCornerMenu();
   document.addEventListener('astro:page-load', initCornerMenu);
