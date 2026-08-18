@@ -12,19 +12,18 @@
  * Enter activates. A dark-red reactive pixel dither brightens under the cursor
  * (darken-only, so white labels stay ≥ AA on #c90500). All JS nonced.
  *
- * farcaster + x have no configured destination, so they stay DISABLED ("soon").
- * GitHub lives in the footer.
+ * x has no configured destination, so it stays DISABLED ("soon"). Farcaster is
+ * deferred (spec §34): its Pass 22 backend (manifest, fc:miniapp embed, OG card)
+ * stays live-but-dormant, but there is no UI entry for it. GitHub lives in the
+ * footer.
  */
-const FARCASTER_URL: string | null = null;
 const X_URL: string | null = null;
-if (!FARCASTER_URL) console.warn('[corner-menu] farcaster option disabled — no public destination in the social config');
 if (!X_URL) console.warn('[corner-menu] x option disabled — no public destination in the social config');
 
 interface Opt { label: string; href: string | null; external?: boolean }
 const OPTIONS: Opt[] = [
   { label: 'ambient', href: '/ambient' },
   { label: 'rss', href: '/rss.xml' },
-  { label: 'farcaster', href: FARCASTER_URL, external: true },
   { label: 'x', href: X_URL, external: true },
   { label: 'badges', href: '/badges' },
 ];
