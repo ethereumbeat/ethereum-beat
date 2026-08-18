@@ -47,7 +47,14 @@ const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolea
     aria-hidden="true"
     title="Drag to dock (left · right · top · float) · double-click to reset"
   >⠿</span>
-  <a href="/" class="micro flex flex-none items-center gap-1.5 whitespace-nowrap !no-underline">
+  <button
+    type="button"
+    class="cmd-logo corner-trigger micro flex flex-none items-center gap-1.5 whitespace-nowrap"
+    data-corner-toggle
+    aria-haspopup="menu"
+    aria-expanded="false"
+    aria-controls="corner-panel"
+  >
     <span class="beat-mark" aria-hidden="true">
       {/* pixel-beat mark — 3×2 bitmap 1 0 1 / 0 1 0, crisp square pixels, wordmark colour */}
       <svg viewBox="0 0 3 2" fill="currentColor" shape-rendering="crispEdges">
@@ -58,7 +65,16 @@ const actions: { keys: string[]; glyph: string; label: string; homeOnly?: boolea
     </span>
     <span class="hidden md:inline">ETHEREUM&nbsp;BEAT</span>
     <span class="md:hidden">EB</span>
-  </a>
+    {/* "more options" tooltip — animated corner-bracket border (shared HUD primitive) */}
+    <span class="corner-tip" role="tooltip">
+      <svg class="hud-frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="hud-edge" pathLength="1" d="M 0.6 0.6 L 99.4 0.6 L 99.4 99.4 L 0.6 99.4 L 0.6 0.6" />
+        <path class="hud-tick" pathLength="1" d="M 0.6 22 L 0.6 0.6 L 22 0.6" />
+        <path class="hud-tick" pathLength="1" d="M 78 99.4 L 99.4 99.4 L 99.4 78" />
+      </svg>
+      <span class="corner-tip-label">more options</span>
+    </span>
+  </button>
   <span class="cmd-sep mx-1 h-4 w-px flex-none bg-[color:var(--hairline)]"></span>
 
   {

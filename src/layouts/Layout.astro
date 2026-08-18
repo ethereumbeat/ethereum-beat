@@ -503,8 +503,8 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
         if (!b) return;
         const t = e.target as HTMLElement;
         const onHandle = t.closest('[data-cmd-handle]');
-        // grab the background or the handle — never a chip or a link
-        if (!onHandle && (t.closest('.cmd-chip') || t.closest('a'))) return;
+        // grab the background or the handle — never a chip, link, or the menu logo
+        if (!onHandle && (t.closest('.cmd-chip') || t.closest('a') || t.closest('[data-corner-toggle]'))) return;
         dragging = true;
         zone = dock;
         b.classList.add('cmd-dragging');

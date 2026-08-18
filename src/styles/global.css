@@ -2013,27 +2013,19 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
 }
 
 /* ── corner menu (spec §31) — terminal list opened by the wordmark ─────────── */
-.corner-menu {
-  position: fixed; left: 0.6rem; z-index: 40;
-  bottom: calc(38px + env(safe-area-inset-bottom, 0px));
-}
+.corner-menu { position: fixed; z-index: 40; }
 
-/* TRIGGER: the "ethereum beat" wordmark itself (grotesk) — no arrow box */
+/* TRIGGER lives on the command-bar logo lockup (spec §32.B) — inherit the bar ink */
 .corner-trigger {
-  position: relative; display: inline-flex; align-items: center;
-  background: transparent; border: 0; padding: 0.2rem 0.1rem; cursor: pointer;
+  position: relative; background: transparent; border: 0; cursor: pointer;
+  color: var(--bar-text); padding: 0;
 }
-.corner-trigger-word {
-  font-family: var(--font-grotesk); font-weight: 700; font-size: 0.95rem;
-  letter-spacing: 0.02em; text-transform: lowercase; color: var(--ink);
-}
-.corner-trigger:hover .corner-trigger-word,
-.corner-trigger:focus-visible .corner-trigger-word { color: var(--accent); }
-.corner-open .corner-trigger { opacity: 0; pointer-events: none; }
 
-/* "more options" tooltip — the site's corner-bracket border, drawn in on show */
+/* "more options" tooltip — the site's corner-bracket border, drawn in on show.
+   position:fixed (positioned by the nonced script) so it escapes the command
+   bar's overflow clip. */
 .corner-tip {
-  position: absolute; left: 0; bottom: calc(100% + 0.5rem);
+  position: fixed; z-index: 60; left: 0; top: 0;
   display: inline-flex; align-items: center; white-space: nowrap;
   padding: 0.35rem 0.65rem; background: var(--paper);
   font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em;
@@ -2073,7 +2065,7 @@ dialog.rm-modal::backdrop { background: rgba(8, 8, 8, 0.62); }
 
 /* reactive dark-red pixel texture, painted behind the content */
 .corner-tex { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-.corner-panel-kicker, .corner-term, .corner-close { position: relative; z-index: 1; }
+.corner-term, .corner-close { position: relative; z-index: 1; }
 
 .corner-panel-kicker {
   font-family: var(--font-grotesk); font-size: 0.9rem; letter-spacing: 0.08em;
