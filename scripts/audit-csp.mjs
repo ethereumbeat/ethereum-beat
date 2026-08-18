@@ -40,8 +40,13 @@ const ROUTES = [
 const EXPECT_HEADERS = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',
-  'x-frame-options': 'DENY',
 };
+
+// Framing is governed by CSP frame-ancestors, not X-Frame-Options (which can't
+// allowlist the Farcaster Mini App client — spec §33.F). Assert the allowlist is
+// present, still self-scoped, and NOT reverted to 'none'; and that no stray
+// X-Frame-Options: DENY sneaks back and blocks the Mini App iframe.
+const FRAME_ANCESTORS_MUST_INCLUDE = ["'self'", 'https://farcaster.xyz', 'https://warpcast.com'];
 
 // browser hosts the connect-src must permit (RPC + beacon + WSS mempool)
 const CONNECT_MUST_INCLUDE = [
@@ -79,6 +84,17 @@ for (const route of ROUTES) {
   for (const [h, want] of Object.entries(EXPECT_HEADERS)) {
     const got = res.headers.get(h);
     if (got !== want) failures.push(`${route}: header ${h} = ${got ?? '(absent)'}, expected ${want}`);
+  }
+  if ((res.headers.get('x-frame-options') ?? '').toUpperCase() === 'DENY') {
+    failures.push(`${route}: X-Frame-Options: DENY would block the Farcaster Mini App iframe (§33.F)`);
+  }
+
+  const frameAncestors = (csp.match(/frame-ancestors([^;]*)/) ?? [, ''])[1];
+  if (/'none'/.test(frameAncestors)) {
+    failures.push(`${route}: frame-ancestors 'none' blocks the Mini App iframe (§33.F)`);
+  }
+  for (const host of FRAME_ANCESTORS_MUST_INCLUDE) {
+    if (!frameAncestors.includes(host)) failures.push(`${route}: frame-ancestors missing ${host}`);
   }
 
   const scriptSrc = (csp.match(/script-src([^;]*)/) ?? [, ''])[1];

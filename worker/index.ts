@@ -55,12 +55,23 @@ const CONNECT_SRC = [
   'https://static.cloudflareinsights.com',
 ];
 
+// Hosts allowed to embed the site in a frame — the Farcaster Mini App (spec
+// §33.F) renders the app in the client's iframe, so the web clients must be
+// allowlisted. A tight list (not a wildcard); everything else stays framed-out.
+const FRAME_ANCESTORS = [
+  "'self'",
+  'https://farcaster.xyz',
+  'https://*.farcaster.xyz',
+  'https://warpcast.com',
+  'https://*.warpcast.com',
+];
+
 function cspFor(nonce: string): string {
   return [
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    "frame-ancestors 'none'",
+    `frame-ancestors ${FRAME_ANCESTORS.join(' ')}`,
     "form-action 'self'",
     "img-src 'self' data:",
     "font-src 'self'",
@@ -90,7 +101,9 @@ function secureHtml(res: Response): Response {
   out.headers.set('Content-Security-Policy', cspFor(nonce));
   out.headers.set('X-Content-Type-Options', 'nosniff');
   out.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  out.headers.set('X-Frame-Options', 'DENY');
+  // NB: no X-Frame-Options — it can only DENY or SAMEORIGIN, neither of which
+  // allows the Farcaster Mini App iframe (spec §33.F). Framing is governed by
+  // the CSP `frame-ancestors` allowlist above, which modern browsers honour.
   return out;
 }
 
