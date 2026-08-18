@@ -1510,3 +1510,30 @@ homepage, that og:image is present + resolvable, twitter:card is present, and
 `fc:miniapp` is present and valid JSON (version "1", PNG imageUrl); audit-csp
 green with the new frame-ancestors allowlist; the OG and farcaster.json endpoints
 serve their correct content-types. Commit and push per item.
+
+## 34. Pass 23 — Farcaster deferred (UI entry removed, backend dormant)
+
+Shelve Farcaster as a user-facing destination while KEEPING the Pass 22 backend
+in place for later. UI-only change; nothing here touches metric_meta, needs no D1
+migration or KV bust, and does not mutate wrangler.toml.
+
+A. UI ENTRY REMOVED. The `farcaster` tile is dropped from the corner-menu
+   terminal list. The menu is now: ambient, rss, x (soon), badges. The
+   blinking-caret keyboard nav is unchanged (it cycles the remaining tiles). Any
+   other user-facing Farcaster link/reference (footer, /about source registry) is
+   swept — there were none beyond the menu tile and its /design + DESIGN.md
+   documentation, which are updated to the new list.
+
+B. BACKEND RETAINED, DORMANT. Everything from Pass 22 (§33) is intentionally
+   KEPT and left live-but-unlinked: `/.well-known/farcaster.json`, the `fc:miniapp`
+   meta embed, the dynamic `/og/beat.png` card, the CSP `frame-ancestors`
+   allowlist, the icon/splash assets, and the FARCASTER_* env bindings. The
+   separate §25 daily broadcast (Nostr/Farcaster/X) is likewise untouched. A
+   future session that finds the manifest serving without an `accountAssociation`
+   should read this as deferred-by-design, NOT a bug: Mini App verification
+   (domain custody signing + the FARCASTER_ACCOUNT_ASSOCIATION secret) is the
+   deferred step. Re-linking later is a one-line menu change.
+
+Gates: clean build; audit-contrast/meta/csp green (one fewer menu tile; the embed
+and manifest are unchanged, so audit-meta's fc:miniapp assertion still passes).
+Commit and push per item.
