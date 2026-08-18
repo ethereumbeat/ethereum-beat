@@ -183,12 +183,23 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   `micro` mono label, a value, and the red accent, self-contained for any README.
 - **Command bar** — the persistent nav strip: `accent` background, `paper` text
   (5.9:1), one-key channel switching.
+- **Pixel-beat mark** — the wordmark lockup's glyph is a **3×2 bitmap**, `1 0 1 /
+  0 1 0` (1 = filled), rendered as hard-edged square pixels (inline SVG `<rect>`s,
+  `shape-rendering: crispEdges` — no radius, no antialias). It is drawn in
+  `currentColor`, so it inherits the wordmark's text colour and clears AA wherever
+  the wordmark does. Static — no animation. It replaces the `•` dot in the
+  `[mark] ETHEREUM BEAT` lockup, site-wide.
 - **Corner menu** — global chrome, a **terminal-style list opened by the
-  wordmark**. The bottom-left "ethereum beat" wordmark (lowercase grotesk) is the
-  trigger — there is no arrow; on hover/focus a **"more options" tooltip** draws
-  its corner-bracket border in (the shared `.hud-frame`/`.hud-edge`/`.hud-tick` +
-  `hud-line-draw` primitive). Click/Enter opens a **full viewport-height red rail**
-  (`min(40vw, 460px)`) down the left edge. Options are a vertical stack of **large
+  command-bar logo**. The logo lockup in the red command bar (`[pixel-beat mark]
+  ETHEREUM BEAT`, a `<button>`) is the trigger — there is no arrow; on hover/focus
+  a **"more options" tooltip** draws its corner-bracket border in (the shared
+  `.hud-frame`/`.hud-edge`/`.hud-tick` + `hud-line-draw` primitive). Because the
+  command bar re-renders on soft-nav, opening is a **delegated** document click;
+  the tooltip is `position:fixed` (pinned by a nonced script) so it escapes the
+  bar's overflow clip. Click/Enter opens a **full viewport-height red rail** down
+  the left edge — **50vw on desktop, full-width below the 768px tablet breakpoint**
+  (the big pixel labels need room on phones). The panel **opens directly to the
+  option list** — no top wordmark. Options are a vertical stack of **large
   lowercase Departure Mono (pixel) labels** — ambient · rss · farcaster · x ·
   badges — no icons, no boxes. The hovered/focused option shows a blinking `_`
   caret; ↑/↓ move it, Enter activates, one caret at a time. **Panel palette:** a
@@ -198,10 +209,11 @@ octahedron glyph `⬡`, which does a lub-dub pulse on every slot.
   under the cursor and settle back; cells only ever **DARKEN** the field
   (`rgba(58,0,0,α)`, **opacity ceiling α ≤ 0.34**), so white labels never drop
   below AA — darkening only raises white-on-red contrast — and the labels sit on
-  the solid token in the negative space. Static under `prefers-reduced-motion`.
-  farcaster + x have no configured destination, so they stay **DISABLED** ("soon")
-  — never substituted. GitHub is **not** in the menu; it stays in the footer.
-  Esc / click-outside close; all JS nonced.
+  the solid token in the negative space. Widening the panel to 50vw doesn't touch
+  per-pixel contrast (labels stay white on the same token). Static under
+  `prefers-reduced-motion`. farcaster + x have no configured destination, so they
+  stay **DISABLED** ("soon") — never substituted. GitHub is **not** in the menu;
+  it stays in the footer. Esc / click-outside close; all JS nonced.
 - **Ambient wallpapers** — a chrome-free, full-viewport system for desktop tools
   like Plash. It **ignores the seven-theme system** and runs on a LOCKED mono+red
   palette so its contrast matrix is ten designs, not ten×seven:
