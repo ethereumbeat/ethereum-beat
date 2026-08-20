@@ -1,4 +1,33 @@
 User-agent: *
 Allow: /
+Content-Signal: ai-train=no, search=yes, ai-input=yes
+
+# AI crawlers may read the site and answer questions from it (search + ai-input);
+# the growthepie-sourced data is CC BY 4.0 and is not bulk-licensed for model
+# training without attribution (ai-train=no). See DECISIONS.md — this is a
+# flippable default.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
 
 Sitemap: https://ethereumbeat.org/sitemap.xml
