@@ -1537,3 +1537,62 @@ B. BACKEND RETAINED, DORMANT. Everything from Pass 22 (§33) is intentionally
 Gates: clean build; audit-contrast/meta/csp green (one fewer menu tile; the embed
 and manifest are unchanged, so audit-meta's fc:miniapp assertion still passes).
 Commit and push per item.
+
+## 35. Pass 24 — agent readiness
+
+Make the site legible to AI agents and answer engines without any paid service,
+new dependency, or commerce protocol. Read-only surfaces only; nothing here
+touches metric_meta (no D1 migration, no KV bust) and wrangler.toml is unchanged.
+
+Explicitly OUT OF SCOPE and NOT built (they do not apply to a static read-only
+data site; publishing placeholder versions would be dishonest scaffolding):
+OAuth/OIDC discovery, OAuth Protected Resource metadata, auth.md, an MCP Server
+Card, WebMCP tool registration, DNS-AID records, and any commerce protocol
+(x402 / MPP / UCP / ACP).
+
+A. robots.txt CONTENT SIGNALS. The static `public/robots.txt` keeps its existing
+   `User-agent: * / Allow: / / Sitemap:` lines verbatim and adds
+   `Content-Signal: ai-train=no, search=yes, ai-input=yes` — a policy DEFAULT:
+   agents may read the site and answer questions from it (search + ai-input), but
+   the growthepie-sourced data (CC BY 4.0) is not bulk-licensed for model
+   training without attribution (ai-train=no). Explicit `Allow: /` blocks follow
+   for the known AI crawlers (GPTBot, ClaudeBot, Google-Extended, CCBot,
+   PerplexityBot, Amazonbot, Bytespider, anthropic-ai), matching that policy. The
+   default is one line and flippable (recorded in DECISIONS).
+
+B. API DISCOVERY Link HEADER (RFC 8288). Astro middleware (`src/middleware.ts`)
+   adds `Link: </.well-known/api-catalog>; rel="api-catalog"` site-wide. It
+   survives the Worker's `secureHtml()` re-wrap and is invisible to audit-csp
+   (which allowlists specific headers, not a closed set).
+
+C. API CATALOG (RFC 9727) at `/.well-known/api-catalog`, served as
+   `application/linkset+json`. One linkset member per endpoint family:
+   `/api/snapshot` (rel `service-doc` → a short markdown API doc; rel `status` →
+   itself, honest because the route carries `finished_at` + `is_stale`) and
+   `/api/metric/{key}` (rel `service-doc` documenting the `range` param and
+   pointing key discovery at `/api/snapshot` — the metric_key list lives in D1
+   and must never be hardcoded).
+
+D. ARD MANIFEST at `/.well-known/ai-catalog.json` — `application/json`,
+   `Access-Control-Allow-Origin: *`. `specVersion`, a `host` object for
+   ethereumbeat.org, and one `entries` member per channel (BEAT, NODES, BLOBS,
+   FLOW, FINALITY, LAYERS) plus one for the raw metric API. Each entry:
+   `urn:air:ethereumbeat.org:<slug>`, displayName, type (text/html for pages,
+   application/json for the API), url, and 2–5 `representativeQueries` phrased as
+   real agent questions — protocol-health only, never price or TVL.
+
+E. MARKDOWN CONTENT NEGOTIATION. The middleware serves a `text/markdown`
+   rendition (with `Vary: Accept`) when `Accept: text/markdown` is sent for the
+   content pages — `/about` and the per-channel landing pages (`/nodes`, `/blobs`,
+   `/flow`, `/finality`, `/layers`, `/roadmap`) — but NOT the inherently
+   interactive `/` BEAT stage. The markdown is generated from ONE shared module
+   (`src/lib/agent-markdown.ts`) off the site route registry — no hand-maintained
+   second copy — and an `astro:build:done` hook writes the same output to static
+   `.md` files in the build so `/<page>.md` also resolves directly. The data-source
+   attribution (growthepie CC BY 4.0, Beacon API/PublicNode, ethernodes,
+   beaconcha.in, DefiLlama, ultrasound) is carried into every markdown rendition —
+   load-bearing, reused from `src/lib/sources.ts`, not re-typed.
+
+Gates: clean `npm run build`; audit-contrast/meta/csp green. New `.well-known`
+routes and `.md` renditions stay OUT of the sitemap (audit-meta is sitemap-driven
+and would otherwise audit them as HTML). Commit and push per item.
