@@ -1916,3 +1916,30 @@ metric_meta changes, so no migration/KV step. (SPEC §27.)
   signing + the `FARCASTER_ACCOUNT_ASSOCIATION` secret). Re-linking is a one-line
   menu change. The separate §25 daily broadcast (Nostr/Farcaster/X) is unrelated
   and untouched.
+
+## Agent readiness (Pass 24, 2026-08-20)
+
+- **robots.txt AI policy is a flippable default.** `public/robots.txt` sets
+  `Content-Signal: ai-train=no, search=yes, ai-input=yes`: AI agents may READ the
+  site and ANSWER questions from it, but the growthepie-sourced data (CC BY 4.0)
+  is not bulk-licensed for model TRAINING without attribution. This is a policy
+  default, not a hard stance — if Nuno wants to allow training, flip the single
+  `ai-train=no` token to `ai-train=yes` on that one line (the per-crawler
+  `Allow: /` blocks already grant read access and need no change).
+- **Blobscan is NOT attributed; the parenthetical in the Pass 24 brief was
+  stale.** The brief listed Blobscan among sources to carry into the markdown
+  renditions, but the live registry (`src/lib/sources.ts`) and an earlier
+  DECISIONS entry show Blobscan's daily-stats route 404s and was superseded by
+  growthepie `da_blob_count` / the Beacon API. The markdown attribution therefore
+  lists the REAL sources (growthepie CC BY 4.0, Beacon API/PublicNode,
+  ethernodes, beaconcha.in, DefiLlama, ultrasound) and omits Blobscan — matching
+  the footer/about/JSON-LD, per the "find the actual handlers, don't assume"
+  discipline of this pass.
+- **Agent-readiness surfaces are read-only and paid-service-free.** Only what a
+  static data site can honestly serve: robots Content-Signals, an api-catalog
+  Link header, `/.well-known/api-catalog` (RFC 9727 linkset), an
+  `/.well-known/ai-catalog.json` ARD manifest, and markdown content negotiation.
+  Deliberately NOT built (would be dishonest scaffolding on a read-only site with
+  no auth or commerce): OAuth/OIDC discovery, OAuth Protected Resource metadata,
+  auth.md, an MCP Server Card, WebMCP registration, DNS-AID, and any commerce
+  protocol (x402/MPP/UCP/ACP).
