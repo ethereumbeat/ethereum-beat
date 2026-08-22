@@ -1652,3 +1652,26 @@ change).
 Gates: clean `npm run build`; audit-contrast/meta/csp green. `/privacy` and
 `/developers` join the sitemap EXTRA_PAGES; the `.md` renditions and .well-known
 routes stay out of it. Commit and push per item.
+
+## 37. Pass 26 — hide the VALUES beat + unify modal helper-text casing
+
+Two small UI changes. No metric_meta / D1 / KV change; wrangler.toml unchanged.
+
+A. VALUES BEAT HIDDEN (dormant). The BEAT rotation had one extra virtual slot
+   after the KPI cycle — the "values beat", a one-principle-per-beat CROPS card
+   (src/lib/values.ts, rendered in BeatStage). It is hidden for now: the rotation
+   is metrics-only (`SHOW_VALUES_BEAT = false`, `valuesSlot = -1`), so `active`
+   never lands on it. All the card-rendering and principle-rotation code stays in
+   place, dormant; flip the one flag to re-enable. (The peripheral corner metrics
+   STAKE/GAS/PARTICIP/BLOBS on the dial are a SEPARATE element and are unchanged.)
+
+B. MODAL HELPER-TEXT CASING UNIFIED. The site's rule holds — instrument LABELS
+   and live DATA readouts are uppercase micro (`.micro`/`.tick-label`), explanatory
+   PROSE is sentence case — but two modal helpers broke it by rendering prose in
+   the uppercase label style: the TickerModal dial legend ("THE DIAL: 32 TICKS =
+   …") and the CropsBadge context sentence (`context.toUpperCase()`). Both are now
+   sentence-case prose, matching the ExplainChip / modal body style. Data readouts
+   (SLOT/EPOCH…), chart axis captions and nav links stay uppercase — they are
+   labels, not prose.
+
+Gates: clean `npm run build`; audit-contrast/meta/csp green. Commit and push.
