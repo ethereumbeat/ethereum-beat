@@ -83,9 +83,14 @@ export default function BeatStage({ initialOverlay }: Props = {}) {
   const overlayOpen = overlayKey !== null;
 
   const metrics: SnapshotMetric[] = snapshot ? featuredMetrics(snapshot) : [];
-  // one extra virtual slot after the rotation: the VALUES beat
-  const count = metrics.length ? metrics.length + 1 : 0;
-  const valuesSlot = metrics.length; // active === valuesSlot -> principle card
+  // The VALUES beat — the one-principle-per-beat card (src/lib/values.ts) — is
+  // hidden for now (spec §37): the rotation is metrics-only. Flip this flag to
+  // re-enable it; the card rendering + principle rotation below stay in place,
+  // dormant (valuesSlot = -1 means `active` never lands on it).
+  const SHOW_VALUES_BEAT = false;
+  // one extra virtual slot after the rotation: the VALUES beat (when enabled)
+  const count = metrics.length ? metrics.length + (SHOW_VALUES_BEAT ? 1 : 0) : 0;
+  const valuesSlot = SHOW_VALUES_BEAT ? metrics.length : -1; // active === valuesSlot -> principle card
   const [principleIdx, setPrincipleIdx] = useState(0);
   const active = count > 0 ? ((virtual % count) + count) % count : 0;
 
