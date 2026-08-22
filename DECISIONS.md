@@ -1971,3 +1971,11 @@ acceptmarkdown.com compliance with `/` added to markdown negotiation, an llms.tx
   homepage from `Accept: text/markdown`; the Ora audit tests `/`, so it now serves
   a network-health summary rendition. The interactive page itself is unchanged;
   the exclusion was not load-bearing.
+
+## X account live (2026-08-22)
+
+- **The corner-menu `x` tile is now a live link to https://x.com/ethereumbeat.**
+  Pass 23 (§34) left it DISABLED ("soon") with no configured destination; the
+  @ethereumbeat account is live, so `X_URL` is set and the tile renders as a real
+  external link (`target=_blank rel=noopener`) — no "soon". One-line change; flip
+  `X_URL` back to `null` to re-disable. Farcaster stays deferred/dormant (§34).
