@@ -1,0 +1,58 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
+
+// A real 404 (Astro serves this with a 404 status) that helps agents AND people
+// recover — links to the channels, the open API, and the discovery files. Agents
+// asking with `Accept: text/markdown` get a markdown recovery body instead
+// (src/middleware.ts / agent-markdown notFoundMarkdown).
+const channels = [
+  ['/', 'BEAT'],
+  ['/nodes', 'NODES'],
+  ['/blobs', 'BLOBS'],
+  ['/flow', 'FLOW'],
+  ['/finality', 'FINALITY'],
+  ['/layers', 'LAYERS'],
+  ['/roadmap', 'ROADMAP'],
+  ['/about', 'ABOUT'],
+];
+---
+
+<Layout
+  title="Ethereum Beat — 404 · not found"
+  description="That path does not exist on Ethereum Beat. Jump to a channel, the open JSON API, or the sitemap to find what you are looking for."
+>
+  <main class="channel-body mx-auto flex max-w-2xl flex-col gap-8 px-6 py-16" aria-label="Not found">
+    <div>
+      <p class="micro mb-2 flex items-center gap-2">
+        <span class="red-dot"></span>
+        <span>404 // PATH NOT FOUND</span>
+      </p>
+      <h1 class="font-grotesk text-3xl font-extrabold leading-tight text-[color:var(--ink)] sm:text-4xl">
+        That path isn’t<br />on the beat
+      </h1>
+      <p class="mono-label mt-4 leading-relaxed text-[color:var(--ink-soft)]">
+        The page you asked for doesn’t exist. Here’s where to look next.
+      </p>
+    </div>
+
+    <section class="hairline-t pt-6">
+      <h2 class="mb-3 font-grotesk text-lg font-bold text-[color:var(--ink)]">Channels</h2>
+      <ul class="flex flex-wrap gap-2">
+        {channels.map(([href, label]) => (
+          <li><a href={href} class="cmd-chip !no-underline"><span>{label}</span></a></li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="hairline-t pt-6">
+      <h2 class="mb-3 font-grotesk text-lg font-bold text-[color:var(--ink)]">Data &amp; discovery</h2>
+      <ul class="mono-label flex flex-col gap-1 leading-relaxed text-[color:var(--ink-soft)]">
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/api/snapshot">/api/snapshot</a> — every metric as JSON</li>
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/developers">/developers</a> — the open API</li>
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/llms.txt">/llms.txt</a> · <a class="hover:font-bold text-[color:var(--ink)]" href="/sitemap.xml">/sitemap.xml</a></li>
+      </ul>
+    </section>
+  </main>
+</Layout>
