@@ -1,0 +1,74 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
+
+const title = 'Ethereum Beat — PRIVACY · what we collect (essentially nothing)';
+const description =
+  'Ethereum Beat privacy: no accounts, no personal data, no tracking cookies. Analytics are cookieless and aggregate; the code is open source and self-hostable. Privacy is the P in CROPS, applied to the site itself.';
+
+// One source of truth: the visible sections mirror the /privacy markdown
+// rendition in src/lib/agent-markdown.ts (SPECIAL_PAGES).
+const sections: { h: string; p: string }[] = [
+  {
+    h: 'No accounts, no personal data',
+    p: 'There is nothing to sign up for and no profile to build. Ethereum Beat does not ask for, store, or process any personal information — it is a read-only instrument for public Ethereum network data.',
+  },
+  {
+    h: 'No tracking cookies',
+    p: 'The site sets no tracking or advertising cookies. The only thing stored in your browser is your chosen theme, kept in localStorage and read entirely client-side; it never leaves your device.',
+  },
+  {
+    h: 'Cookieless, aggregate analytics',
+    p: 'When enabled, page-view counts come from Cloudflare Web Analytics, which is cookieless and uses no fingerprinting or cross-site identifiers — only aggregate counts. It is env-gated: a fork or deployment without an analytics token ships no analytics at all.',
+  },
+  {
+    h: 'No third-party trackers or ad networks',
+    p: 'There are no ad networks, no social pixels, and no third-party tracking scripts anywhere on the site.',
+  },
+  {
+    h: 'Third-party data requests',
+    p: 'The live layer fetches public Ethereum RPC and Beacon endpoints (PublicNode, dRPC, 1RPC) directly from your browser to show per-slot values. Those hosts see the request the same way any website you visit does; Ethereum Beat shares nothing with them and adds no identifiers.',
+  },
+  {
+    h: 'Open source and self-hostable',
+    p: 'The entire site is MIT-licensed and public. If you would rather not rely on this deployment at all, you can run your own copy from the repository.',
+  },
+];
+---
+
+<Layout title={title} description={description}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">P</div>
+
+  <main class="channel-body mx-auto max-w-2xl overflow-y-auto px-6 py-12" aria-label="Privacy">
+    <p class="micro mb-2 flex items-center gap-2">
+      <span class="red-dot"></span>
+      <span>PRIVACY // WHAT WE COLLECT (ESSENTIALLY NOTHING)</span>
+    </p>
+    <h1 class="mb-6 font-grotesk text-3xl font-extrabold leading-tight text-[color:var(--ink)] sm:text-4xl">
+      Privacy is the P<br />in CROPS
+    </h1>
+    <p class="mono-label mb-8 leading-relaxed text-[color:var(--ink-soft)]">
+      Ethereum Beat measures Ethereum’s privacy properties; it also holds itself to them. It collects essentially
+      nothing about you.
+    </p>
+
+    <dl class="flex flex-col gap-8">
+      {
+        sections.map((s) => (
+          <div class="hairline-t pt-6">
+            <dt class="mb-2 font-grotesk text-lg font-bold text-[color:var(--ink)]">{s.h}</dt>
+            <dd class="mono-label leading-relaxed text-[color:var(--ink-soft)]">{s.p}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <p class="micro mt-10 text-[color:var(--ink-faint)]">
+      Questions about privacy? Email{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="mailto:beat@ethereumbeat.org">beat@ethereumbeat.org</a>.
+      This page is also available as{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/privacy.md">markdown</a>.
+    </p>
+  </main>
+</Layout>

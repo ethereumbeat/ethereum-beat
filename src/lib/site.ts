@@ -132,6 +132,26 @@ export function siteJsonLd(origin: string): object[] {
       keywords: CROPS_KEYWORDS,
     },
     {
+      // Organization for entity/contact verification (spec §36.G). No telephone
+      // or PostalAddress — this is a free, open-source project with no business
+      // phone or physical address; fabricating them to pass a checker is exactly
+      // the dishonest scaffolding the project refuses. contactPoint is the real
+      // mailbox; sameAs is the canonical repository.
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: `${origin}/`,
+      logo: `${origin}/icon.png`,
+      description: `${SITE_NAME} — a free, open-source instrument for Ethereum protocol health. No prices, no market data.`,
+      sameAs: ['https://github.com/ethereumbeat/ethereum-beat'],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'technical support',
+        email: 'beat@ethereumbeat.org',
+        url: `${origin}/support`,
+      },
+    },
+    {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: SITE_NAME,

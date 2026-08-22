@@ -32,26 +32,52 @@ const asOf = snapshot?.generated_at?.slice(0, 10) ?? null;
   <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">1</div>
 
   {/* Server-rendered accessible summary of the live instrument: the core facts
-      in the initial HTML for screen readers and for search / answer engines. */}
+      in the initial HTML, with a real heading hierarchy, for screen readers and
+      for search / answer engines that read the page without JavaScript. sr-only,
+      so the visual instrument is unchanged. */}
   <section class="sr-only" aria-label="Ethereum network health summary">
     <h1>Ethereum network health — the live pulse of Ethereum</h1>
     <p>{rm.description}</p>
+
+    <h2>What Ethereum Beat measures</h2>
+    <p>
+      Ethereum Beat is a live, free, open-source instrument for the Ethereum network — protocol health, usage and
+      neutrality, one metric per 12-second slot. It tracks four protocol properties (CROPS) and never prices or markets:
+    </p>
+    <ul>
+      <li><strong>Censorship resistance</strong> — no actor can selectively exclude a valid transaction.</li>
+      <li><strong>Open source &amp; free</strong> — all of Ethereum is public, auditable and free to run and fork.</li>
+      <li><strong>Privacy</strong> — assets and identity are held by cryptography, not an account someone else controls.</li>
+      <li><strong>Security</strong> — attacking the chain means burning your own stake.</li>
+    </ul>
+
     {
       featured.length > 0 && (
-        <ul>
-          {featured.map((m) => {
-            const v = kpiValue(m.latest.value, m.unit);
-            return (
-              <li>
-                <strong>{m.label}</strong>: {v.value}
-                {v.suffix ? ` ${v.suffix}` : ''} — {m.description}{' '}
-                <span>({CATEGORY_LABELS[m.category] ?? m.category})</span>
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          <h2>Live network-health readings</h2>
+          <ul>
+            {featured.map((m) => {
+              const v = kpiValue(m.latest.value, m.unit);
+              return (
+                <li>
+                  <strong>{m.label}</strong>: {v.value}
+                  {v.suffix ? ` ${v.suffix}` : ''} — {m.description}{' '}
+                  <span>({CATEGORY_LABELS[m.category] ?? m.category})</span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )
     }
+
+    <h2>Channels and open data</h2>
+    <p>
+      Explore the network by channel: BEAT, NODES, BLOBS, FLOW, FINALITY, LAYERS and ROADMAP. Every number is available
+      as open JSON with no API key at <a href="/api/snapshot">/api/snapshot</a> and{' '}
+      <a href="/api/metric/{key}">/api/metric/&#123;key&#125;</a>; see <a href="/about">About</a> for the concept and
+      every data source, or <a href="/developers">Developers</a> to build on it.
+    </p>
     {asOf && <p>Latest values as of {asOf}. Protocol health only — no prices, no market data.</p>}
   </section>
 

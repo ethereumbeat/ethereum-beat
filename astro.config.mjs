@@ -19,6 +19,8 @@ const emitAgentMarkdown = {
       const origin = siteOrigin();
       let n = 0;
       for (const path of MARKDOWN_PATHS) {
+        // `/` is markdown-negotiable but has no clean `.md` URL — negotiation-only.
+        if (path === '/') continue;
         const md = markdownFor(path, origin);
         if (md === null) continue;
         await writeFile(new URL(`${path.replace(/^\//, '')}.md`, dir), md, 'utf8');

@@ -1943,3 +1943,31 @@ metric_meta changes, so no migration/KV step. (SPEC §27.)
   no auth or commerce): OAuth/OIDC discovery, OAuth Protected Resource metadata,
   auth.md, an MCP Server Card, WebMCP registration, DNS-AID, and any commerce
   protocol (x402/MPP/UCP/ACP).
+
+## Agent readiness II (Pass 25, 2026-08-22)
+
+Responds to an "Is Agentic" (Ora) audit (72/100). Implemented the honest fixes
+(agent-friendly 404, homepage SSR heading structure, `Vary: Accept` +
+acceptmarkdown.com compliance with `/` added to markdown negotiation, an llms.txt
+"when to use" section, a real `/privacy` page, an honest `/developers` page, and
+`Organization` JSON-LD) and refused the rest as fabrication:
+
+- **The score model is paid-SaaS-shaped; we optimise honesty, not the number.**
+  100/100 is unreachable without inventing things this project does not have, and
+  chasing it would violate the anti-scaffolding rule. Specifics:
+- **No developer portal with API keys or a sandbox.** The API is public, free and
+  key-less. `/developers` documents that plainly instead of faking an auth/sandbox
+  flow. It will not earn the audit's "full credit" — correct.
+- **`Organization` schema omits `telephone` and `PostalAddress`.** There is no
+  business phone or physical address; fabricating them to pass a checker is the
+  same dishonesty refused in Pass 24. `contactPoint` uses the real
+  `beat@ethereumbeat.org`; `sameAs` is the GitHub repo.
+- **No CLI was built.** The audit claimed a "CLI mentioned in llms.txt" — false
+  positive; there is none. Publishing one needs npm credentials + ongoing
+  maintenance (a product decision), so it is out of scope, not scaffolded.
+- **Brand-name search ranking is off-site.** Not a code change (indexing, press,
+  listings); left to product/marketing.
+- **`/` is now markdown-negotiable (reverses §35.E).** Pass 24 excluded the BEAT
+  homepage from `Accept: text/markdown`; the Ora audit tests `/`, so it now serves
+  a network-health summary rendition. The interactive page itself is unchanged;
+  the exclusion was not load-bearing.

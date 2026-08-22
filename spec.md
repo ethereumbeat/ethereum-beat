@@ -1596,3 +1596,59 @@ E. MARKDOWN CONTENT NEGOTIATION. The middleware serves a `text/markdown`
 Gates: clean `npm run build`; audit-contrast/meta/csp green. New `.well-known`
 routes and `.md` renditions stay OUT of the sitemap (audit-meta is sitemap-driven
 and would otherwise audit them as HTML). Commit and push per item.
+
+## 36. Pass 25 — agent readiness II
+
+A second agent-readiness pass responding to an "Is Agentic" (Ora) audit. Only the
+HONEST fixes are implemented; the audit also rewards patterns that would require
+fabricating things this project does not have, and those are deliberately NOT
+built (a paid-SaaS scoring model applied to a free, no-accounts, no-commerce,
+open-source data site). Read-only surfaces; no metric_meta / D1 / KV change;
+wrangler.toml unchanged.
+
+A. AGENT-FRIENDLY 404. A real `404.astro` (still a 404 status) with a short
+   recovery body linking the channels, the JSON API, and the discovery files
+   (llms.txt, sitemap, api-catalog). The middleware additionally returns a
+   `text/markdown` 404 recovery when `Accept: text/markdown` is sent for an
+   unknown path.
+
+B. HOMEPAGE SSR STRUCTURE. The server-rendered accessible summary on `/` gains a
+   real heading hierarchy (h1 + per-section h2s) so crawlers see structured,
+   JS-free content — invisible (`sr-only`), so the visual instrument is unchanged.
+
+C. acceptmarkdown.com COMPLIANCE. `Vary: Accept` is added to the HTML responses
+   of every negotiable path (not just the markdown variant), so a CDN cannot
+   serve a cached HTML variant to an agent asking for markdown. The `/` BEAT
+   stage is ADDED to markdown negotiation (reversing §35.E's exclusion): it now
+   serves a network-health summary rendition, while the interactive page itself
+   is unchanged.
+
+D. WHEN-TO-USE. `/llms.txt` gains a "When to use Ethereum Beat" section — best-fit
+   agent questions, how to call the API, and the explicit non-goals (no price,
+   token, market-cap or dollar-TVL data).
+
+E. TRUST ANCHOR — `/privacy`. A real privacy page (honest: no accounts, no PII,
+   cookieless aggregate analytics, theme pref in localStorage only, third-party
+   data fetched directly by the browser). It is the "P" of CROPS made explicit.
+
+F. DEVELOPERS — `/developers`. An honest developer page documenting the public,
+   key-less, free JSON API and the machine-readable discovery surfaces. It states
+   plainly that there are NO API keys, no sandbox and no official CLI/SDK — the
+   API is plain HTTP+JSON, called directly. No fabricated portal.
+
+G. ORGANIZATION SCHEMA. `Organization` JSON-LD with a real `contactPoint` (email
+   beat@ethereumbeat.org), `sameAs` (the GitHub repo) and `logo`. `telephone` and
+   `PostalAddress` are OMITTED — there is no business phone or physical address,
+   and inventing them to satisfy a checker is the dishonest scaffolding this
+   project refuses.
+
+NOT built (audit items that require fabrication or are off-site): a developer
+portal with API keys / sandbox (none exist); Organization phone/postal address
+(none exist); a published CLI (needs credentials + maintenance — a product
+decision; the audit's "CLI mentioned in llms.txt" evidence was a false positive,
+there is none); brand-name search ranking (off-site SEO/indexing, not a code
+change).
+
+Gates: clean `npm run build`; audit-contrast/meta/csp green. `/privacy` and
+`/developers` join the sitemap EXTRA_PAGES; the `.md` renditions and .well-known
+routes stay out of it. Commit and push per item.
