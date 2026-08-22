@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { siteOrigin } from '../lib/site';
+
+export const prerender = false;
+
+const origin = siteOrigin(Astro.locals?.runtime?.env);
+const title = 'Ethereum Beat — DEVELOPERS · the free, key-less JSON API';
+const description =
+  'Build with Ethereum Beat: a public, free, key-less JSON API for Ethereum protocol-health data, with open CORS, a quickstart, and machine-readable discovery. No API keys, no sandbox, no signup.';
+---
+
+<Layout title={title} description={description}>
+  <div class="channel-glyph" transition:name="channel-glyph" aria-hidden="true">D</div>
+
+  <main class="channel-body mx-auto max-w-2xl overflow-y-auto px-6 py-12" aria-label="Developers">
+    <p class="micro mb-2 flex items-center gap-2">
+      <span class="red-dot"></span>
+      <span>DEVELOPERS // THE FREE, KEY-LESS JSON API</span>
+    </p>
+    <h1 class="mb-6 font-grotesk text-3xl font-extrabold leading-tight text-[color:var(--ink)] sm:text-4xl">
+      Build on the beat
+    </h1>
+    <p class="mono-label mb-8 leading-relaxed text-[color:var(--ink-soft)]">
+      Every number on Ethereum Beat is open JSON. No API key, no signup, no auth — CORS is open
+      (<span class="font-mono">access-control-allow-origin: *</span>) and responses are edge-cached for about an hour.
+      Protocol health only: no prices, no market data.
+    </p>
+
+    <section class="hairline-t pt-6">
+      <h2 class="mb-3 font-grotesk text-lg font-bold text-[color:var(--ink)]">Quickstart</h2>
+      <pre class="mono-label overflow-x-auto rounded-none bg-[color:var(--paper-raise)] p-4 leading-relaxed text-[color:var(--ink-soft)]"><code>curl -s {origin}/api/snapshot
+curl -s "{origin}/api/metric/&#123;key&#125;?range=w"</code></pre>
+      <p class="mono-label mt-3 leading-relaxed text-[color:var(--ink-soft)]">
+        Discover metric keys from <a class="hover:font-bold text-[color:var(--ink)]" href="/api/snapshot">/api/snapshot</a>
+        (the <span class="font-mono">metrics[].metric_key</span> values) — they live in the database and are never
+        hardcoded. The <span class="font-mono">range</span> param is one of <span class="font-mono">d w m q y</span>.
+      </p>
+    </section>
+
+    <section class="hairline-t mt-8 pt-6">
+      <h2 class="mb-3 font-grotesk text-lg font-bold text-[color:var(--ink)]">Endpoints & discovery</h2>
+      <ul class="mono-label flex flex-col gap-1 leading-relaxed text-[color:var(--ink-soft)]">
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/api/snapshot">/api/snapshot</a> — every metric, one document</li>
+        <li><span class="font-mono">/api/metric/&#123;key&#125;?range=</span> — one metric’s time series</li>
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/docs/api/snapshot.md">/docs/api/*.md</a> — endpoint docs</li>
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/.well-known/api-catalog">/.well-known/api-catalog</a> — RFC 9727 catalog</li>
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/.well-known/ai-catalog.json">/.well-known/ai-catalog.json</a> — agent manifest (ARD)</li>
+        <li><a class="hover:font-bold text-[color:var(--ink)]" href="/llms.txt">/llms.txt</a> · <a class="hover:font-bold text-[color:var(--ink)]" href="/llms-full.txt">/llms-full.txt</a></li>
+      </ul>
+      <p class="mono-label mt-3 leading-relaxed text-[color:var(--ink-soft)]">
+        Every content page also answers <span class="font-mono">Accept: text/markdown</span>.
+      </p>
+    </section>
+
+    <section class="hairline-t mt-8 pt-6">
+      <h2 class="mb-3 font-grotesk text-lg font-bold text-[color:var(--ink)]">What there is not</h2>
+      <p class="mono-label leading-relaxed text-[color:var(--ink-soft)]">
+        No API keys, no sandbox environment, and no official CLI or SDK — the API is plain HTTP + JSON, so call it
+        directly. The site is MIT-licensed and self-hostable:{' '}
+        <a class="hover:font-bold text-[color:var(--ink)]" href="https://github.com/ethereumbeat/ethereum-beat">github.com/ethereumbeat/ethereum-beat</a>.
+      </p>
+    </section>
+
+    <p class="micro mt-10 text-[color:var(--ink-faint)]">
+      This page is also available as{' '}
+      <a class="hover:font-bold text-[color:var(--ink)]" href="/developers.md">markdown</a>.
+    </p>
+  </main>
+</Layout>
