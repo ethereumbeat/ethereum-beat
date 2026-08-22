@@ -12,12 +12,11 @@
  * Enter activates. A dark-red reactive pixel dither brightens under the cursor
  * (darken-only, so white labels stay ≥ AA on #c90500). All JS nonced.
  *
- * x has no configured destination, so it stays DISABLED ("soon"). Farcaster is
- * deferred (spec §34): its Pass 22 backend (manifest, fc:miniapp embed, OG card)
- * stays live-but-dormant, but there is no UI entry for it. GitHub lives in the
- * footer.
+ * x links to the live @ethereumbeat account. Farcaster is deferred (spec §34):
+ * its Pass 22 backend (manifest, fc:miniapp embed, OG card) stays live-but-
+ * dormant, but there is no UI entry for it. GitHub lives in the footer.
  */
-const X_URL: string | null = null;
+const X_URL: string | null = 'https://x.com/ethereumbeat';
 if (!X_URL) console.warn('[corner-menu] x option disabled — no public destination in the social config');
 
 interface Opt { label: string; href: string | null; external?: boolean }
