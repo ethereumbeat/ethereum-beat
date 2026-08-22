@@ -106,6 +106,10 @@ for (const route of routes) {
   const types = parsed.map((p) => p['@type']);
   if (!types.includes('WebSite')) fail(route, 'JSON-LD missing WebSite');
   if (!types.includes('SoftwareApplication')) fail(route, 'JSON-LD missing SoftwareApplication');
+  // Organization with a contactPoint for entity/contact verification (§36.G)
+  const org = parsed.find((p) => p['@type'] === 'Organization');
+  if (!org) fail(route, 'JSON-LD missing Organization');
+  else if (!org.contactPoint?.email) fail(route, 'Organization missing contactPoint.email');
   if (route.startsWith('/pulse/')) {
     const ds = parsed.find((p) => p['@type'] === 'Dataset');
     if (!ds) fail(route, 'JSON-LD missing Dataset');
@@ -165,10 +169,34 @@ try {
 }
 const robots = await get('/robots.txt');
 if (!robots.body.includes('Sitemap:') || !robots.body.includes('/sitemap.xml')) fail('/robots.txt', 'no sitemap reference');
+if (!robots.body.includes('Content-Signal:')) fail('/robots.txt', 'missing Content-Signal (§35.A)');
 for (const p of ['/llms.txt', '/llms-full.txt']) {
   const r = await get(p);
   if (r.status !== 200 || !r.type.includes('text/plain') || !r.body.startsWith('# Ethereum Beat')) fail(p, `bad response (${r.status})`);
 }
+// llms.txt "when to use" agent guidance (§36.D)
+if (!(await get('/llms.txt')).body.includes('When to use')) fail('/llms.txt', 'missing "When to use" section');
+
+// ── agent readiness surfaces (Pass 24/25) ───────────────────────────────
+const apiCat = await get('/.well-known/api-catalog');
+if (apiCat.status !== 200 || !apiCat.type.includes('application/linkset+json')) fail('/.well-known/api-catalog', `bad (${apiCat.status} / ${apiCat.type})`);
+const ard = await get('/.well-known/ai-catalog.json');
+if (ard.status !== 200 || !ard.type.includes('application/json')) fail('/.well-known/ai-catalog.json', `bad (${ard.status} / ${ard.type})`);
+
+// markdown content negotiation + Vary: Accept (§35.E / §36.C)
+const mdRes = await fetch(BASE + '/about', { headers: { accept: 'text/markdown' } });
+if (!(mdRes.headers.get('content-type') ?? '').includes('text/markdown')) fail('/about', 'Accept: text/markdown not honoured');
+if (!/accept/i.test(mdRes.headers.get('vary') ?? '')) fail('/about', 'markdown response missing Vary: Accept');
+const homeMd = await fetch(BASE + '/', { headers: { accept: 'text/markdown' } });
+if (!(homeMd.headers.get('content-type') ?? '').includes('text/markdown')) fail('/', 'homepage Accept: text/markdown not honoured (§36.C)');
+const aboutHtml = await fetch(BASE + '/about');
+if (!/accept/i.test(aboutHtml.headers.get('vary') ?? '')) fail('/about', 'HTML variant missing Vary: Accept (§36.C)');
+
+// agent-friendly 404: real 404 + markdown recovery (§36.A)
+const nf = await fetch(BASE + '/definitely-not-a-real-path-xyz-404-probe');
+if (nf.status !== 404) fail('/404', `unknown path returned ${nf.status}, expected 404`);
+const nfMd = await fetch(BASE + '/definitely-not-a-real-path-xyz-404-probe', { headers: { accept: 'text/markdown' } });
+if (nfMd.status !== 404 || !(nfMd.headers.get('content-type') ?? '').includes('text/markdown')) fail('/404', 'no text/markdown 404 recovery');
 
 // ── report ──────────────────────────────────────────────────────────────
 if (failures.length) {
