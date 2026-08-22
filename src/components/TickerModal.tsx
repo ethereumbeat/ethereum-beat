@@ -209,8 +209,11 @@ function ClockReadout({ engine }: { engine: BeatEngine }) {
   return (
     <div className="border border-[color:var(--hairline)] px-3 py-3">
       <p ref={ref} className="tick-label tabular-nums text-[color:var(--ink)]" />
-      <p className="micro mt-2 text-[color:var(--ink-faint)]">
-        THE DIAL: 32 TICKS = ONE EPOCH · SWEEP HAND = ONE SLOT · RED TICK = NOW
+      {/* explanatory legend: prose (sentence case), matching the modal body and
+          the ExplainChip helper style — the live readout above stays uppercase
+          because it is data, not prose */}
+      <p className="mt-2 text-xs leading-relaxed text-[color:var(--ink-faint)]">
+        The dial: 32 ticks make one epoch, the sweep hand is one slot, and the red tick is now.
       </p>
     </div>
   );

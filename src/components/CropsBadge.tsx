@@ -92,7 +92,10 @@ export default function CropsBadge({ category, context }: { category: string; co
             className="brackets brackets-ink relative w-full max-w-md border border-[color:var(--hairline)] bg-[color:var(--paper)] px-6 py-5 outline-none"
           >
             <SectionHeader index={info.letter} title={info.property} subtitle="values" accent className="mb-3" />
-            {context && <p className="micro mb-2 text-[color:var(--ink-faint)]">{context.toUpperCase()}</p>}
+            {/* context is a descriptive sentence (or a metric label) — sentence
+                case as an eyebrow, matching the `why` prose below and the other
+                modals' helper style (no shouting all-caps) */}
+            {context && <p className="mb-2 text-xs leading-relaxed text-[color:var(--ink-faint)]">{context}</p>}
             <p className="text-sm leading-relaxed text-[color:var(--ink-soft)]">{info.why}</p>
             <div className="mt-4 flex items-center justify-between">
               <a href="/about#crops" className="micro underline hover:text-[color:var(--ink)]">
