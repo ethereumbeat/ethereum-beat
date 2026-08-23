@@ -149,9 +149,11 @@ channel is independent and skips cleanly when its key is unset:
 |---|---|
 | `NOSTR_NSEC` | Nostr — a signed kind-1 note (nsec or hex). `NOSTR_RELAYS` overrides the relay set |
 | `FARCASTER_FID` + `FARCASTER_SIGNER` | Farcaster — a cast via the direct hub path. `FARCASTER_HUB` sets a write-capable hub |
+| `BLUESKY_IDENTIFIER` + `BLUESKY_APP_PASSWORD` | Bluesky — an `app.bsky.feed.post` with an OG link card, over plain AT Protocol XRPC. Use an **app password** (Settings → App Passwords), never the account password. `BLUESKY_PDS` overrides the PDS |
 
-There is no X API (no free tier as of Feb 2026): the post is written to
-`/broadcast/x-draft.json` for manual posting. In production these secrets are
+X has no free API tier: since Feb 2026 it is pay-per-use ($0.015 per post, and
+$0.20 for a post containing a link), so nothing here calls X — the post is
+written to `/broadcast/x-draft.json` for manual posting. In production these secrets are
 GitHub secrets, injected into `wrangler.ci.toml` at deploy time (never the
 committed config) — see `.github/workflows/deploy.yml`. Run `npm run
 test:broadcast` to check the signing and digest logic offline.

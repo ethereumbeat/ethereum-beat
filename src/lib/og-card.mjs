@@ -43,9 +43,18 @@ export function initEngines(yogaModule, resvgModule) {
 export const OG_W = 1200;
 export const OG_H = 800;
 
-const PAPER = '#fbfbf9';
-const INK = '#0a0a0a';
-const ACCENT = '#c90500';
+// Two palettes, mirroring the site's own light ":root" and dark "02 BONE"
+// ([data-theme=dark]) tokens in src/styles/tokens.css. The signal red is kept
+// in BOTH themes (the site's red bar does the same), and the CROPS badge letter
+// stays a near-white knockout on that red in both — so `onAccent` is constant.
+const THEMES = {
+  light: { bg: '#fbfbf9', ink: '#0a0a0a', accent: '#c90500', onAccent: '#fbfbf9' },
+  dark: { bg: '#0a0a0a', ink: '#f4f2ec', accent: '#c90500', onAccent: '#fbfbf9' },
+};
+export const OG_THEMES = /** @type {const} */ (['light', 'dark']);
+/** @param {unknown} theme */
+export const resolveTheme = (theme) => (theme === 'dark' ? 'dark' : 'light');
+
 const MONO = 'Departure Mono';
 // The card commits to the single pixel data face (Departure Mono) for a punchy,
 // legible social thumbnail and a small Worker bundle; hierarchy comes from size
@@ -54,7 +63,7 @@ const MONO = 'Departure Mono';
 const GROTESK = MONO;
 
 /** one L-shaped print crop mark, absolutely positioned at a frame corner */
-function cropMark(corner) {
+function cropMark(corner, ink) {
   const arm = 34;
   const th = 2;
   const inset = 40;
@@ -69,7 +78,7 @@ function cropMark(corner) {
         height: arm,
         ...v,
         ...h,
-        borderColor: INK,
+        borderColor: ink,
         borderStyle: 'solid',
         borderTopWidth: corner.includes('t') ? th : 0,
         borderBottomWidth: corner.includes('b') ? th : 0,
@@ -86,13 +95,14 @@ function span(text, style) {
 
 /**
  * Build the satori element tree for the card.
- * @param {{ value: string, suffix: string, label: string, letter?: string, slot: number, asOf: string|null }} s
+ * @param {{ value: string, suffix: string, label: string, letter?: string, slot: number, asOf: string|null, theme?: 'light'|'dark' }} s
  */
 export function beatCardElement(s) {
   const value = s.value ?? '—';
   const suffix = s.suffix ?? '';
   const label = (s.label ?? 'ETHEREUM').toUpperCase();
   const slot = Number.isFinite(s.slot) ? s.slot.toLocaleString('en-US') : '—';
+  const { bg, ink, accent, onAccent } = THEMES[resolveTheme(s.theme)];
 
   return {
     type: 'div',
@@ -104,16 +114,16 @@ export function beatCardElement(s) {
         flexDirection: 'column',
         justifyContent: 'space-between',
         position: 'relative',
-        background: PAPER,
-        color: INK,
+        background: bg,
+        color: ink,
         padding: 84,
         fontFamily: MONO,
       },
       children: [
-        cropMark('tl'),
-        cropMark('tr'),
-        cropMark('bl'),
-        cropMark('br'),
+        cropMark('tl', ink),
+        cropMark('tr', ink),
+        cropMark('bl', ink),
+        cropMark('br', ink),
 
         // top row — wordmark + snapshot date
         {
@@ -126,7 +136,7 @@ export function beatCardElement(s) {
                 fontFamily: GROTESK,
                 fontSize: 24,
                 letterSpacing: 2,
-                color: INK,
+                color: ink,
                 opacity: 0.62,
               }),
             ],
@@ -148,8 +158,8 @@ export function beatCardElement(s) {
                       ? span(s.letter, {
                           fontFamily: MONO,
                           fontSize: 26,
-                          color: PAPER,
-                          background: ACCENT,
+                          color: onAccent,
+                          background: accent,
                           padding: '6px 12px',
                           letterSpacing: 1,
                         })
@@ -163,12 +173,12 @@ export function beatCardElement(s) {
                 props: {
                   style: { display: 'flex', alignItems: 'flex-end', marginTop: 8 },
                   children: [
-                    span(value, { fontFamily: MONO, fontSize: 210, color: ACCENT, lineHeight: 1 }),
+                    span(value, { fontFamily: MONO, fontSize: 210, color: accent, lineHeight: 1 }),
                     suffix
                       ? span(suffix, {
                           fontFamily: MONO,
                           fontSize: 64,
-                          color: ACCENT,
+                          color: accent,
                           marginLeft: 24,
                           marginBottom: 24,
                         })
@@ -200,7 +210,7 @@ export function beatCardElement(s) {
                         children: [
                           {
                             type: 'div',
-                            props: { style: { display: 'flex', width: 15, height: 15, background: ACCENT } },
+                            props: { style: { display: 'flex', width: 15, height: 15, background: accent } },
                           },
                           span('ethereumbeat.org', { fontFamily: GROTESK, fontSize: 28, letterSpacing: 1 }),
                         ],

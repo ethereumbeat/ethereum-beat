@@ -1979,3 +1979,61 @@ acceptmarkdown.com compliance with `/` added to markdown negotiation, an llms.tx
   @ethereumbeat account is live, so `X_URL` is set and the tile renders as a real
   external link (`target=_blank rel=noopener`) — no "soon". One-line change; flip
   `X_URL` back to `null` to re-disable. Farcaster stays deferred/dormant (§34).
+
+## Bluesky broadcast channel (2026-08-23)
+
+Phase 1 of automating the launch cadence: the daily digest now publishes to
+Bluesky alongside Nostr and Farcaster. Same fork-safe discipline as the §25
+broadcast rail — absent credentials skip the channel and log, and nothing here
+can throw and break the collector.
+
+- **Plain XRPC over `fetch`, no SDK and no new dependency.** Three calls:
+  `com.atproto.server.createSession` (app password → `accessJwt` + `did`),
+  `com.atproto.repo.uploadBlob` (the OG card), then
+  `com.atproto.repo.createRecord` for an `app.bsky.feed.post`. `@atproto/api`
+  would have pulled a large dependency tree for what is ~40 lines of request
+  building; unlike the Nostr/Farcaster signing, none of this needs crypto the
+  runtime lacks.
+- **An app password, not OAuth.** App passwords are separately scoped and
+  revocable from Bluesky settings and need no redirect flow or refresh-token
+  rotation — the right fit for a cron whose only durable store is KV. It is
+  never the account password; `.dev.vars.example` and `env.d.ts` both say so.
+- **The link rides in the embed, not the text.** This is digest.ts's stated
+  rule — the URL travels "as an embed where the channel supports it, appended
+  to the text where it does not" — so Bluesky gets an
+  `app.bsky.embed.external` card (uri + `SITE_NAME` + `SITE_TAGLINE` + the OG
+  card as its thumb) and Nostr keeps its inline URL. A useful consequence: with
+  no URL in the text there is nothing to link-annotate, so no richtext facets
+  are needed — which sidesteps the AT Protocol trap that facet offsets are
+  UTF-8 **byte** offsets. `String#indexOf` would have mislocated them, because
+  the digest opens with `⬡` (3 bytes) and is full of `·` (2) and `—` (3).
+- **The thumbnail is best-effort; the post is not.** `uploadThumb` returns a
+  note instead of throwing on an OG fetch failure, a non-200, or an image over
+  the 1,000,000-byte cap that `app.bsky.embed.external`'s thumb carries (the
+  binding limit — the PDS's own blob ceiling is 50 MB and irrelevant here; the
+  live cards are 25–135 KB). A thumbless card still posts, and `thumbNote`
+  records why.
+- **Per-channel day markers.** The §25 guard was one `broadcast:last-date` key
+  for every channel, so whichever channel posted first claimed the day for all
+  of them — adding Bluesky's keys to an already-broadcasting account would have
+  silently skipped Bluesky until the next day. Now `broadcast:last-date:<channel>`.
+  The day is still claimed on **attempt**, not success: a re-run cannot
+  distinguish "the publish failed" from "it landed but the response was lost",
+  and a duplicate digest on a public feed is worse than a missed one. The old
+  shared key is left orphaned rather than migrated — `runBroadcast` is reachable
+  only from `scheduled()` (there is no production `__scheduled` route), so on
+  deploy day no channel can post twice.
+- **Text caps asserted in the test, not truncated at runtime.** The lexicon caps
+  post text at 300 graphemes and 3000 bytes; the digest's own `BODY_BUDGET` of
+  240 keeps it far clear (the live digest is 230 chars / 240 bytes). A CI
+  assertion catches a future digest change that would breach it, which is better
+  than silently truncating a carefully-built post.
+- **Verified.** `npm run test:broadcast` adds 13 checks (record shape, `langs`,
+  `createdAt` round-trip, card fields from site.ts, thumb present/absent, no
+  bare URL in the text, and the grapheme/byte caps measured as graphemes and
+  bytes). End-to-end in workerd via `wrangler dev --test-scheduled`: keyless →
+  all three channels skip and the X draft still writes; with a deliberately bad
+  app password → `{ok: false, status: 401, note: "AuthenticationRequired…"}`,
+  no throw, other channels unaffected. `astro check` 0 errors, build clean, and
+  the deploy-config injection of all three `BLUESKY_*` vars was simulated and
+  the result parsed as TOML.

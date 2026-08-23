@@ -17,6 +17,8 @@ export interface BeatCardState {
   letter?: string;
   slot: number;
   asOf: string | null;
+  /** 'light' (default paper) or 'dark' (bone-on-black); anything else → light */
+  theme?: 'light' | 'dark';
 }
 
 /** state → PNG bytes; instantiates both engines once per isolate from the globals. */
