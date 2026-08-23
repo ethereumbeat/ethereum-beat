@@ -9,7 +9,8 @@
  */
 import type { APIRoute } from 'astro';
 import { renderBeat } from '../../lib/og-render';
-import { OG_FALLBACK_PNG } from '../../lib/og-fallback';
+import { OG_FALLBACK_PNG, OG_FALLBACK_PNG_DARK } from '../../lib/og-fallback';
+import { resolveTheme } from '../../lib/og-card.mjs';
 import { SNAPSHOT_KEY, type Snapshot } from '../../../worker/snapshot.ts';
 import { kpiValue } from '../../lib/format';
 import { slotClock } from '../../lib/clock';
@@ -40,7 +41,10 @@ function png(bytes: Uint8Array, extra?: Record<string, string>): Response {
   });
 }
 
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, url }) => {
+  // ?theme=dark → bone-on-black card; anything else (incl. absent) → light paper.
+  const theme = resolveTheme(url.searchParams.get('theme'));
+  const fallback = theme === 'dark' ? OG_FALLBACK_PNG_DARK : OG_FALLBACK_PNG;
   try {
     const env = locals.runtime.env;
     // KV only — do NOT self-heal from D1 here (an image route must stay cheap).
@@ -51,7 +55,7 @@ export const GET: APIRoute = async ({ locals }) => {
       .filter((m) => m.featured)
       .sort((a, b) => a.sort - b.sort)[0];
 
-    if (!featured) return png(OG_FALLBACK_PNG); // no data yet → baked card
+    if (!featured) return png(fallback); // no data yet → baked card
 
     const { value, suffix } = kpiValue(featured.latest.value, featured.unit);
     const label = featured.label.length > 26 ? `${featured.label.slice(0, 25)}…` : featured.label;
@@ -63,10 +67,11 @@ export const GET: APIRoute = async ({ locals }) => {
       letter: CROPS_LETTER[featured.category],
       slot: slotClock(Date.now()).slot,
       asOf: snapshot?.generated_at?.slice(0, 10) ?? null,
+      theme,
     });
     return png(bytes);
   } catch (err) {
     console.error('[og/beat] render failed, serving baked fallback', err);
-    return png(OG_FALLBACK_PNG, { 'x-og-fallback': '1' });
+    return png(fallback, { 'x-og-fallback': '1' });
   }
 };

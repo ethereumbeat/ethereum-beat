@@ -56,23 +56,29 @@ const yogaWasm = await readFile(require.resolve('satori/yoga.wasm'));
 const resvgWasm = await readFile(p('node_modules/@resvg/resvg-wasm/index_bg.wasm'));
 await initEngines(yogaWasm, resvgWasm);
 const fonts = [{ name: 'Departure Mono', data: otf, weight: 400, style: 'normal' }];
-const fallbackState = {
+const baseState = {
   value: 'BEAT',
   suffix: '',
   label: 'the pulse of Ethereum',
   slot: NaN,
   asOf: null,
 };
-const png = await renderBeatPng(fallbackState, fonts);
-if (png[0] !== 0x89 || png[1] !== 0x50) throw new Error('fallback render did not produce a PNG');
-console.log(`fallback card: ${png.length}B PNG`);
+// one baked card per theme, so the never-500 fallback matches ?theme= (spec §33.A).
+const light = await renderBeatPng({ ...baseState, theme: 'light' }, fonts);
+const dark = await renderBeatPng({ ...baseState, theme: 'dark' }, fonts);
+for (const [name, png] of [['light', light], ['dark', dark]]) {
+  if (png[0] !== 0x89 || png[1] !== 0x50) throw new Error(`${name} fallback render did not produce a PNG`);
+  console.log(`fallback card (${name}): ${png.length}B PNG`);
+}
 
 await writeFile(
   p('src/lib/og-fallback.ts'),
   GENERATED +
-    '// A baked BEAT card, served by /og/beat.png if the live render throws.\n' +
+    '// Baked BEAT cards (one per theme), served by /og/beat.png if the live render throws.\n' +
     DECODE +
-    `export const OG_FALLBACK_PNG_B64 =\n  '${Buffer.from(png).toString('base64')}';\n` +
-    'export const OG_FALLBACK_PNG = b64(OG_FALLBACK_PNG_B64);\n',
+    `export const OG_FALLBACK_PNG_B64 =\n  '${Buffer.from(light).toString('base64')}';\n` +
+    'export const OG_FALLBACK_PNG = b64(OG_FALLBACK_PNG_B64);\n' +
+    `export const OG_FALLBACK_PNG_DARK_B64 =\n  '${Buffer.from(dark).toString('base64')}';\n` +
+    'export const OG_FALLBACK_PNG_DARK = b64(OG_FALLBACK_PNG_DARK_B64);\n',
 );
 console.log('wrote src/lib/og-fallback.ts');
