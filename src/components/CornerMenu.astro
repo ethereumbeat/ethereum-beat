@@ -12,18 +12,21 @@
  * Enter activates. A dark-red reactive pixel dither brightens under the cursor
  * (darken-only, so white labels stay ≥ AA on #c90500). All JS nonced.
  *
- * x links to the live @ethereumbeat account. Farcaster is deferred (spec §34):
- * its Pass 22 backend (manifest, fc:miniapp embed, OG card) stays live-but-
- * dormant, but there is no UI entry for it. GitHub lives in the footer.
+ * x and bluesky link to the live @ethereumbeat accounts. Farcaster is deferred
+ * (spec §34): its Pass 22 backend (manifest, fc:miniapp embed, OG card) stays
+ * live-but-dormant, but there is no UI entry for it. GitHub lives in the footer.
  */
 const X_URL: string | null = 'https://x.com/ethereumbeat';
 if (!X_URL) console.warn('[corner-menu] x option disabled — no public destination in the social config');
+const BSKY_URL: string | null = 'https://bsky.app/profile/ethereumbeat.bsky.social';
+if (!BSKY_URL) console.warn('[corner-menu] bluesky option disabled — no public destination in the social config');
 
 interface Opt { label: string; href: string | null; external?: boolean }
 const OPTIONS: Opt[] = [
   { label: 'ambient', href: '/ambient' },
   { label: 'rss', href: '/rss.xml' },
   { label: 'x', href: X_URL, external: true },
+  { label: 'bluesky', href: BSKY_URL, external: true },
   { label: 'badges', href: '/badges' },
 ];
 ---
