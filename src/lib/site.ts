@@ -143,7 +143,11 @@ export function siteJsonLd(origin: string): object[] {
       url: `${origin}/`,
       logo: `${origin}/icon.png`,
       description: `${SITE_NAME} — a free, open-source instrument for Ethereum protocol health. No prices, no market data.`,
-      sameAs: ['https://github.com/ethereumbeat/ethereum-beat'],
+      sameAs: [
+        'https://github.com/ethereumbeat/ethereum-beat',
+        'https://x.com/ethereumbeat',
+        'https://bsky.app/profile/ethereumbeat.bsky.social',
+      ],
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'technical support',
