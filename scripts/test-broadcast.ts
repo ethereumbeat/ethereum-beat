@@ -3,7 +3,8 @@
  *   node --experimental-strip-types scripts/test-broadcast.ts
  * No network. Verifies bech32/key derivation against the canonical NIP-19
  * vector, the Nostr event id + Schnorr signature, the Farcaster protobuf +
- * Ed25519/Blake3 signature (round-tripped), and the digest shape.
+ * Ed25519/Blake3 signature (round-tripped), the digest shape, and the Bluesky
+ * post record against the app.bsky.feed.post lexicon's limits.
  */
 import { schnorr } from '@noble/curves/secp256k1.js';
 import { ed25519 } from '@noble/curves/ed25519.js';
@@ -11,7 +12,9 @@ import { blake3 } from '@noble/hashes/blake3.js';
 import { toSecretKeyBytes, bech32ToBytes } from '../worker/broadcast/bech32.ts';
 import { signNote } from '../worker/broadcast/nostr.ts';
 import { buildCastMessage } from '../worker/broadcast/farcaster.ts';
+import { buildPostRecord, type BlobRef } from '../worker/broadcast/bluesky.ts';
 import { buildDigest } from '../worker/broadcast/digest.ts';
+import { SITE_NAME, SITE_TAGLINE } from '../src/lib/site.ts';
 import type { Snapshot } from '../worker/snapshot.ts';
 
 let failures = 0;
@@ -97,5 +100,45 @@ check('digest is non-financial (no $)', !d.text.includes('$'));
 check('digest omits usd metric (tvs)', !d.text.toLowerCase().includes('secured'));
 check('digest includes uptime vital', d.text.includes('4,046') || d.text.includes('4046'));
 check('digest body within X budget (<=280)', [...d.text].length <= 280, `${[...d.text].length} chars`);
+
+// ── 5. Bluesky post record ────────────────────────────────────────────────
+// The app.bsky.feed.post lexicon caps text at 300 graphemes AND 3000 UTF-8
+// bytes. The digest is deliberately multi-byte (⬡ 3B, · 2B, — 3B), so the byte
+// budget has to be measured in bytes, not string length — the same trap that
+// makes String#indexOf the wrong tool for AT Protocol facet offsets.
+const graphemes = (s: string) =>
+  [...new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(s)].length;
+const utf8 = (s: string) => new TextEncoder().encode(s).length;
+
+const NOW_MS = 1_754_560_000_000;
+const blob: BlobRef = {
+  $type: 'blob',
+  ref: { $link: 'bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+  mimeType: 'image/png',
+  size: 25_551,
+};
+const rec = buildPostRecord(d, NOW_MS, blob);
+check('record $type is app.bsky.feed.post', rec.$type === 'app.bsky.feed.post');
+check('record text is the shared digest body', rec.text === d.text);
+check('record declares langs (feeds filter on it)', rec.langs.includes('en'));
+check('createdAt round-trips the passed instant', new Date(rec.createdAt).getTime() === NOW_MS, rec.createdAt);
+check('embed is an external link card', rec.embed.$type === 'app.bsky.embed.external');
+check('card uri is the digest url', rec.embed.external.uri === d.url);
+check(
+  'card title/description reuse site.ts',
+  rec.embed.external.title === SITE_NAME && rec.embed.external.description === SITE_TAGLINE,
+);
+check('card carries the thumb blob', rec.embed.external.thumb?.ref.$link === blob.ref.$link);
+
+const bare = buildPostRecord(d, NOW_MS);
+check('thumb key absent (not undefined) when the blob is missing', !('thumb' in bare.embed.external));
+check('a thumbless card still has its uri', bare.embed.external.uri === d.url);
+
+// the link rides in the embed, not the text — digest.ts's stated rule
+check('post text carries no bare url', !rec.text.includes('http'));
+check('digest text is genuinely multi-byte', utf8(d.text) > d.text.length, `${utf8(d.text)}B / ${d.text.length} chars`);
+check('text within the 300-grapheme lexicon cap', graphemes(rec.text) <= 300, `${graphemes(rec.text)} graphemes`);
+check('text within the 3000-byte lexicon cap', utf8(rec.text) <= 3000, `${utf8(rec.text)}B`);
+
 console.log('\n' + (failures ? `${failures} FAILURES` : 'ALL PASS'));
 process.exit(failures ? 1 : 0);

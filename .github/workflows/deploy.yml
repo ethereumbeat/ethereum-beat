@@ -50,6 +50,9 @@ jobs:
           FARCASTER_FID: ${{ secrets.FARCASTER_FID }}
           FARCASTER_SIGNER: ${{ secrets.FARCASTER_SIGNER }}
           FARCASTER_HUB: ${{ secrets.FARCASTER_HUB }}
+          BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          BLUESKY_PDS: ${{ secrets.BLUESKY_PDS }}
         run: |
           set -euo pipefail
           sed -e "s|REPLACE_WITH_YOUR_D1_DATABASE_ID|${CF_D1_DATABASE_ID}|" \
@@ -80,13 +83,17 @@ jobs:
           #    the set ones are inserted UNDER the existing [vars] header. Only
           #    non-empty secrets are written, so forks with none deploy a config
           #    identical to before. Values are TOML basic strings (nsec base32,
-          #    fid digits, signer hex, relay/hub URLs — no quotes/backslashes). ──
+          #    fid digits, signer hex, relay/hub/PDS URLs, a bsky handle and an
+          #    app password of lowercase-and-hyphens — no quotes/backslashes). ──
           broadcast_vars() {
-            [ -n "${NOSTR_NSEC:-}" ]       && printf 'NOSTR_NSEC = "%s"\n' "$NOSTR_NSEC"
-            [ -n "${NOSTR_RELAYS:-}" ]     && printf 'NOSTR_RELAYS = "%s"\n' "$NOSTR_RELAYS"
-            [ -n "${FARCASTER_FID:-}" ]    && printf 'FARCASTER_FID = "%s"\n' "$FARCASTER_FID"
-            [ -n "${FARCASTER_SIGNER:-}" ] && printf 'FARCASTER_SIGNER = "%s"\n' "$FARCASTER_SIGNER"
-            [ -n "${FARCASTER_HUB:-}" ]    && printf 'FARCASTER_HUB = "%s"\n' "$FARCASTER_HUB"
+            [ -n "${NOSTR_NSEC:-}" ]           && printf 'NOSTR_NSEC = "%s"\n' "$NOSTR_NSEC"
+            [ -n "${NOSTR_RELAYS:-}" ]         && printf 'NOSTR_RELAYS = "%s"\n' "$NOSTR_RELAYS"
+            [ -n "${FARCASTER_FID:-}" ]        && printf 'FARCASTER_FID = "%s"\n' "$FARCASTER_FID"
+            [ -n "${FARCASTER_SIGNER:-}" ]     && printf 'FARCASTER_SIGNER = "%s"\n' "$FARCASTER_SIGNER"
+            [ -n "${FARCASTER_HUB:-}" ]        && printf 'FARCASTER_HUB = "%s"\n' "$FARCASTER_HUB"
+            [ -n "${BLUESKY_IDENTIFIER:-}" ]   && printf 'BLUESKY_IDENTIFIER = "%s"\n' "$BLUESKY_IDENTIFIER"
+            [ -n "${BLUESKY_APP_PASSWORD:-}" ] && printf 'BLUESKY_APP_PASSWORD = "%s"\n' "$BLUESKY_APP_PASSWORD"
+            [ -n "${BLUESKY_PDS:-}" ]          && printf 'BLUESKY_PDS = "%s"\n' "$BLUESKY_PDS"
             true
           }
           broadcast_vars > /tmp/broadcast-vars.txt
@@ -96,7 +103,8 @@ jobs:
 
           # verify each SET broadcast secret survived generation (key name only,
           # never the value, so nothing secret lands in the run log)
-          for v in NOSTR_NSEC NOSTR_RELAYS FARCASTER_FID FARCASTER_SIGNER FARCASTER_HUB; do
+          for v in NOSTR_NSEC NOSTR_RELAYS FARCASTER_FID FARCASTER_SIGNER FARCASTER_HUB \
+                   BLUESKY_IDENTIFIER BLUESKY_APP_PASSWORD BLUESKY_PDS; do
             eval "val=\${$v:-}"
             if [ -n "$val" ] && ! grep -q "^$v = " wrangler.ci.toml; then
               echo "::error::$v was set but did not survive into wrangler.ci.toml"

@@ -22,3 +22,9 @@ FARCASTER_SIGNER=
 # Optional hub base URL for submitMessage. Empty → a public write hub default.
 # Must be a hub that accepts writes (many public hubs are read-only).
 FARCASTER_HUB=
+# Bluesky handle (or DID) + an APP PASSWORD from Settings → App Passwords —
+# never the account password. Both required; absent → Bluesky skipped.
+BLUESKY_IDENTIFIER=
+BLUESKY_APP_PASSWORD=
+# Optional PDS override. Empty → https://bsky.social
+BLUESKY_PDS=

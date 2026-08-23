@@ -33,6 +33,13 @@ interface Env {
   FARCASTER_SIGNER?: string;
   /** hub base URL for submitMessage; defaults to a public write hub if unset */
   FARCASTER_HUB?: string;
+  /** Bluesky handle or DID (e.g. ethereumbeat.bsky.social). Absent → skipped. */
+  BLUESKY_IDENTIFIER?: string;
+  /** Bluesky APP PASSWORD (Settings → App Passwords), never the account
+   *  password — it is scoped and revocable. Absent → Bluesky skipped. */
+  BLUESKY_APP_PASSWORD?: string;
+  /** PDS base URL for the XRPC calls; defaults to https://bsky.social */
+  BLUESKY_PDS?: string;
   /**
    * Farcaster Mini App manifest accountAssociation (spec §33.D) — the
    * maintainer-signed { header, payload, signature } JSON that binds this
