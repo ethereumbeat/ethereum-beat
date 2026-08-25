@@ -1,11 +1,17 @@
 /**
  * Dynamic BEAT social card (spec §33.A) — 1200×800 (3:2) PNG rendered live with
  * satori + resvg-wasm. It reads ONLY `snapshot:latest` from KV (never the RPC or
- * D1) and composes the card from the first featured metric, the live beacon slot
- * (pure clock maths), and the CROPS taxonomy line.
+ * D1) and composes the card from a snapshot metric, the live beacon slot (pure
+ * clock maths), and the CROPS taxonomy line.
  *
- * It NEVER 500s: any failure — KV miss, malformed snapshot, satori/resvg throw —
- * falls back to the baked PNG committed in src/lib/og-fallback.ts.
+ * ?metric=<metric_key> optionally selects which metric to render; absent (or an
+ * unknown key) falls back to the first featured metric by sort. ?theme=dark
+ * renders the bone-on-black variant. The edge cache keys on the full URL
+ * (query string included), so each param combination caches independently.
+ *
+ * It NEVER 500s: any failure — KV miss, malformed snapshot, unknown metric,
+ * satori/resvg throw — falls back to the baked PNG committed in
+ * src/lib/og-fallback.ts.
  */
 import type { APIRoute } from 'astro';
 import { renderBeat } from '../../lib/og-render';
@@ -51,20 +57,26 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const raw = await env.SNAP.get(SNAPSHOT_KEY);
     const snapshot = raw ? (JSON.parse(raw) as Snapshot) : null;
 
+    // Default: the first featured metric by sort (unchanged, byte-identical for
+    // the no-param case). ?metric=<key> overrides it with a specific snapshot
+    // metric; an absent/unknown key degrades to this default rather than erroring.
     const featured = (snapshot?.metrics ?? [])
       .filter((m) => m.featured)
       .sort((a, b) => a.sort - b.sort)[0];
+    const metricParam = url.searchParams.get('metric');
+    const requested = metricParam ? snapshot?.metrics?.find((m) => m.metric_key === metricParam) : undefined;
+    const metric = requested ?? featured;
 
-    if (!featured) return png(fallback); // no data yet → baked card
+    if (!metric) return png(fallback); // no data yet → baked card
 
-    const { value, suffix } = kpiValue(featured.latest.value, featured.unit);
-    const label = featured.label.length > 26 ? `${featured.label.slice(0, 25)}…` : featured.label;
+    const { value, suffix } = kpiValue(metric.latest.value, metric.unit);
+    const label = metric.label.length > 26 ? `${metric.label.slice(0, 25)}…` : metric.label;
 
     const bytes = await renderBeat({
       value,
       suffix,
       label,
-      letter: CROPS_LETTER[featured.category],
+      letter: CROPS_LETTER[metric.category],
       slot: slotClock(Date.now()).slot,
       asOf: snapshot?.generated_at?.slice(0, 10) ?? null,
       theme,
