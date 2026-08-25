@@ -26,22 +26,27 @@ const origin = siteOrigin(Astro.locals?.runtime?.env);
 const normalized = path === '/' ? '/' : path.replace(/\/$/, '');
 const canonical = origin + normalized;
 
-// Social card: the live BEAT card is the site-wide social image (spec §33.B) —
-// a dynamic 1200x800 (3:2) PNG rendered by /og/beat.png from the KV snapshot.
-// The 3:2 ratio is what the Farcaster Mini App embed requires; Twitter/OG accept
-// it too. (Per-channel build-time cards under /og/*.png still exist for anyone
-// who wants them, but the live card is the one the head points at.)
+// Social card. For launch we ship a STATIC 1200x630 black card as the site-wide
+// og:image / twitter:image — a fixed, predictable card (public/og/default.png,
+// built by scripts/build-static-og.mjs). The dynamic live renderer at
+// /og/beat.png stays intact in the codebase for later per-channel use; flip
+// USE_DYNAMIC_OG to restore it as the default head image (it renders 3:2 /
+// 1200x800 from the KV snapshot). NB: the Farcaster Mini App embed below always
+// uses the dynamic 3:2 card — the ratio Farcaster requires.
+const USE_DYNAMIC_OG = false;
 const channel = ROUTES.find((r) => r.path === normalized);
-const ogImage = `${origin}/og/beat.png`;
-const ogAlt = channel
+const dynamicOgImage = `${origin}/og/beat.png`;
+const ogImage = USE_DYNAMIC_OG ? dynamicOgImage : `${origin}/og/default.png`;
+const ogImageHeight = USE_DYNAMIC_OG ? '800' : '630';
+const ogAlt = USE_DYNAMIC_OG && channel
   ? `${SITE_NAME} — ${channel.channel}: ${channel.oneLine}. Live network-health card.`
-  : `${SITE_NAME} — live network-health card: ${description}`;
+  : `${SITE_NAME} — the pulse of Ethereum. Non-financial network-health instrument.`;
 
 // Farcaster Mini App embed (spec §33.C): one inert meta tag, so it ships
 // site-wide; the launch action always opens the app root.
 const miniApp = {
   version: '1',
-  imageUrl: ogImage,
+  imageUrl: dynamicOgImage,
   button: {
     title: 'Open Ethereum Beat',
     action: {
@@ -77,7 +82,7 @@ const beaconToken = Astro.locals?.runtime?.env?.CF_BEACON_TOKEN;
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="800" />
+    <meta property="og:image:height" content={ogImageHeight} />
     <meta property="og:image:alt" content={ogAlt} />
     <meta property="og:image:type" content="image/png" />
     <meta name="twitter:card" content="summary_large_image" />
