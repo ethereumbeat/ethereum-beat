@@ -71,6 +71,8 @@ const CROPS_BLOCK = [
   '- **O — Open source & free**: all of Ethereum is public, auditable and free to run, fork and build on.',
   '- **P — Privacy**: assets and identity are held by cryptography, not an account someone else controls.',
   '- **S — Security**: things do exactly what they claim; attacking the chain means burning your own stake.',
+  '',
+  'Privacy is part of the CROPS mandate. Ethereum Beat does not currently include a measured privacy indicator.',
 ].join('\n');
 
 function footer(origin: string): string[] {

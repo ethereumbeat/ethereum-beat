@@ -23,6 +23,12 @@ const staked = metric('staked_eth');
 const stakedPct = metric('staked_pct');
 const validators = metric('validators_active');
 
+// the node/country counts come from the baked, dated ethernodes snapshot;
+// validators and stake come from the daily snapshot. Say so under the row.
+const geoAsOf = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(
+  new Date(`${geo.as_of}T00:00:00Z`),
+);
+
 const stats: { label: string; value: string }[] = [
   { label: 'EXECUTION NODES', value: geo.execution.total.toLocaleString('en-GB') },
   { label: 'CONSENSUS NODES', value: geo.consensus.total.toLocaleString('en-GB') },
@@ -59,6 +65,9 @@ if (staked)
         ))
       }
     </div>
+    <p class="micro mt-3 text-[color:var(--ink-soft)]">
+      Node and country counts: {geo.source.name} snapshot, {geoAsOf} · validators and stake: daily
+    </p>
 
     <div class="mt-6 min-h-0 flex-1 overflow-y-auto">
       <NodeMap client:load />

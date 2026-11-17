@@ -53,7 +53,7 @@ export const ROUTES: RouteMeta[] = [
     'NODES',
     '02',
     'where Ethereum physically lives',
-    'Where Ethereum physically lives: execution and consensus nodes by country on a dot-matrix world map, client diversity bars, validator and stake counts.',
+    'Where Ethereum physically lives: execution and consensus nodes by country on a dot-matrix world map from a dated ethernodes.org snapshot, client diversity bars, validator and stake counts.',
     'nodes',
   ),
   route(
