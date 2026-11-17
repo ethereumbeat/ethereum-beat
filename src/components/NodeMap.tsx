@@ -85,6 +85,7 @@ export default function NodeMap({ reducedMotion = false }: { reducedMotion?: boo
           text={[
             'Ethereum is thousands of computers run by volunteers, companies and stakers across the world. The wider the spread across countries and client software, the harder the network is to switch off, censor or break by accident.',
             'That spread is the point. Country-level aggregates only; nothing identifies an individual node.',
+            `Country counts and client shares are a dated snapshot from ${geo.source.name}, as of ${geo.as_of}. Slot, block and FLOW data update separately.`,
           ]}
         />
         {(['execution', 'consensus'] as Layer[]).map((l) => (
@@ -104,7 +105,9 @@ export default function NodeMap({ reducedMotion = false }: { reducedMotion?: boo
         ))}
       </div>
 
-      {/* country status grid strip: one box flickers as data refreshes */}
+      <p className="micro mb-2 text-[color:var(--ink-soft)]">GEOGRAPHIC SNAPSHOT · AS OF {geo.as_of}</p>
+
+      {/* country status grid strip: one box flickers as a cosmetic effect; the counts are the dated snapshot */}
       <div className="mb-3 flex flex-wrap gap-1" aria-label="Top countries by node count">
         {data.countries.slice(0, 12).map((c, i) => (
           <div
