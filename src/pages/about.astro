@@ -89,13 +89,13 @@ const aboutJsonLd = {
     </section>
 
     <!-- 3 CROPS -->
-    <section id="crops" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-7 px-8 text-center">
+    <section id="crops" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-5 px-8 pb-28 text-center sm:gap-7 sm:pb-0">
       <SectionHeader index="03" title="four properties" subtitle="the crops mandate" accent />
       <CropsWordmark gloss class="text-4xl sm:text-5xl" />
       <div class="flex flex-wrap items-center justify-center gap-4">
         {
           crops.map(([letter, name]) => (
-            <div class="brackets brackets-ink flex flex-col items-center gap-2 px-6 py-5">
+            <div class="brackets brackets-ink flex flex-col items-center gap-2 px-4 py-3 sm:px-6 sm:py-5">
               <span class="font-grotesk invert flex h-10 min-w-10 items-center justify-center whitespace-nowrap px-2 text-xl font-extrabold tracking-tight">
                 {letter}
               </span>
