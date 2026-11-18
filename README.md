@@ -153,9 +153,11 @@ channel is independent and skips cleanly when its key is unset:
 
 X has no free API tier: since Feb 2026 it is pay-per-use ($0.015 per post, and
 $0.20 for a post containing a link), so nothing here calls X — the post is
-written to `/broadcast/x-draft.json` for manual posting. In production these secrets are
-GitHub secrets, injected into `wrangler.ci.toml` at deploy time (never the
-committed config) — see `.github/workflows/deploy.yml`. Run `npm run
+written to `/broadcast/x-draft.json` for manual posting. The deploy workflow
+injects only the non-secret settings (relays, FID, hub, identifier, PDS) into
+`wrangler.ci.toml`; it never deploys `NOSTR_NSEC`, `FARCASTER_SIGNER` or
+`BLUESKY_APP_PASSWORD`, because Worker vars are plaintext. Set a credential
+with `wrangler secret put` only if you deliberately enable that channel. Run `npm run
 test:broadcast` to check the signing and digest logic offline.
 
 ## Adding a metric

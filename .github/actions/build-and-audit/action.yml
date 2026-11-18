@@ -24,6 +24,11 @@ runs:
       run: npm run check
       shell: bash
 
+    # ── broadcast correctness: offline, no network, no credentials (blocking)
+    - name: Broadcast tests
+      run: npm run test:broadcast
+      shell: bash
+
     - name: Build
       run: npm run build
       shell: bash
