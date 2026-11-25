@@ -89,13 +89,13 @@ const aboutJsonLd = {
     </section>
 
     <!-- 3 CROPS -->
-    <section id="crops" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-7 px-8 text-center">
+    <section id="crops" class="flex h-dvh w-screen flex-none snap-start flex-col items-center justify-center gap-5 px-8 pb-28 text-center sm:gap-7 sm:pb-0">
       <SectionHeader index="03" title="four properties" subtitle="the crops mandate" accent />
       <CropsWordmark gloss class="text-4xl sm:text-5xl" />
       <div class="flex flex-wrap items-center justify-center gap-4">
         {
           crops.map(([letter, name]) => (
-            <div class="brackets brackets-ink flex flex-col items-center gap-2 px-6 py-5">
+            <div class="brackets brackets-ink flex flex-col items-center gap-2 px-4 py-3 sm:px-6 sm:py-5">
               <span class="font-grotesk invert flex h-10 min-w-10 items-center justify-center whitespace-nowrap px-2 text-xl font-extrabold tracking-tight">
                 {letter}
               </span>
@@ -108,12 +108,16 @@ const aboutJsonLd = {
         Ethereum’s four indivisible protocol properties. Every number on this site
         demonstrates one of them; the lettered badges link back here.
       </p>
+      <p class="mono-label max-w-md text-[color:var(--ink-soft)]">
+        Privacy is part of the CROPS mandate. Ethereum Beat does not currently include a measured privacy indicator.
+      </p>
       <ExplainChip
         client:load
         title="CROPS"
         text={[
           'CROPS is four properties. CR — Censorship resistance: no actor can selectively exclude a valid transaction or break functionality. O — Open source and free: no privileged code, no hidden specs; all of it public, auditable and free to run and fork.',
           'P — Privacy: user data is not exposed beyond necessity or against a person’s interests. S — Security: things do exactly what they claim, no more and no less — history locked by economics. (The heartbeat — 100% uptime since 2015 — frames the beat, but is not itself a CROPS property.)',
+          'Privacy is part of the CROPS mandate. Ethereum Beat does not currently include a measured privacy indicator.',
         ]}
       />
     </section>

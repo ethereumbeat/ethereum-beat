@@ -99,6 +99,8 @@ check('digest has an og image', /\/og\/\w+\.png$/.test(d.ogImage));
 check('digest is non-financial (no $)', !d.text.includes('$'));
 check('digest omits usd metric (tvs)', !d.text.toLowerCase().includes('secured'));
 check('digest includes uptime vital', d.text.includes('4,046') || d.text.includes('4046'));
+check('digest names sync-committee participation', d.text.includes('99.3% sync-committee participation'));
+check('digest makes no all-validator attesting claim', !/validators attesting/i.test(d.text));
 check('digest body within X budget (<=280)', [...d.text].length <= 280, `${[...d.text].length} chars`);
 
 // ── 5. Bluesky post record ────────────────────────────────────────────────

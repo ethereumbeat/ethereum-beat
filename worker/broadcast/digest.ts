@@ -32,7 +32,7 @@ const pct = (m: SnapshotMetric) => `${m.latest.value.toFixed(1)}%`;
  */
 const VITALS: { key: string; line: (m: SnapshotMetric) => string; og: string }[] = [
   { key: 'uptime_days', line: (m) => `${nf0.format(m.latest.value)} days of unbroken uptime`, og: 'beat' },
-  { key: 'participation_rate', line: (m) => `${pct(m)} of validators attesting`, og: 'finality' },
+  { key: 'participation_rate', line: (m) => `${pct(m)} sync-committee participation`, og: 'finality' },
   { key: 'staked_pct', line: (m) => `${pct(m)} of all ETH staked`, og: 'nodes' },
   { key: 'validators_active', line: (m) => `${compact(m.latest.value, 2)} validators securing it`, og: 'nodes' },
   { key: 'node_countries', line: (m) => `${nf0.format(m.latest.value)} countries running nodes`, og: 'nodes' },
