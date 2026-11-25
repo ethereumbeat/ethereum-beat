@@ -26,6 +26,8 @@ shown as the heartbeat. No prices, no candles, no market talk.
 Built with Astro + one React island on Cloudflare Workers (D1 + KV + one daily
 cron), free tier throughout. Charts and the world map are hand-rolled SVG.
 
+Developed by [Light Elephant](https://lightelephant.xyz).
+
 ## Deploy your own fork
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ethereumbeat/ethereum-beat)
